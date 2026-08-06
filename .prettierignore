@@ -1,0 +1,9 @@
+.next
+.agents
+.claude
+node_modules
+coverage
+design-references
+public/media
+convex/_generated
+package-lock.json

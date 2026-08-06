@@ -1,0 +1,5 @@
+import { AdminCollectionPage } from "@/components/admin/content-manager";
+
+export default function AdminDocumentsPage() {
+  return <AdminCollectionPage collection="documents" />;
+}

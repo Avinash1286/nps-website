@@ -1,0 +1,128 @@
+@import "@fontsource/manrope/400.css";
+@import "@fontsource/manrope/500.css";
+@import "@fontsource/manrope/600.css";
+@import "@fontsource/manrope/700.css";
+@import "@fontsource/manrope/800.css";
+@import "tailwindcss";
+
+:root {
+  --navy-950: #031733;
+  --navy-900: #061f4e;
+  --navy-800: #082f6b;
+  --blue-700: #0b5fc4;
+  --blue-600: #1675df;
+  --sky-100: #e8f4ff;
+  --sky-50: #f5faff;
+  --gold-500: #e5a90b;
+  --ink: #09295c;
+  --muted: #5b6d87;
+  --surface: #ffffff;
+  --page: #f7faff;
+  --border: #dce9f7;
+  --shadow-sm: 0 10px 30px rgba(6, 39, 92, 0.08);
+  --shadow-lg: 0 24px 70px rgba(3, 31, 78, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: "Manrope", "Inter", Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  text-underline-offset: 0.2em;
+}
+
+img {
+  max-width: 100%;
+}
+
+::selection {
+  background: #bfe1ff;
+  color: var(--navy-950);
+}
+
+:focus-visible {
+  outline: 3px solid #38a7ff;
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 1000;
+  transform: translateY(-180%);
+  border-radius: 0.75rem;
+  background: white;
+  color: var(--navy-900);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  box-shadow: var(--shadow-lg);
+  transition: transform 160ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.site-grain {
+  background-image: radial-gradient(rgba(21, 101, 192, 0.1) 0.7px, transparent 0.7px);
+  background-size: 16px 16px;
+}
+
+.prose-school {
+  color: #455b78;
+  line-height: 1.85;
+}
+
+.prose-school :where(h2, h3) {
+  color: var(--navy-900);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.prose-school a {
+  color: var(--blue-700);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

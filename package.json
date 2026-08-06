@@ -1,0 +1,61 @@
+{
+  "name": "nps-digital-campus",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "npm@11.12.1",
+  "overrides": {
+    "undici": "6.28.0"
+  },
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --names web,convex \"next dev\" \"convex dev\"",
+    "dev:web": "next dev",
+    "dev:convex": "convex dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build",
+    "convex:deploy": "convex deploy",
+    "convex:codegen": "convex codegen"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^3.0.103",
+    "@clerk/nextjs": "^7.6.5",
+    "@convex-dev/agent": "^0.6.4",
+    "@fontsource/manrope": "^5.3.0",
+    "ai": "^6.0.244",
+    "convex": "^1.43.0",
+    "lucide-react": "^0.511.0",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@convex-dev/eslint-plugin": "^3.0.0",
+    "@edge-runtime/vm": "^5.0.0",
+    "@tailwindcss/postcss": "^4.1.0",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "concurrently": "^10.0.4",
+    "convex-test": "^0.0.55",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.0",
+    "jsdom": "^26.1.0",
+    "prettier": "^3.9.6",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.10"
+  }
+}
