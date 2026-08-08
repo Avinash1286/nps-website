@@ -15,7 +15,12 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/admin",
 }));
 
-import { AdminShell, adminNavigation, isAdminNavigationItemActive } from "@/components/admin/admin-shell";
+import {
+  AdminShell,
+  adminNavigation,
+  isAdminNavigationItemActive,
+  primaryAdminNavigation,
+} from "@/components/admin/admin-shell";
 
 describe("administration sidebar", () => {
   beforeEach(() => {
@@ -89,6 +94,20 @@ describe("administration sidebar", () => {
         "/admin/ai",
         "/admin/settings",
       ]),
+    );
+  });
+
+  it("keeps the default sidebar focused on common staff tasks", () => {
+    expect(primaryAdminNavigation.map((group) => group.label)).toEqual([
+      "Start",
+      "Publish",
+      "Requests",
+      "Tools",
+      "Administration",
+    ]);
+    expect(primaryAdminNavigation[0].items.map((item) => item.label)).toEqual(["Dashboard", "Edit website"]);
+    expect(primaryAdminNavigation.flatMap((group) => group.items).map((item) => item.href)).toEqual(
+      expect.arrayContaining(["/admin/news", "/admin/admissions", "/admin/media", "/admin/settings"]),
     );
   });
 

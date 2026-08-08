@@ -70,12 +70,12 @@ export const adminNavigation: NavigationGroup[] = [
         description: "Activity, metrics and common tasks",
       },
       {
-        label: "Website editor",
+        label: "Edit website",
         href: "/admin/website",
         icon: Globe2,
         roles: [...ADMIN_ACCESS_ROLES.content],
-        description: "Browse content by public website section",
-        searchTerms: "content map public site",
+        description: "Choose the page exactly as visitors see it",
+        searchTerms: "website editor content map public site start here",
       },
     ],
   },
@@ -332,6 +332,51 @@ export const adminNavigation: NavigationGroup[] = [
         searchTerms: "logo school seo configuration maintenance contact",
       },
     ],
+  },
+];
+
+const navigationItemsByHref = new Map(
+  adminNavigation.flatMap((group) => group.items.map((item) => [item.href, item] as const)),
+);
+
+function navigationItems(...hrefs: string[]): NavigationItem[] {
+  return hrefs.map((href) => navigationItemsByHref.get(href)).filter((item) => item !== undefined);
+}
+
+/**
+ * The default sidebar is intentionally task-oriented. Detailed website editors
+ * remain available through Edit website and appear when the sidebar is searched.
+ */
+export const primaryAdminNavigation: NavigationGroup[] = [
+  {
+    label: "Start",
+    description: "Overview and website editing",
+    items: navigationItems("/admin", "/admin/website"),
+  },
+  {
+    label: "Publish",
+    description: "Share updates and resources",
+    items: navigationItems("/admin/news", "/admin/notices", "/admin/events", "/admin/documents"),
+  },
+  {
+    label: "Requests",
+    description: "Applications and messages",
+    items: navigationItems(
+      "/admin/admissions",
+      "/admin/contacts",
+      "/admin/registrations",
+      "/admin/newsletter",
+    ),
+  },
+  {
+    label: "Tools",
+    description: "Media, AI, and delivery",
+    items: navigationItems("/admin/media", "/admin/ai", "/admin/jobs"),
+  },
+  {
+    label: "Administration",
+    description: "Menus, access, and settings",
+    items: navigationItems("/admin/navigation", "/admin/users", "/admin/audit", "/admin/settings"),
   },
 ];
 
@@ -614,13 +659,30 @@ function NavigationLinks({
 }) {
   const [query, setQuery] = useState("");
   const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
-    const activeGroup = adminNavigation.find((group) =>
+    const activeGroup = primaryAdminNavigation.find((group) =>
       group.items.some((item) => isAdminNavigationItemActive(pathname, item.href)),
     );
-    return [activeGroup?.label ?? "Overview"];
+    return [activeGroup?.label ?? "Start"];
   });
   const normalizedQuery = query.trim().toLocaleLowerCase("en-US");
-  const roleVisibleGroups = adminNavigation.flatMap((group) => {
+  const baseGroups = normalizedQuery ? adminNavigation : primaryAdminNavigation;
+  const activeLocation = currentNavigationLocation(pathname);
+  const activeIsInBase = baseGroups.some((group) =>
+    group.items.some((item) => isAdminNavigationItemActive(pathname, item.href)),
+  );
+  const navigationGroups =
+    !normalizedQuery && activeLocation && !activeIsInBase
+      ? [
+          baseGroups[0],
+          {
+            label: "Current editor",
+            description: "The workspace you have open",
+            items: [activeLocation.item],
+          },
+          ...baseGroups.slice(1),
+        ]
+      : baseGroups;
+  const roleVisibleGroups = navigationGroups.flatMap((group) => {
     const items = group.items.filter(
       (item) =>
         (item.href === "/admin" && roles.length === 0) || item.roles.some((role) => roles.includes(role)),

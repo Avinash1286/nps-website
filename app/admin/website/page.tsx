@@ -7,9 +7,9 @@ export default function AdminWebsitePage() {
   return (
     <>
       <PageHeading
-        eyebrow="Public website"
-        title="Website editor"
-        description="Choose the part of the public website you want to update. Each section below leads to the correct content, media, or configuration workspace."
+        eyebrow="Guided website editing"
+        title="Edit the public website"
+        description="Find the page or feature visitors see, then open the correct editing workspace without needing to know the content system."
         action={
           <Link
             href="/"

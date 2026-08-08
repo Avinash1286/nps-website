@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { websiteEditorSectionsForRoles } from "@/components/admin/website-editor";
+import {
+  filterWebsiteEditorSections,
+  websiteEditorSectionsForRoles,
+} from "@/components/admin/website-editor";
 
 function destinationsFor(role: "admin" | "publisher" | "editor" | "admissions") {
   return websiteEditorSectionsForRoles([role]).flatMap((section) => section.destinations);
@@ -42,5 +45,22 @@ describe("website editor section map", () => {
 
   it("does not expose publishing destinations to admissions-only staff", () => {
     expect(websiteEditorSectionsForRoles(["admissions"])).toEqual([]);
+  });
+
+  it("finds deep editing destinations using visitor-friendly words", () => {
+    const sections = websiteEditorSectionsForRoles(["admin"]);
+    expect(filterWebsiteEditorSections(sections, "teacher")).toMatchObject([
+      {
+        title: "Academics",
+        destinations: [{ label: "Manage teacher profiles", href: "/admin/teachers" }],
+      },
+    ]);
+    expect(filterWebsiteEditorSections(sections, "priority")).toMatchObject([
+      {
+        title: "Updates",
+        destinations: [{ label: "Publish notices", href: "/admin/notices" }],
+      },
+    ]);
+    expect(filterWebsiteEditorSections(sections, "not a real section")).toEqual([]);
   });
 });

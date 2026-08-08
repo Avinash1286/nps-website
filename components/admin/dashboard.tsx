@@ -8,6 +8,7 @@ import {
   CalendarDays,
   ContactRound,
   FileClock,
+  Globe2,
   Newspaper,
   School,
   ShieldCheck,
@@ -20,6 +21,13 @@ import { formatDate, itemLabel } from "./content-manager";
 import { EmptyState, LoadingPanel } from "./ui";
 
 const quickActions = [
+  {
+    title: "Edit the public website",
+    description: "Choose the exact page or section visitors see.",
+    href: "/admin/website",
+    icon: Globe2,
+    roles: ADMIN_ACCESS_ROLES.content,
+  },
   {
     title: "Write a news story",
     description: "Create a verified draft for editorial review.",
@@ -174,24 +182,35 @@ function DashboardData() {
 
         <div className="rounded-2xl bg-[#12123a] p-6 text-white shadow-xl shadow-slate-300/50">
           <ShieldCheck className="text-sky-300" />
-          <h2 className="mt-5 text-xl font-black">Production safeguards</h2>
-          <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-300">
-            <li>Clerk protects every administration route.</li>
-            <li>Convex functions authorize every read and write.</li>
-            <li>Publishing and operational changes are audited.</li>
-            <li>
-              {isAdmin
-                ? "Failed delivery work can be inspected and retried."
-                : "Navigation and actions are limited to your assigned staff role."}
+          <p className="mt-4 text-[10px] font-extrabold tracking-[.16em] text-sky-300 uppercase">
+            Simple workflow
+          </p>
+          <h2 className="mt-2 text-xl font-black">Edit with confidence</h2>
+          <ol className="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+            <li className="flex gap-3">
+              <b className="text-sky-300">1.</b>
+              <span>Choose the public page or task you want to update.</span>
             </li>
-          </ul>
-          {isAdmin && (
+            <li className="flex gap-3">
+              <b className="text-sky-300">2.</b>
+              <span>Save a draft, or update live content only when you are ready.</span>
+            </li>
+            <li className="flex gap-3">
+              <b className="text-sky-300">3.</b>
+              <span>Open the public page and confirm the published result.</span>
+            </li>
+          </ol>
+          {canManageContent ? (
             <Link
-              href="/admin/audit"
+              href="/admin/website"
               className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-sky-300 hover:text-white"
             >
-              Review audit history <ArrowRight size={15} />
+              Start editing the website <ArrowRight size={15} />
             </Link>
+          ) : (
+            <p className="mt-5 text-xs leading-5 text-slate-400">
+              Your assigned role shows only the workflows you are allowed to use.
+            </p>
           )}
         </div>
       </section>

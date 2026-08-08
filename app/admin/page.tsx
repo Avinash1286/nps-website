@@ -5,9 +5,9 @@ export default function AdminDashboardPage() {
   return (
     <>
       <PageHeading
-        eyebrow="Workspace overview"
-        title="Good administration starts with clarity"
-        description="Monitor publishing, enquiries, admissions, automation, and recent administrative activity from one secure workspace."
+        eyebrow="Start here"
+        title="What would you like to update?"
+        description="Choose a common task below, or open Edit website to find content in the same order visitors see it."
       />
       <AdminDashboard />
     </>

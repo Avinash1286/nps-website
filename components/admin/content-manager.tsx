@@ -2,6 +2,7 @@
 
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import {
+  AlertTriangle,
   Archive,
   CalendarClock,
   File,
@@ -84,6 +85,66 @@ const mediaUrlFields: Record<string, string> = {
 export function mediaFallbackUrl(values: Record<string, string | boolean>, storageField: string): string {
   const urlField = mediaUrlFields[storageField];
   return urlField ? String(values[urlField] ?? "").trim() : "";
+}
+
+const advancedEditorFieldKeys = new Set(["slug", "order", "expireAt", ...Object.values(mediaUrlFields)]);
+
+export function isAdvancedEditorField(field: EditorField): boolean {
+  if (field.required) return false;
+  return advancedEditorFieldKeys.has(field.key) || field.key.startsWith("seo.");
+}
+
+export function editorFieldGuidance(field: EditorField): string | undefined {
+  if (field.help) return field.help;
+  if (field.key === "slug")
+    return "This becomes part of the public page address. Use lowercase words and hyphens.";
+  if (field.key === "order") return "Lower numbers appear first. Use 0 when no special order is needed.";
+  if (field.type === "list") return "Separate each item with a comma.";
+  if (field.type === "datetime")
+    return "Leave blank unless this content should change automatically at a specific time.";
+  if (field.type === "url")
+    return "Optional advanced fallback. Use a complete https:// address or an approved site path.";
+  return undefined;
+}
+
+export function editorSavePresentation(
+  editing: AdminRecord | null,
+  singular: string,
+): { actionLabel: string; description: string; live: boolean } {
+  if (!editing) {
+    return {
+      actionLabel: "Save draft",
+      description: "This starts as a private draft. You can review it before publishing.",
+      live: false,
+    };
+  }
+  const status = String(editing.status ?? "draft");
+  if (status === "published") {
+    return {
+      actionLabel: `Update live ${singular}`,
+      description: "This item is live. Saving changes updates the public website immediately.",
+      live: true,
+    };
+  }
+  if (status === "scheduled") {
+    return {
+      actionLabel: `Update scheduled ${singular}`,
+      description: "This item is scheduled. Saving changes updates the version waiting to be published.",
+      live: false,
+    };
+  }
+  if (status === "archived") {
+    return {
+      actionLabel: `Save archived ${singular}`,
+      description: "This item remains hidden from the public website while it is archived.",
+      live: false,
+    };
+  }
+  return {
+    actionLabel: "Save draft",
+    description: "This item remains a private draft until a publisher makes it public.",
+    live: false,
+  };
 }
 
 function mediaFallbackAlt(values: Record<string, string | boolean>, field: EditorField): string {
@@ -607,7 +668,11 @@ export function AdminCollectionScreen({
 }) {
   return (
     <AdminFeatureGate requiredRoles={ADMIN_ACCESS_ROLES.content}>
-      <CollectionManager definition={definition} initialSearch={initialSearch} />
+      <CollectionManager
+        key={`${definition.type}:${initialSearch}`}
+        definition={definition}
+        initialSearch={initialSearch}
+      />
     </AdminFeatureGate>
   );
 }
@@ -847,16 +912,27 @@ function CollectionManager({
               : `Create the first ${definition.singular} when verified content is ready.`
           }
           action={
-            !search && filter === "all" ? (
+            search || filter !== "all" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setFilter("all");
+                }}
+                className={secondaryButtonClass}
+              >
+                Clear filters
+              </button>
+            ) : (
               <button onClick={openNew} className={primaryButtonClass}>
                 <Plus size={17} /> Add {definition.singular}
               </button>
-            ) : undefined
+            )
           }
         />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="hidden grid-cols-[minmax(0,1.5fr)_140px_170px_104px] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-[10px] font-extrabold tracking-[.14em] text-slate-500 uppercase xl:grid">
+          <div className="hidden grid-cols-[minmax(0,1.5fr)_140px_170px_190px] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-[10px] font-extrabold tracking-[.14em] text-slate-500 uppercase xl:grid">
             <span>Content</span>
             <span>Status</span>
             <span>Publication</span>
@@ -865,7 +941,7 @@ function CollectionManager({
           {items.map((item) => (
             <article
               key={item._id}
-              className="grid gap-4 border-b border-slate-100 p-4 last:border-0 sm:p-5 xl:grid-cols-[minmax(0,1.5fr)_140px_170px_104px] xl:items-center"
+              className="grid gap-4 border-b border-slate-100 p-4 last:border-0 sm:p-5 xl:grid-cols-[minmax(0,1.5fr)_140px_170px_190px] xl:items-center"
             >
               <div className="min-w-0">
                 <h2 className="truncate font-extrabold text-slate-900">{itemLabel(item)}</h2>
@@ -921,11 +997,11 @@ function CollectionManager({
                 <span className="text-[10px] font-extrabold tracking-[.14em] text-slate-400 uppercase xl:hidden">
                   Actions
                 </span>
-                <div className="flex gap-1">
+                <div className="flex flex-wrap justify-end gap-1">
                   <button
                     onClick={() => openEdit(item)}
                     disabled={!canPublish && (item.status === "published" || item.status === "scheduled")}
-                    className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2.5 text-sky-800 hover:bg-sky-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold text-sky-800 hover:bg-sky-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
                     aria-label={`Edit ${itemLabel(item)}`}
                     title={
                       !canPublish && (item.status === "published" || item.status === "scheduled")
@@ -934,14 +1010,16 @@ function CollectionManager({
                     }
                   >
                     <Pencil size={17} />
+                    Edit
                   </button>
                   {canPublish && (
                     <button
                       onClick={() => void deleteItem(item)}
-                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2.5 text-red-700 hover:bg-red-50"
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold text-red-700 hover:bg-red-50"
                       aria-label={`Delete ${itemLabel(item)}`}
                     >
                       <Trash2 size={17} />
+                      Delete
                     </button>
                   )}
                 </div>
@@ -1016,6 +1094,46 @@ function EditorModal({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   const { dialogRef, onDialogKeyDown } = useModalAccessibility<HTMLFormElement>(true, onClose);
+  const savePresentation = editorSavePresentation(editing, definition.singular);
+  const mainFields = definition.fields.filter((field) => !isAdvancedEditorField(field));
+  const advancedFields = definition.fields.filter(isAdvancedEditorField);
+
+  const renderField = (field: EditorField) =>
+    field.type === "media" ? (
+      <MediaEditorControl
+        key={field.key}
+        field={field}
+        value={String(values[field.key] ?? "")}
+        fallbackUrl={mediaFallbackUrl(values, field.key)}
+        fallbackAlt={mediaFallbackAlt(values, field)}
+        onSelect={(asset) => {
+          const next = { ...values, [field.key]: asset ? String(asset.storageId ?? "") : "" };
+          if (definition.type === "documents" && field.key === "storageId") {
+            next.fileName = asset ? String(asset.fileName ?? "") : "";
+            next.mimeType = asset ? String(asset.mimeType ?? "") : "";
+            next.size = asset && typeof asset.size === "number" ? String(asset.size) : "";
+            if (asset) next.externalUrl = "";
+          }
+          setValues(next);
+        }}
+      />
+    ) : field.type === "reference" ? (
+      <ReferenceEditorControl
+        key={field.key}
+        field={field}
+        value={String(values[field.key] ?? "")}
+        currentRecordId={editing?._id}
+        onChange={(value) => setValues({ ...values, [field.key]: value })}
+      />
+    ) : (
+      <EditorControl
+        key={field.key}
+        field={field}
+        value={values[field.key]}
+        onChange={(value) => setValues({ ...values, [field.key]: value })}
+      />
+    );
+
   return (
     <div className="fixed inset-0 z-[70] overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm">
       <div className="grid min-h-full place-items-center">
@@ -1027,9 +1145,9 @@ function EditorModal({
           tabIndex={-1}
           onKeyDown={onDialogKeyDown}
           onSubmit={onSubmit}
-          className="my-4 w-full max-w-3xl rounded-2xl bg-white p-6 shadow-2xl sm:p-8"
+          className="my-4 flex max-h-[calc(100dvh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
         >
-          <div className="flex items-start justify-between gap-4">
+          <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-5 py-5 sm:px-7">
             <div>
               <p className="text-[10px] font-extrabold tracking-[.18em] text-sky-700 uppercase">
                 {definition.title}
@@ -1037,8 +1155,8 @@ function EditorModal({
               <h2 id="content-editor-title" className="mt-2 text-2xl font-black">
                 {editing ? `Edit ${definition.singular}` : `Add ${definition.singular}`}
               </h2>
-              <p className="mt-2 text-sm text-slate-500">
-                New content begins as a draft and is not public until explicitly published.
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                {savePresentation.description}
               </p>
             </div>
             <button
@@ -1049,62 +1167,82 @@ function EditorModal({
             >
               <X />
             </button>
-          </div>
-          {error && (
-            <div className="mt-5">
-              <Feedback>{error}</Feedback>
-            </div>
-          )}
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            {definition.fields.map((field) =>
-              field.type === "media" ? (
-                <MediaEditorControl
-                  key={field.key}
-                  field={field}
-                  value={String(values[field.key] ?? "")}
-                  fallbackUrl={mediaFallbackUrl(values, field.key)}
-                  fallbackAlt={mediaFallbackAlt(values, field)}
-                  onSelect={(asset) => {
-                    const next = { ...values, [field.key]: asset ? String(asset.storageId ?? "") : "" };
-                    if (definition.type === "documents" && field.key === "storageId") {
-                      next.fileName = asset ? String(asset.fileName ?? "") : "";
-                      next.mimeType = asset ? String(asset.mimeType ?? "") : "";
-                      next.size = asset && typeof asset.size === "number" ? String(asset.size) : "";
-                      if (asset) next.externalUrl = "";
-                    }
-                    setValues(next);
-                  }}
-                />
-              ) : field.type === "reference" ? (
-                <ReferenceEditorControl
-                  key={field.key}
-                  field={field}
-                  value={String(values[field.key] ?? "")}
-                  currentRecordId={editing?._id}
-                  onChange={(value) => setValues({ ...values, [field.key]: value })}
-                />
-              ) : (
-                <EditorControl
-                  key={field.key}
-                  field={field}
-                  value={values[field.key]}
-                  onChange={(value) => setValues({ ...values, [field.key]: value })}
-                />
-              ),
+          </header>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-7 sm:py-6">
+            {error && (
+              <div className="mb-5">
+                <Feedback>{error}</Feedback>
+              </div>
+            )}
+
+            {savePresentation.live && (
+              <div className="mb-6 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
+                <AlertTriangle className="mt-0.5 shrink-0 text-amber-700" size={19} aria-hidden="true" />
+                <div>
+                  <p className="text-sm font-extrabold">You are editing live content</p>
+                  <p className="mt-1 text-xs leading-5 text-amber-900">
+                    Review every change before saving. Visitors will see the updated version immediately.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <fieldset>
+              <legend className="text-sm font-black text-slate-900">Main information</legend>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Complete the content visitors need. Fields marked with an asterisk are required.
+              </p>
+              <div className="mt-5 grid gap-5 sm:grid-cols-2">{mainFields.map(renderField)}</div>
+            </fieldset>
+
+            {advancedFields.length > 0 && (
+              <details className="mt-7 rounded-xl border border-slate-200 bg-slate-50 open:bg-white">
+                <summary className="cursor-pointer px-4 py-4 text-sm font-extrabold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none focus:ring-inset">
+                  Advanced options
+                  <span className="ml-2 text-xs font-normal text-slate-500">
+                    Page address, ordering, SEO, fallback links, and scheduling
+                  </span>
+                </summary>
+                <div className="border-t border-slate-200 p-4 sm:p-5">
+                  <p className="mb-5 text-xs leading-5 text-slate-500">
+                    Most editors can leave these values unchanged. Update them only when you understand their
+                    effect on the public page.
+                  </p>
+                  <div className="grid gap-5 sm:grid-cols-2">{advancedFields.map(renderField)}</div>
+                </div>
+              </details>
             )}
           </div>
-          <div className="mt-8 flex flex-col-reverse justify-end gap-3 sm:flex-row">
+
+          <footer className="flex shrink-0 flex-col-reverse justify-end gap-3 border-t border-slate-200 bg-white px-5 py-4 sm:flex-row sm:px-7">
             <button type="button" onClick={onClose} disabled={busy} className={secondaryButtonClass}>
               Cancel
             </button>
             <button disabled={busy} className={primaryButtonClass}>
               {busy && <LoaderCircle className="animate-spin" size={16} />}
-              {busy ? "Saving…" : `Save ${definition.singular}`}
+              {busy ? "Saving…" : savePresentation.actionLabel}
             </button>
-          </div>
+          </footer>
         </form>
       </div>
     </div>
+  );
+}
+
+function EditorFieldLabel({ field }: { field: EditorField }) {
+  return (
+    <>
+      {field.label}
+      {field.required && (
+        <>
+          <span aria-hidden="true" className="ml-1 text-red-600">
+            *
+          </span>
+          <span className="sr-only"> (required)</span>
+        </>
+      )}
+    </>
   );
 }
 
@@ -1130,14 +1268,20 @@ function ReferenceEditorControl({
     : results;
   const selected = eligibleResults.find((item) => item._id === value);
   const needsSavedRecord = Boolean(field.referenceMatchCurrentIdBy && !currentRecordId);
+  const help = needsSavedRecord
+    ? "Save this record first, link a published teacher to it, then return to choose the department head."
+    : (editorFieldGuidance(field) ?? "Choose a related content record.");
+  const helpId = `editor-${field.key}-help`;
   return (
     <div className="sm:col-span-2">
       <label className="block text-sm font-bold text-slate-800">
-        {field.label}
+        <EditorFieldLabel field={field} />
         <select
+          required={field.required}
           value={value}
           disabled={status === "LoadingFirstPage" || needsSavedRecord}
           onChange={(event) => onChange(event.target.value)}
+          aria-describedby={helpId}
           className={inputClass}
         >
           <option value="">
@@ -1152,11 +1296,7 @@ function ReferenceEditorControl({
         </select>
       </label>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-        <span>
-          {needsSavedRecord
-            ? "Save this record first, link a published teacher to it, then return to choose the department head."
-            : (field.help ?? "Choose a related CMS record.")}
-        </span>
+        <span id={helpId}>{help}</span>
         {status === "CanLoadMore" && (
           <button type="button" onClick={() => loadMore(100)} className="font-bold text-sky-800">
             Load more options
@@ -1210,7 +1350,7 @@ function MediaEditorControl({
         </span>
         <div className="min-w-0 flex-1">
           <label className="block text-sm font-bold text-slate-800">
-            {field.label}
+            <EditorFieldLabel field={field} />
             <select
               value={value}
               disabled={status === "LoadingFirstPage"}
@@ -1297,6 +1437,8 @@ function EditorControl({
   value: string | boolean | undefined;
   onChange: (value: string | boolean) => void;
 }) {
+  const guidance = editorFieldGuidance(field);
+  const helpId = guidance ? `editor-${field.key}-help` : undefined;
   if (field.type === "boolean")
     return (
       <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 text-sm font-bold sm:col-span-2">
@@ -1304,11 +1446,16 @@ function EditorControl({
           type="checkbox"
           checked={Boolean(value)}
           onChange={(event) => onChange(event.target.checked)}
+          aria-describedby={helpId}
           className="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-500"
         />
         <span>
-          {field.label}
-          {field.help && <span className="mt-1 block text-xs font-normal text-slate-500">{field.help}</span>}
+          <EditorFieldLabel field={field} />
+          {guidance && (
+            <span id={helpId} className="mt-1 block text-xs font-normal text-slate-500">
+              {guidance}
+            </span>
+          )}
         </span>
       </label>
     );
@@ -1317,13 +1464,14 @@ function EditorControl({
     value: String(value ?? ""),
     onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
       onChange(event.target.value),
+    "aria-describedby": helpId,
     className: inputClass,
   };
   return (
     <label
       className={`block text-sm font-bold text-slate-800 ${field.type === "textarea" ? "sm:col-span-2" : ""}`}
     >
-      {field.label}
+      <EditorFieldLabel field={field} />
       {field.type === "textarea" ? (
         <textarea
           {...common}
@@ -1354,8 +1502,10 @@ function EditorControl({
           }
         />
       )}
-      {field.help && (
-        <span className="mt-1.5 block text-xs leading-5 font-normal text-slate-500">{field.help}</span>
+      {guidance && (
+        <span id={helpId} className="mt-1.5 block text-xs leading-5 font-normal text-slate-500">
+          {guidance}
+        </span>
       )}
     </label>
   );

@@ -100,16 +100,19 @@ describe("admin UI authorization", () => {
 
   it("only returns dashboard links the viewer can open", () => {
     expect(dashboardQuickActionsForRoles(["admin"]).map((action) => action.href)).toEqual([
+      "/admin/website",
       "/admin/news",
       "/admin/admissions",
       "/admin/events",
       "/admin/jobs",
     ]);
     expect(dashboardQuickActionsForRoles(["publisher"]).map((action) => action.href)).toEqual([
+      "/admin/website",
       "/admin/news",
       "/admin/events",
     ]);
     expect(dashboardQuickActionsForRoles(["editor"]).map((action) => action.href)).toEqual([
+      "/admin/website",
       "/admin/news",
       "/admin/events",
     ]);
