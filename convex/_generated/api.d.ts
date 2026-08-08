@@ -13,6 +13,7 @@ import type * as assistant from "../assistant.js";
 import type * as assistantAdmin from "../assistantAdmin.js";
 import type * as assistantData from "../assistantData.js";
 import type * as content from "../content.js";
+import type * as copyMaintenance from "../copyMaintenance.js";
 import type * as crons from "../crons.js";
 import type * as formActions from "../formActions.js";
 import type * as forms from "../forms.js";
@@ -43,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   assistantAdmin: typeof assistantAdmin;
   assistantData: typeof assistantData;
   content: typeof content;
+  copyMaintenance: typeof copyMaintenance;
   crons: typeof crons;
   formActions: typeof formActions;
   forms: typeof forms;

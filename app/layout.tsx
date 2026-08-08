@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(siteUrl),
-    applicationName: "NPS Digital Campus",
+    applicationName: "NPS Digital School",
     title: { default: title, template: `%s | ${site.shortName}` },
     description,
     category: "education",

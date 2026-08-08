@@ -11,7 +11,7 @@ describe("website editor section map", () => {
       "Home",
       "About",
       "Academics",
-      "Campus life",
+      "School life",
       "Admissions",
       "Updates",
       "Sitewide",

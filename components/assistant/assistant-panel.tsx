@@ -30,7 +30,7 @@ export function AssistantPanel({
     {
       role: "assistant",
       content:
-        "Hello. I can help you find verified information published on the NPS Digital Campus. I will direct you to the school office when an answer is not available.",
+        "Hello. I can help you find verified information published by Nepal Police School on this website. I will direct you to the school office when an answer is not available.",
     },
   ]);
   const [value, setValue] = useState("");

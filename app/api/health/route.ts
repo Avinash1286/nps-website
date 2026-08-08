@@ -42,7 +42,7 @@ export function GET() {
   return NextResponse.json(
     {
       status: ready ? "ready" : "configuration_required",
-      service: "nps-digital-campus",
+      service: "nps-digital-school",
       checkScope: "configuration_only",
       configuration,
       timestamp: new Date().toISOString(),

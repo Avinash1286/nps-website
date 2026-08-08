@@ -33,7 +33,7 @@ export default async function GalleryAlbumPage({ params }: { params: Promise<{ s
         description={album.description ?? "Approved photographs and media from the school community."}
         image={album.coverUrl ?? "/media/campus-hero.png"}
         crumbs={[
-          { label: "Campus life", href: "/campus-life" },
+          { label: "School life", href: "/campus-life" },
           { label: "Gallery", href: "/campus-life/gallery" },
           { label: album.title },
         ]}

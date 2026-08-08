@@ -121,7 +121,7 @@ export function StandardPage({
               <div className="relative aspect-[4/3]">
                 <Image
                   src={content.image ?? "/media/nps-campus-building.png"}
-                  alt="Nepal Police School campus"
+                  alt="Nepal Police School grounds"
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 320px"

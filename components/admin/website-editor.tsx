@@ -40,7 +40,7 @@ type WebsiteEditorDestination = {
 };
 
 export type WebsiteEditorSection = {
-  key: "home" | "about" | "academics" | "campus" | "admissions" | "updates" | "sitewide";
+  key: "home" | "about" | "academics" | "school" | "admissions" | "updates" | "sitewide";
   title: string;
   description: string;
   publicHref: string;
@@ -143,15 +143,15 @@ export const websiteEditorSections: readonly WebsiteEditorSection[] = [
     ],
   },
   {
-    key: "campus",
-    title: "Campus life",
-    description: "Facilities, activities, transport information, virtual-tour copy, and school photographs.",
+    key: "school",
+    title: "School life",
+    description: "Facilities, activities, transport information, virtual tour copy, and school photographs.",
     publicHref: "/campus-life",
     icon: Building2,
     destinations: [
       {
-        label: "Campus-life pages",
-        description: "Edit facilities, activities, transport, and other routed campus pages.",
+        label: "School life pages",
+        description: "Edit facilities, activities, transport, and other routed School life pages.",
         href: "/admin/pages?section=campus-life",
         icon: FileText,
         roles: contentRoles,

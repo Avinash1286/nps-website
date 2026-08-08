@@ -66,7 +66,7 @@ describe("administration sidebar", () => {
       "Home & site",
       "About",
       "Academics",
-      "Campus life",
+      "School life",
       "Admissions",
       "Updates",
       "Communications",

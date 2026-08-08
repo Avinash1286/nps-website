@@ -32,7 +32,7 @@ export function AboutSection({
             {mainImage ? (
               <PublicImage
                 src={mainImage}
-                alt={section?.imageAlt ?? `${site.schoolName} campus`}
+                alt={section?.imageAlt ?? `${site.schoolName} grounds`}
                 fill
                 sizes="(max-width: 1024px) 100vw, 46vw"
                 className="object-cover"

@@ -367,7 +367,7 @@ const collections: Record<
     title: "Gallery albums",
     eyebrow: "Publishing",
     description:
-      "Organize campus media into accessible, routed albums. Upload individual files from the Media workspace.",
+      "Organize school media into accessible, routed albums. Upload individual files from the Media workspace.",
     fields: [
       { key: "title", label: "Album title", required: true },
       { key: "slug", label: "Album slug", required: true },

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { KeyRound, ShieldCheck } from "lucide-react";
 
 export const metadata = {
-  title: "Staff sign in | NPS Digital Campus",
+  title: "Staff sign in | NPS Digital School",
   description: "Secure staff access to the Nepal Police School administration workspace.",
 };
 
@@ -34,7 +34,7 @@ export default function SignInPage() {
           </span>
           <span className="min-w-0">
             <span className="block text-sm font-extrabold">Nepal Police School</span>
-            <span className="text-xs text-slate-500">Digital Campus</span>
+            <span className="text-xs text-slate-500">Digital School</span>
           </span>
         </Link>
 

@@ -104,7 +104,7 @@ export const adminNavigation: NavigationGroup[] = [
         href: "/admin/pages",
         icon: FolderKanban,
         roles: [...ADMIN_ACCESS_ROLES.content],
-        description: "About, academics, campus and admissions pages",
+        description: "About, academics, School life, and admissions pages",
         searchTerms: "history mission vision curriculum facilities transport eligibility fees custom pages",
       },
       {
@@ -170,8 +170,8 @@ export const adminNavigation: NavigationGroup[] = [
     ],
   },
   {
-    label: "Campus life",
-    description: "Campus media and experiences",
+    label: "School life",
+    description: "School activities and media",
     items: [
       {
         label: "Gallery",
@@ -179,7 +179,7 @@ export const adminNavigation: NavigationGroup[] = [
         icon: GalleryHorizontalEnd,
         roles: [...ADMIN_ACCESS_ROLES.content],
         description: "Public photo and video albums",
-        searchTerms: "campus photos videos albums",
+        searchTerms: "school photos videos albums",
       },
       {
         label: "Media library",
@@ -474,7 +474,7 @@ export function AdminShell({ children, authConfigured }: { children: ReactNode; 
               />
             </span>
             <span className={`min-w-0 ${sidebarCollapsed ? "lg:hidden" : ""}`}>
-              <b className="block truncate text-sm">Digital Campus</b>
+              <b className="block truncate text-sm">Digital School</b>
               <span className="block truncate text-[11px] text-sky-200">Administration console</span>
             </span>
           </Link>

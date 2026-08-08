@@ -175,23 +175,27 @@ export const baseline = mutation({
           candidate.href === item.href &&
           candidate.parentId === parentId,
       );
-      if (!existing && parentId && options.adoptRootLabel) {
+      if (!existing && parentId && (options.adoptRootLabel || options.renameRootLabel)) {
         existing = knownNavigation.find(
           (candidate) =>
             candidate.location === item.location &&
             candidate.href === item.href &&
             candidate.parentId === undefined &&
-            candidate.label === options.adoptRootLabel,
+            (candidate.label === options.adoptRootLabel || candidate.label === options.renameRootLabel),
         );
         if (existing) {
+          const shouldRename =
+            options.renameRootLabel !== undefined && existing.label === options.renameRootLabel;
           await ctx.db.patch("navigationItems", existing.id, {
             parentId,
             order: item.order,
+            ...(shouldRename ? { label: item.label } : {}),
             updatedBy: actor._id,
             updatedAt: now,
           });
           existing.parentId = parentId;
           existing.order = item.order;
+          if (shouldRename) existing.label = item.label;
           markUpdated();
           return existing.id;
         }
@@ -242,12 +246,16 @@ export const baseline = mutation({
       location: "header",
       order: 20,
     });
-    const campusNavigationId = await ensureNavigation({
-      label: "Campus life",
-      href: "/campus-life",
-      location: "header",
-      order: 30,
-    });
+    const schoolLifeNavigationId = await ensureNavigation(
+      {
+        label: "School life",
+        href: "/campus-life",
+        location: "header",
+        order: 30,
+      },
+      undefined,
+      { renameRootLabel: "Campus life" },
+    );
     const admissionsNavigationId = await ensureNavigation({
       label: "Admissions",
       href: "/admissions",
@@ -262,7 +270,7 @@ export const baseline = mutation({
 
     const headerGroups: Array<{
       parentId: Id<"navigationItems">;
-      items: Array<SeedNavigation & { adoptRootLabel?: string }>;
+      items: Array<SeedNavigation & { adoptRootLabel?: string; renameRootLabel?: string }>;
     }> = [
       {
         parentId: aboutNavigationId,
@@ -303,7 +311,7 @@ export const baseline = mutation({
         ],
       },
       {
-        parentId: campusNavigationId,
+        parentId: schoolLifeNavigationId,
         items: [
           { label: "Overview", href: "/campus-life", location: "header", order: 0 },
           { label: "Facilities", href: "/campus-life/facilities", location: "header", order: 10 },
@@ -382,7 +390,7 @@ export const baseline = mutation({
     });
     const footerGroups: Array<{
       parentId: Id<"navigationItems">;
-      items: Array<SeedNavigation & { adoptRootLabel?: string }>;
+      items: Array<SeedNavigation & { adoptRootLabel?: string; renameRootLabel?: string }>;
     }> = [
       {
         parentId: schoolFooterId,
@@ -397,11 +405,12 @@ export const baseline = mutation({
           },
           { label: "Teachers", href: "/teachers", location: "footer", order: 30 },
           {
-            label: "Campus life",
+            label: "School life",
             href: "/campus-life",
             location: "footer",
             order: 40,
-            adoptRootLabel: "Campus life",
+            adoptRootLabel: "School life",
+            renameRootLabel: "Campus life",
           },
         ],
       },
@@ -437,8 +446,8 @@ export const baseline = mutation({
       },
     ];
     for (const group of footerGroups) {
-      for (const { adoptRootLabel, ...item } of group.items) {
-        await ensureNavigation(item, group.parentId, { adoptRootLabel });
+      for (const { adoptRootLabel, renameRootLabel, ...item } of group.items) {
+        await ensureNavigation(item, group.parentId, { adoptRootLabel, renameRootLabel });
       }
     }
     for (const item of [
@@ -717,10 +726,10 @@ export const baseline = mutation({
     const gallery = [
       {
         slug: "campus-life",
-        title: "Campus life",
-        description: "Daily life and learning across the Nepal Police School campus.",
+        title: "School life",
+        description: "Daily life and learning across Nepal Police School.",
         imageUrl: "/media/campus-hero.png",
-        alt: "Students on the school campus",
+        alt: "Students on the school grounds",
         featured: true,
         order: 10,
       },
@@ -909,7 +918,7 @@ export const baseline = mutation({
         secondaryBody:
           "Academic guidance, admissions information, staff profiles, notices, events, and school resources are published and maintained here by authorised school staff, so families always work from verified information.",
         imageUrl: "/media/nps-campus-building.png",
-        imageAlt: "Nepal Police School campus building",
+        imageAlt: "Nepal Police School building",
         secondaryImageUrl: "/media/nps-hero-gate.png",
         ctaLabel: "Discover our school",
         ctaHref: "/about",
@@ -931,13 +940,13 @@ export const baseline = mutation({
         eyebrow: "Beyond the classroom",
         heading: "ECA activities",
         body: "Sport, culture, service, and club programmes that build confidence, discipline, and teamwork alongside academic study.",
-        ctaLabel: "Explore campus life",
+        ctaLabel: "Explore school life",
         ctaHref: "/campus-life/activities",
       },
       {
         slug: "gallery",
         eyebrow: "Photo gallery",
-        heading: "Moments from our campus",
+        heading: "Moments from our school",
         body: "A look at daily school life, ceremonies, activities, and the people who make up the school community.",
         ctaLabel: "Open full gallery",
         ctaHref: "/campus-life/gallery",
@@ -997,10 +1006,15 @@ export const baseline = mutation({
       },
       {
         section: "hero" as const,
-        title: "Campus life",
-        summary: "A campus built around discipline, dignity, and decorum.",
+        title: "School life",
+        summary: "A school built around discipline, dignity, and decorum.",
         imageUrl: "/media/campus-hero.png",
-        imageAlt: "Students on the school campus",
+        imageAlt: "Students on the school grounds",
+        legacy: {
+          title: "Campus life",
+          summary: "A campus built around discipline, dignity, and decorum.",
+          imageAlt: "Students on the school campus",
+        },
       },
       {
         section: "hero" as const,
@@ -1074,7 +1088,7 @@ export const baseline = mutation({
         summary:
           "Cultural programmes, national day performances, and creative practice across music, art, and dance.",
         imageUrl: "/media/campus-hero.png",
-        imageAlt: "Students gathered on the school campus",
+        imageAlt: "Students gathered on the school grounds",
         href: "/campus-life/activities",
       },
       {
@@ -1084,7 +1098,7 @@ export const baseline = mutation({
         summary:
           "Debate, quiz, essay, and public-speaking activities in Nepali and English that sharpen confident expression.",
         imageUrl: "/media/nps-campus-building.png",
-        imageAlt: "Nepal Police School campus building",
+        imageAlt: "Nepal Police School building",
         href: "/campus-life/activities",
       },
       {
@@ -1113,14 +1127,22 @@ export const baseline = mutation({
       throw new Error("Home-card seed stopped because the table exceeds the safe reconciliation limit.");
     }
     for (let index = 0; index < homeHighlights.length; index += 1) {
-      const highlight = homeHighlights[index];
+      const { legacy, ...highlight } = homeHighlights[index];
       const existing = existingHighlights.find(
-        (row) => row.section === highlight.section && row.title === highlight.title,
+        (row) =>
+          row.section === highlight.section && (row.title === highlight.title || row.title === legacy?.title),
       );
       if (existing) {
         const baseline = { ...highlight } as Partial<Doc<"homeHighlights">>;
         if (existing.imageId !== undefined) baseline.imageUrl = undefined;
         const patch = missingFields(existing, baseline);
+        if (legacy?.title && existing.title === legacy.title) patch.title = highlight.title;
+        if (legacy?.summary && existing.summary === legacy.summary) {
+          patch.summary = highlight.summary;
+        }
+        if (legacy?.imageAlt && existing.imageAlt === legacy.imageAlt) {
+          patch.imageAlt = highlight.imageAlt;
+        }
         if (hasFields(patch)) {
           await ctx.db.patch("homeHighlights", existing._id, {
             ...patch,

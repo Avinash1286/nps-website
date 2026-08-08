@@ -19,9 +19,9 @@ export default async function GalleryPage() {
       <PageHero
         eyebrow="School gallery"
         title="Moments from our learning community"
-        description="Approved photographs and albums from school programmes, activities, and campus life."
+        description="Approved photographs and albums from school programmes, activities, and school life."
         image="/media/campus-hero.png"
-        crumbs={[{ label: "Campus life", href: "/campus-life" }, { label: "Gallery" }]}
+        crumbs={[{ label: "School life", href: "/campus-life" }, { label: "Gallery" }]}
       />
       <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-7xl">

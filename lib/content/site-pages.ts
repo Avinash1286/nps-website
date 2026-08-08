@@ -27,7 +27,7 @@ export const aboutPages: Record<string, StandardPageContent> = {
         body: "Historical information is reviewed for accuracy and context before it appears here.",
         points: [
           "Official names and dates",
-          "Major academic and campus milestones",
+          "Major academic and school milestones",
           "Archived photographs and source notes",
           "Corrections when better records become available",
         ],
@@ -259,13 +259,13 @@ export const academicPages: Record<string, StandardPageContent> = {
   },
 };
 
-export const campusPages: Record<string, StandardPageContent> = {
+export const schoolLifePages: Record<string, StandardPageContent> = {
   facilities: {
-    eyebrow: "Campus life",
+    eyebrow: "School life",
     title: "Facilities for learning and wellbeing",
     description: "Purposeful spaces help students learn, collaborate, move, and feel supported.",
     intro:
-      "The campus includes spaces used for teaching, practical work, reading, administration, and student activities. Availability and access are managed by the school and may vary by programme or timetable.",
+      "The school includes spaces used for teaching, practical work, reading, administration, and student activities. Availability and access are managed by the school and may vary by programme or timetable.",
     image: "/media/nps-campus-building.png",
     sections: [
       {
@@ -274,7 +274,7 @@ export const campusPages: Record<string, StandardPageContent> = {
       },
       {
         title: "Using shared spaces",
-        body: "A safe campus depends on consistent care and responsible use.",
+        body: "A safe school depends on consistent care and responsible use.",
         points: [
           "Follow staff instructions",
           "Keep learning areas orderly",
@@ -319,7 +319,7 @@ export const campusPages: Record<string, StandardPageContent> = {
   gallery: {
     eyebrow: "School gallery",
     title: "Moments from our learning community",
-    description: "Approved photographs and albums from school programmes, activities, and campus life.",
+    description: "Approved photographs and albums from school programmes, activities, and school life.",
     intro:
       "Gallery content is published by authorised staff with attention to student privacy and appropriate consent. Albums appear when verified media is available in the content system.",
     image: "/media/campus-hero.png",
@@ -339,11 +339,11 @@ export const campusPages: Record<string, StandardPageContent> = {
     ],
   },
   "virtual-tour": {
-    eyebrow: "Explore the campus",
-    title: "A guided digital campus tour",
-    description: "See key areas and understand how the campus supports the school day.",
+    eyebrow: "Explore the school",
+    title: "A guided digital tour of the school",
+    description: "See key areas and understand how the school supports the school day.",
     intro:
-      "This digital tour uses approved school images to introduce the campus. It is an orientation resource, not a live representation of access, room allocation, or current construction.",
+      "This digital tour uses approved images to introduce the school. It is an orientation resource, not a live representation of access, room allocation, or current construction.",
     image: "/media/nps-hero-gate.png",
     sections: [
       {
@@ -352,7 +352,7 @@ export const campusPages: Record<string, StandardPageContent> = {
       },
       {
         title: "Learning and activity areas",
-        body: "Campus spaces support lessons, practical learning, administration, gatherings, and supervised student activities.",
+        body: "School spaces support lessons, practical learning, administration, gatherings, and supervised student activities.",
       },
       {
         title: "Planning a visit",
@@ -497,7 +497,7 @@ export const admissionPages: Record<string, StandardPageContent> = {
         body: "Use the downloads and notices sections, or request the current approved information from the school office.",
       },
       {
-        title: "Can I visit the campus?",
+        title: "Can I visit the school?",
         body: "Contact the school in advance. Visitors must follow the school's reception and safeguarding procedures.",
       },
     ],

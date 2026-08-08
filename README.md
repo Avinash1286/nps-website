@@ -1,10 +1,10 @@
-# NPS Digital Campus
+# NPS Digital School
 
 Production-oriented website and content platform for Nepal Police School, Garuda, Rautahat. The application uses Next.js, Convex, Clerk, and Gemini.
 
 ## Product surfaces
 
-- Public school website with dedicated routes for academics, leadership, faculty, campus life, news, notices, events, downloads, admissions, search, and governance pages.
+- Public school website with dedicated routes for academics, leadership, faculty, school life, news, notices, events, downloads, admissions, search, and governance pages.
 - Validated contact, admissions, double-opt-in newsletter, campaign delivery, and event-registration workflows.
 - Invite-only staff administration with role-based publishing, media, submissions, users, jobs, and audit history.
 - Gemini information assistant grounded in published school content. The browser never receives the Gemini credential.

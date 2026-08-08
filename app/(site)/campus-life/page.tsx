@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
 import { OverviewPage } from "@/components/content/overview-page";
 export const metadata: Metadata = {
-  title: "Campus life",
+  title: "School life",
   description:
-    "Explore facilities, activities, gallery, transport, and the digital campus tour at Nepal Police School, Garuda.",
+    "Explore facilities, activities, gallery, transport, and the digital tour of Nepal Police School, Garuda.",
 };
-export default function CampusLifePage() {
+export default function SchoolLifePage() {
   return (
     <OverviewPage
-      eyebrow="Campus life"
+      eyebrow="School life"
       title="A fuller school experience"
       description="Learning spaces, student activities, shared responsibilities, and practical services all contribute to the school day."
       image="/media/sports-day.png"
       introEyebrow="Beyond lessons"
-      introTitle="A campus where learning, participation, and wellbeing meet."
-      intro="Campus life information helps families understand facilities, activities, transport, events, and visitor arrangements. Confirmed schedules and participation details are published through notices and direct school communication."
+      introTitle="A school where learning, participation, and wellbeing meet."
+      intro="School life information helps families understand facilities, activities, transport, events, and visitor arrangements. Confirmed schedules and participation details are published through notices and direct school communication."
       featureImage="/media/sports-day.png"
       cardHeading="Explore life at NPS Garuda"
       cards={[
@@ -23,7 +23,7 @@ export default function CampusLifePage() {
           description:
             "Spaces used for teaching, practical learning, reading, administration, and activities.",
           href: "/campus-life/facilities",
-          meta: "The campus",
+          meta: "The school",
         },
         {
           title: "Activities",
@@ -39,7 +39,7 @@ export default function CampusLifePage() {
         },
         {
           title: "Virtual tour",
-          description: "A digital introduction to key areas of the campus.",
+          description: "A digital introduction to key areas of the school.",
           href: "/campus-life/virtual-tour",
           meta: "Explore online",
         },
@@ -68,7 +68,7 @@ export default function CampusLifePage() {
         },
         {
           title: "Care for shared spaces",
-          description: "Every member of the community helps keep the campus orderly and welcoming.",
+          description: "Every member of the community helps keep the school orderly and welcoming.",
         },
         {
           title: "Clear communication",
@@ -77,7 +77,7 @@ export default function CampusLifePage() {
         },
       ]}
       cta={{
-        title: "Take a closer look at the campus",
+        title: "Take a closer look at the school",
         description:
           "Start with the digital tour, then contact the school in advance if you need to plan an in-person visit.",
         label: "Open virtual tour",
