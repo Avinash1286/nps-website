@@ -135,7 +135,9 @@ const collections: Record<
   | "gallery"
   | "documents"
   | "testimonials"
-  | "faqs",
+  | "faqs"
+  | "homeSections"
+  | "homeHighlights",
   CollectionDefinition
 > = {
   pages: {
@@ -427,6 +429,111 @@ const collections: Record<
       { key: "question", label: "Question", type: "textarea", required: true },
       { key: "answer", label: "Approved answer", type: "textarea", required: true },
       { key: "category", label: "Category", placeholder: "Admissions" },
+      { key: "order", label: "Display order", type: "number", defaultValue: "0" },
+    ],
+  },
+  homeSections: {
+    type: "homeSections",
+    singular: "section",
+    title: "Home page sections",
+    eyebrow: "Home page",
+    description:
+      "Edit the wording and imagery of each home-page section. Only published sections appear on the public home page.",
+    fields: [
+      {
+        key: "slug",
+        label: "Section",
+        type: "select",
+        required: true,
+        defaultValue: "about",
+        help: "Each section may have one published record.",
+        options: [
+          { label: "Hero (headline over the carousel)", value: "hero" },
+          { label: "About the school", value: "about" },
+          { label: "Message from the management", value: "management" },
+          { label: "News and events", value: "news" },
+          { label: "ECA activities", value: "eca" },
+          { label: "Photo gallery", value: "gallery" },
+          { label: "What our alumni say", value: "alumni" },
+        ],
+      },
+      {
+        key: "eyebrow",
+        label: "Eyebrow",
+        placeholder: "About the school",
+        help: "The small uppercase label above the heading.",
+      },
+      { key: "heading", label: "Heading", type: "textarea", required: true },
+      { key: "body", label: "Lead paragraph", type: "textarea" },
+      {
+        key: "secondaryBody",
+        label: "Second paragraph",
+        type: "textarea",
+        help: "Used by the About section only.",
+      },
+      { key: "imageId", label: "Main image from media library", type: "media", mediaKind: "image" },
+      { key: "imageUrl", label: "Main image URL", type: "url" },
+      { key: "imageAlt", label: "Image description", help: "Describes the image for screen readers." },
+      {
+        key: "secondaryImageId",
+        label: "Inset image from media library",
+        type: "media",
+        mediaKind: "image",
+      },
+      { key: "secondaryImageUrl", label: "Inset image URL", type: "url" },
+      { key: "ctaLabel", label: "Link label", placeholder: "Discover our school" },
+      { key: "ctaHref", label: "Link target", placeholder: "/about" },
+    ],
+  },
+  homeHighlights: {
+    type: "homeHighlights",
+    singular: "card",
+    title: "Home page cards",
+    eyebrow: "Home page",
+    description:
+      "Maintain the hero carousel slides, the About value pillars, and the ECA activity cards. Only published cards appear on the public home page.",
+    fields: [
+      {
+        key: "section",
+        label: "Belongs to",
+        type: "select",
+        required: true,
+        defaultValue: "eca",
+        options: [
+          { label: "Hero carousel slide", value: "hero" },
+          { label: "About value pillar", value: "about" },
+          { label: "ECA activity card", value: "eca" },
+        ],
+      },
+      { key: "title", label: "Title", required: true },
+      {
+        key: "summary",
+        label: "Summary",
+        type: "textarea",
+        help: "Hero slides show this as the caption under the carousel.",
+      },
+      {
+        key: "icon",
+        label: "Icon",
+        type: "select",
+        defaultValue: "",
+        help: "Used by About pillars and ECA cards. Hero slides ignore it.",
+        options: [
+          { label: "None", value: "" },
+          { label: "Trophy (sport)", value: "trophy" },
+          { label: "Shield (discipline)", value: "shield" },
+          { label: "Music", value: "music" },
+          { label: "Debate", value: "debate" },
+          { label: "Science", value: "science" },
+          { label: "Service", value: "service" },
+          { label: "Book (learning)", value: "book" },
+          { label: "Sparkles (dignity)", value: "sparkles" },
+        ],
+      },
+      { key: "imageId", label: "Image from media library", type: "media", mediaKind: "image" },
+      { key: "imageUrl", label: "Image URL", type: "url" },
+      { key: "imageAlt", label: "Image description", help: "Required for hero slides and ECA cards." },
+      { key: "href", label: "Link target", placeholder: "/campus-life/activities" },
       { key: "order", label: "Display order", type: "number", defaultValue: "0" },
     ],
   },

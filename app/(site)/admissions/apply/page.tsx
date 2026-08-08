@@ -24,15 +24,15 @@ export default async function ApplyPage() {
       <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[.65fr_1.35fr]">
           <aside className="lg:sticky lg:top-28 lg:self-start">
-            <ShieldCheck size={28} className="text-[#0a65a8]" />
-            <h2 className="mt-5 text-2xl font-extrabold text-[#092f59]">Before you submit</h2>
+            <ShieldCheck size={28} className="text-[#2e3192]" />
+            <h2 className="mt-5 text-2xl font-extrabold text-[#1e1f5c]">Before you submit</h2>
             <ul className="mt-5 space-y-4 text-sm leading-6 text-slate-600">
               <li>Check the current admissions notice for active dates and requirements.</li>
               <li>Use accurate student and guardian information.</li>
               <li>Do not include identity documents, passwords, card details, or one-time codes.</li>
               <li>Submission is an enquiry, not an admission decision or seat reservation.</li>
             </ul>
-            <p className="mt-6 rounded-xl bg-sky-50 p-4 text-xs leading-5 text-[#164b70]">
+            <p className="mt-6 rounded-xl bg-sky-50 p-4 text-xs leading-5 text-[#262873]">
               Your information is used to process this enquiry and handled according to the website privacy
               notice.
             </p>

@@ -51,45 +51,45 @@ export default async function TeacherPage({ params }: { params: Promise<{ slug: 
             </div>
           </aside>
           <article className="min-w-0">
-            <p className="text-xs font-extrabold tracking-[.18em] text-[#0a65a8] uppercase">
+            <p className="text-xs font-extrabold tracking-[.18em] text-[#2e3192] uppercase">
               Faculty profile
             </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <div className="rounded-xl bg-slate-50 p-4">
-                <BookOpen size={18} className="text-[#0a65a8]" />
+                <BookOpen size={18} className="text-[#2e3192]" />
                 <p className="mt-3 text-xs font-bold tracking-[.12em] text-slate-500 uppercase">Department</p>
-                <p className="mt-1 font-extrabold text-[#173f61]">{teacher.department}</p>
+                <p className="mt-1 font-extrabold text-[#2f3169]">{teacher.department}</p>
               </div>
               <div className="rounded-xl bg-slate-50 p-4">
-                <GraduationCap size={18} className="text-[#0a65a8]" />
+                <GraduationCap size={18} className="text-[#2e3192]" />
                 <p className="mt-3 text-xs font-bold tracking-[.12em] text-slate-500 uppercase">
                   Qualification
                 </p>
-                <p className="mt-1 font-extrabold text-[#173f61]">
+                <p className="mt-1 font-extrabold text-[#2f3169]">
                   {teacher.qualification ?? "To be published"}
                 </p>
               </div>
               <div className="rounded-xl bg-slate-50 p-4 sm:col-span-2">
-                <BookMarked size={18} className="text-[#0a65a8]" />
+                <BookMarked size={18} className="text-[#2e3192]" />
                 <p className="mt-3 text-xs font-bold tracking-[.12em] text-slate-500 uppercase">Subjects</p>
                 {teacher.subjects.length ? (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {teacher.subjects.map((subject) => (
                       <span
                         key={subject}
-                        className="rounded-full bg-white px-3 py-1.5 text-sm font-bold text-[#173f61]"
+                        className="rounded-full bg-white px-3 py-1.5 text-sm font-bold text-[#2f3169]"
                       >
                         {subject}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-1 font-extrabold text-[#173f61]">To be published</p>
+                  <p className="mt-1 font-extrabold text-[#2f3169]">To be published</p>
                 )}
               </div>
             </div>
             <section className="mt-9">
-              <h2 className="text-2xl font-extrabold text-[#092f59]">About</h2>
+              <h2 className="text-2xl font-extrabold text-[#1e1f5c]">About</h2>
               <p className="mt-4 text-base leading-8 text-slate-700">
                 {teacher.bio ??
                   "A verified professional profile will be published here by the school administration."}
@@ -97,14 +97,14 @@ export default async function TeacherPage({ params }: { params: Promise<{ slug: 
             </section>
             {(teacher.email || teacher.phone) && (
               <section className="mt-9" aria-labelledby="faculty-contact-heading">
-                <h2 id="faculty-contact-heading" className="text-2xl font-extrabold text-[#092f59]">
+                <h2 id="faculty-contact-heading" className="text-2xl font-extrabold text-[#1e1f5c]">
                   Published contact details
                 </h2>
                 <div className="mt-4 flex flex-wrap gap-3">
                   {teacher.email && (
                     <a
                       href={`mailto:${teacher.email}`}
-                      className="inline-flex max-w-full items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-[#0a65a8]"
+                      className="inline-flex max-w-full items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-[#2e3192]"
                     >
                       <Mail size={16} className="shrink-0" />
                       <span className="min-w-0">{teacher.email}</span>
@@ -113,7 +113,7 @@ export default async function TeacherPage({ params }: { params: Promise<{ slug: 
                   {teacher.phone && (
                     <a
                       href={`tel:${teacher.phone.replace(/\s/g, "")}`}
-                      className="inline-flex max-w-full items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-[#0a65a8]"
+                      className="inline-flex max-w-full items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-[#2e3192]"
                     >
                       <Phone size={16} className="shrink-0" />
                       <span className="min-w-0">{teacher.phone}</span>
@@ -125,13 +125,13 @@ export default async function TeacherPage({ params }: { params: Promise<{ slug: 
             <div className="mt-10 flex flex-wrap gap-4 border-t border-slate-200 pt-6">
               <Link
                 href={`/teachers?department=${teacher.departmentSlug}`}
-                className="max-w-full rounded-xl bg-[#0a65a8] px-4 py-2.5 text-sm font-bold text-white"
+                className="max-w-full rounded-xl bg-[#2e3192] px-4 py-2.5 text-sm font-bold text-white"
               >
                 View department faculty
               </Link>
               <Link
                 href="/teachers"
-                className="inline-flex items-center gap-2 text-sm font-bold text-[#0a65a8]"
+                className="inline-flex items-center gap-2 text-sm font-bold text-[#2e3192]"
               >
                 <ArrowLeft size={15} />
                 All teachers

@@ -46,7 +46,7 @@ export default async function TeachersPage({
                 name="q"
                 defaultValue={q}
                 placeholder="Search by name, role, subject, or qualification"
-                className="h-12 w-full rounded-xl border border-slate-300 bg-white pr-4 pl-11 text-sm outline-none focus:border-[#0a65a8] focus:ring-4 focus:ring-sky-100"
+                className="h-12 w-full rounded-xl border border-slate-300 bg-white pr-4 pl-11 text-sm outline-none focus:border-[#2e3192] focus:ring-4 focus:ring-sky-100"
               />
             </label>
             <label>
@@ -54,7 +54,7 @@ export default async function TeachersPage({
               <select
                 name="department"
                 defaultValue={department ?? ""}
-                className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none focus:border-[#0a65a8]"
+                className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none focus:border-[#2e3192]"
               >
                 <option value="">All departments</option>
                 {departments.map(([slug, name]) => (
@@ -64,7 +64,7 @@ export default async function TeachersPage({
                 ))}
               </select>
             </label>
-            <button className="h-12 rounded-xl bg-[#0a65a8] px-5 text-sm font-bold text-white">
+            <button className="h-12 rounded-xl bg-[#2e3192] px-5 text-sm font-bold text-white">
               Filter directory
             </button>
           </form>
@@ -74,7 +74,7 @@ export default async function TeachersPage({
                 <Link
                   key={teacher.id}
                   href={`/teachers/${teacher.slug}`}
-                  className="group min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(16,53,84,.1)]"
+                  className="group min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(30,31,92,.1)]"
                 >
                   <div className="relative aspect-[4/5] bg-slate-100">
                     {teacher.photoUrl ? (
@@ -93,24 +93,24 @@ export default async function TeachersPage({
                     )}
                   </div>
                   <div className="p-5">
-                    <p className="text-[11px] font-extrabold tracking-[.13em] text-[#0a65a8] uppercase">
+                    <p className="text-[11px] font-extrabold tracking-[.13em] text-[#2e3192] uppercase">
                       {teacher.department}
                     </p>
-                    <h2 className="mt-2 text-lg font-extrabold text-[#092f59]">{teacher.name}</h2>
+                    <h2 className="mt-2 text-lg font-extrabold text-[#1e1f5c]">{teacher.name}</h2>
                     <p className="mt-1 text-sm text-slate-500">{teacher.designation}</p>
                     {teacher.subjects.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {teacher.subjects.slice(0, 2).map((subject) => (
                           <span
                             key={subject}
-                            className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-bold text-[#17618f]"
+                            className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-bold text-[#262873]"
                           >
                             {subject}
                           </span>
                         ))}
                       </div>
                     )}
-                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#0a65a8]">
+                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#2e3192]">
                       View profile <ArrowRight size={14} />
                     </span>
                   </div>

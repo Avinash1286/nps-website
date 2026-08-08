@@ -38,13 +38,13 @@ export function StandardPage({
       <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0">
-            <p className="max-w-3xl text-xl leading-9 font-semibold tracking-[-.015em] text-[#153b5f] sm:text-2xl">
+            <p className="max-w-3xl text-xl leading-9 font-semibold tracking-[-.015em] text-[#2f3169] sm:text-2xl">
               {content.intro}
             </p>
             {featuredProfile && (
               <Link
                 href={featuredProfile.href}
-                className="group mt-10 grid min-w-0 overflow-hidden rounded-2xl border border-sky-100 bg-sky-50 transition hover:border-sky-200 hover:shadow-[0_16px_40px_rgba(16,53,84,.08)] sm:grid-cols-[180px_minmax(0,1fr)]"
+                className="group mt-10 grid min-w-0 overflow-hidden rounded-2xl border border-sky-100 bg-sky-50 transition hover:border-sky-200 hover:shadow-[0_16px_40px_rgba(30,31,92,.08)] sm:grid-cols-[180px_minmax(0,1fr)]"
               >
                 <div className="relative min-h-52 bg-sky-100 sm:min-h-full">
                   {featuredProfile.photoUrl ? (
@@ -62,10 +62,10 @@ export function StandardPage({
                   )}
                 </div>
                 <div className="min-w-0 p-6 sm:p-7">
-                  <p className="text-[11px] font-extrabold tracking-[.14em] text-[#0a65a8] uppercase">
+                  <p className="text-[11px] font-extrabold tracking-[.14em] text-[#2e3192] uppercase">
                     {featuredProfile.eyebrow}
                   </p>
-                  <h2 className="mt-2 text-2xl font-extrabold text-[#092f59]">{featuredProfile.name}</h2>
+                  <h2 className="mt-2 text-2xl font-extrabold text-[#1e1f5c]">{featuredProfile.name}</h2>
                   <p className="mt-1 text-sm font-semibold text-slate-600">{featuredProfile.designation}</p>
                   {featuredProfile.description && (
                     <p className="mt-4 line-clamp-3 text-sm leading-7 text-slate-600">
@@ -77,14 +77,14 @@ export function StandardPage({
                       {featuredProfile.subjects.slice(0, 5).map((subject) => (
                         <span
                           key={subject}
-                          className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#17618f]"
+                          className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#262873]"
                         >
                           {subject}
                         </span>
                       ))}
                     </div>
                   )}
-                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-[#0a65a8]">
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-[#2e3192]">
                     View profile <ArrowRight size={15} />
                   </span>
                 </div>
@@ -93,7 +93,7 @@ export function StandardPage({
             <div className="mt-12 space-y-12">
               {content.sections.map((section) => (
                 <section key={section.title} className="border-t border-slate-200 pt-8">
-                  <h2 className="text-2xl font-extrabold tracking-[-.025em] text-[#092f59]">
+                  <h2 className="text-2xl font-extrabold tracking-[-.025em] text-[#1e1f5c]">
                     {section.title}
                   </h2>
                   <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600">{section.body}</p>
@@ -104,7 +104,7 @@ export function StandardPage({
                           key={point}
                           className="flex gap-3 rounded-xl bg-slate-50 p-4 text-sm leading-6 font-semibold text-slate-700"
                         >
-                          <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-sky-100 text-[#0870b7]">
+                          <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-sky-100 text-[#3a3fa5]">
                             <Check size={12} strokeWidth={3} />
                           </span>
                           {point}
@@ -144,7 +144,7 @@ export function StandardPage({
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="flex min-w-0 items-center justify-between gap-3 border-t border-slate-100 py-3 text-sm font-bold text-[#0a609d] first:border-t-0"
+                      className="flex min-w-0 items-center justify-between gap-3 border-t border-slate-100 py-3 text-sm font-bold text-[#2e3192] first:border-t-0"
                     >
                       <span className="min-w-0">{item.label}</span>
                       <ArrowRight size={15} className="shrink-0" />

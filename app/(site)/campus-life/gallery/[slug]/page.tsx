@@ -88,7 +88,7 @@ export default async function GalleryAlbumPage({ params }: { params: Promise<{ s
           )}
           <Link
             href="/campus-life/gallery"
-            className="mt-8 inline-flex items-center gap-2 text-sm font-extrabold text-[#0a65a8]"
+            className="mt-8 inline-flex items-center gap-2 text-sm font-extrabold text-[#2e3192]"
           >
             <ArrowLeft size={15} />
             Back to all albums

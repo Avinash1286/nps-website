@@ -203,6 +203,47 @@ export const faqInputValidator = v.object({
   ...optionalPublicationInput,
 });
 
+export const homeSectionKeyValidator = v.union(
+  v.literal("hero"),
+  v.literal("about"),
+  v.literal("management"),
+  v.literal("news"),
+  v.literal("eca"),
+  v.literal("gallery"),
+  v.literal("alumni"),
+);
+
+export const homeSectionInputValidator = v.object({
+  slug: homeSectionKeyValidator,
+  eyebrow: v.optional(v.string()),
+  heading: v.string(),
+  body: v.optional(v.string()),
+  secondaryBody: v.optional(v.string()),
+  imageId: v.optional(v.id("_storage")),
+  imageUrl: v.optional(v.string()),
+  imageAlt: v.optional(v.string()),
+  secondaryImageId: v.optional(v.id("_storage")),
+  secondaryImageUrl: v.optional(v.string()),
+  ctaLabel: v.optional(v.string()),
+  ctaHref: v.optional(v.string()),
+  ...optionalPublicationInput,
+});
+
+export const homeHighlightSectionValidator = v.union(v.literal("hero"), v.literal("about"), v.literal("eca"));
+
+export const homeHighlightInputValidator = v.object({
+  section: homeHighlightSectionValidator,
+  title: v.string(),
+  summary: v.optional(v.string()),
+  icon: v.optional(v.string()),
+  imageId: v.optional(v.id("_storage")),
+  imageUrl: v.optional(v.string()),
+  imageAlt: v.optional(v.string()),
+  href: v.optional(v.string()),
+  order: v.optional(v.number()),
+  ...optionalPublicationInput,
+});
+
 export const contentTypeValidator = v.union(
   v.literal("pages"),
   v.literal("programs"),
@@ -216,6 +257,8 @@ export const contentTypeValidator = v.union(
   v.literal("galleryAlbums"),
   v.literal("testimonials"),
   v.literal("faqs"),
+  v.literal("homeSections"),
+  v.literal("homeHighlights"),
 );
 
 export const contentInputValidator = v.union(
@@ -231,6 +274,8 @@ export const contentInputValidator = v.union(
   galleryAlbumInputValidator,
   testimonialInputValidator,
   faqInputValidator,
+  homeSectionInputValidator,
+  homeHighlightInputValidator,
 );
 
 const optionalContentId = { id: v.optional(v.string()) };
@@ -248,6 +293,12 @@ export const contentUpsertArgsValidator = v.union(
   v.object({ type: v.literal("galleryAlbums"), ...optionalContentId, data: galleryAlbumInputValidator }),
   v.object({ type: v.literal("testimonials"), ...optionalContentId, data: testimonialInputValidator }),
   v.object({ type: v.literal("faqs"), ...optionalContentId, data: faqInputValidator }),
+  v.object({ type: v.literal("homeSections"), ...optionalContentId, data: homeSectionInputValidator }),
+  v.object({
+    type: v.literal("homeHighlights"),
+    ...optionalContentId,
+    data: homeHighlightInputValidator,
+  }),
 );
 
 export const siteSettingsInputValidator = v.object({

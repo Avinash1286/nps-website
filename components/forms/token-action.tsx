@@ -60,7 +60,7 @@ export function TokenAction({
           type="button"
           onClick={() => void submit()}
           disabled={state === "loading"}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#0a65a8] px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#2e3192] px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
         >
           {state === "loading" ? (
             <LoaderCircle size={16} className="animate-spin" />

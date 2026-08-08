@@ -172,7 +172,7 @@ function DashboardData() {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-[#071c38] p-6 text-white shadow-xl shadow-slate-300/50">
+        <div className="rounded-2xl bg-[#12123a] p-6 text-white shadow-xl shadow-slate-300/50">
           <ShieldCheck className="text-sky-300" />
           <h2 className="mt-5 text-xl font-black">Production safeguards</h2>
           <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-300">

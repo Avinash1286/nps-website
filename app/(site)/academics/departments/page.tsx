@@ -38,7 +38,7 @@ export default async function DepartmentsPage() {
       />
       <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <p className="max-w-3xl text-xl leading-9 font-semibold text-[#173f61]">
+          <p className="max-w-3xl text-xl leading-9 font-semibold text-[#2f3169]">
             Department pages provide a stable home for curriculum information and links to verified teacher
             profiles. Current staffing and subject availability come from the school content system.
           </p>
@@ -49,11 +49,11 @@ export default async function DepartmentsPage() {
                 href={`/academics/departments/${department.slug}`}
                 className="group min-w-0 rounded-2xl border border-slate-200 p-6 transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_16px_38px_rgba(14,49,80,.08)]"
               >
-                <BookMarked className="text-[#0a65a8]" />
+                <BookMarked className="text-[#2e3192]" />
                 {department.featured && <FeaturedBadge className="mt-4" />}
-                <h2 className="mt-5 text-xl font-extrabold text-[#092f59]">{department.title}</h2>
+                <h2 className="mt-5 text-xl font-extrabold text-[#1e1f5c]">{department.title}</h2>
                 <p className="mt-3 text-sm leading-6 text-slate-600">{department.description}</p>
-                <span className="mt-6 inline-flex items-center gap-2 text-sm font-extrabold text-[#0a65a8]">
+                <span className="mt-6 inline-flex items-center gap-2 text-sm font-extrabold text-[#2e3192]">
                   View department <ArrowRight size={15} />
                 </span>
               </Link>

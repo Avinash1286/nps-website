@@ -33,8 +33,8 @@ export function ContactForm() {
       onSubmit={handleSubmit}
       className="relative rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_60px_rgba(15,47,78,.08)] sm:p-8"
     >
-      <p className="text-xs font-extrabold tracking-[.18em] text-[#0a65a8] uppercase">Send a message</p>
-      <h2 className="mt-3 text-2xl font-extrabold tracking-[-.025em] text-[#092f59]">How can we help?</h2>
+      <p className="text-xs font-extrabold tracking-[.18em] text-[#2e3192] uppercase">Send a message</p>
+      <h2 className="mt-3 text-2xl font-extrabold tracking-[-.025em] text-[#1e1f5c]">How can we help?</h2>
       <p className="mt-3 text-sm leading-6 text-slate-600">
         Use this form for general, admissions, or website enquiries. Do not include passwords, financial
         details, or sensitive student records.
@@ -89,7 +89,7 @@ export function ContactForm() {
           required
           checked={consent}
           onChange={(event) => setConsent(event.target.checked)}
-          className="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 accent-[#0a65a8]"
+          className="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 accent-[#2e3192]"
         />
         <span>
           I consent to the school using this information to respond to my enquiry.{" "}
@@ -102,7 +102,7 @@ export function ContactForm() {
         <button
           type="submit"
           disabled={status.state === "submitting"}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0a65a8] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#084f83] disabled:cursor-wait disabled:opacity-60 sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#2e3192] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#262873] disabled:cursor-wait disabled:opacity-60 sm:w-auto"
         >
           {status.state === "submitting" ? (
             "Sending…"

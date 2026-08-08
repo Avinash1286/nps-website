@@ -177,6 +177,34 @@ export type GalleryItem = {
 
 export type GalleryAlbumDetail = { album: GalleryAlbum; items: GalleryItem[] };
 
+/** Admin-editable copy for one home-page section. */
+export type HomeSectionKey = "hero" | "about" | "management" | "news" | "eca" | "gallery" | "alumni";
+
+export type HomeSection = {
+  key: HomeSectionKey;
+  eyebrow?: string;
+  heading: string;
+  body?: string;
+  secondaryBody?: string;
+  imageUrl?: string;
+  imageAlt?: string;
+  secondaryImageUrl?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+};
+
+/** Admin-editable card inside a home-page section. */
+export type HomeHighlight = {
+  id: string;
+  section: "hero" | "about" | "eca";
+  title: string;
+  summary?: string;
+  icon?: string;
+  imageUrl?: string;
+  imageAlt?: string;
+  href?: string;
+};
+
 export type PublicNavigationItem = {
   id: string;
   label: string;
@@ -201,36 +229,6 @@ export const baselineSite: SiteProfile = {
   maintenanceMode: false,
   social: {},
 };
-
-const baselineLeaders: PublicLeader[] = [
-  {
-    id: "principal-office",
-    slug: "principal",
-    name: "Principal's Office",
-    designation: "Academic leadership",
-    message:
-      "The principal's office coordinates academic direction, student support, and communication with families. A verified profile and message will be published by the school administration.",
-    photoUrl: "/media/principal-placeholder.png",
-  },
-  {
-    id: "vice-principal-office",
-    slug: "vice-principal",
-    name: "Vice Principal's Office",
-    designation: "Academic coordination",
-    message:
-      "The vice principal's office supports teaching, learning, assessment, and the day-to-day academic programme. Verified office details will be maintained by the school administration.",
-    photoUrl: "/media/vice-principal-placeholder.png",
-  },
-  {
-    id: "commandant-office",
-    slug: "commandant",
-    name: "Commandant's Office",
-    designation: "Institutional leadership",
-    message:
-      "The commandant's office supports institutional governance, student welfare, and the disciplined operation of the school. Verified profile details will be published by the administration.",
-    photoUrl: "/media/commandant-placeholder.png",
-  },
-];
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -534,8 +532,7 @@ export async function getTeacher(slug: string): Promise<PublicTeacher | null> {
 
 export async function getLeadership(): Promise<PublicLeader[]> {
   const result = await queryConvex<unknown>("content:listLeadership", { limit: 20, now: Date.now() });
-  const records = asRecords(result);
-  return records.length ? records.map(normalizeLeader) : baselineLeaders;
+  return asRecords(result).map(normalizeLeader);
 }
 
 export async function getLeader(slug: string): Promise<PublicLeader | null> {
@@ -652,6 +649,73 @@ export async function getFaqs(category?: string, limit = 100): Promise<PublicFaq
     answer: text(item.answer, "Please contact the school office for current guidance."),
     category: optionalText(item.category),
   }));
+}
+
+const HOME_SECTION_KEYS: readonly HomeSectionKey[] = [
+  "hero",
+  "about",
+  "management",
+  "news",
+  "eca",
+  "gallery",
+  "alumni",
+];
+
+function homeSectionKey(value: unknown): HomeSectionKey | undefined {
+  const key = text(value);
+  return HOME_SECTION_KEYS.find((candidate) => candidate === key);
+}
+
+/**
+ * Section copy maintained in the CMS, keyed by section. Unpublished sections
+ * are omitted so the public page never substitutes unreviewed marketing copy.
+ */
+export async function getHomeSections(): Promise<Partial<Record<HomeSectionKey, HomeSection>>> {
+  const result = await queryConvex<unknown>("content:listHomeSections", { now: Date.now() });
+  const sections: Partial<Record<HomeSectionKey, HomeSection>> = {};
+  for (const item of asRecords(result)) {
+    const key = homeSectionKey(item.slug ?? item.key);
+    if (!key || sections[key]) continue;
+    const heading = optionalText(item.heading);
+    if (!heading) continue;
+    sections[key] = {
+      key,
+      heading,
+      eyebrow: optionalText(item.eyebrow),
+      body: optionalText(item.body),
+      secondaryBody: optionalText(item.secondaryBody),
+      imageUrl: optionalText(item.imageUrl),
+      imageAlt: optionalText(item.imageAlt),
+      secondaryImageUrl: optionalText(item.secondaryImageUrl),
+      ctaLabel: optionalText(item.ctaLabel),
+      ctaHref: optionalText(item.ctaHref),
+    };
+  }
+  return sections;
+}
+
+export async function getHomeHighlights(section: "hero" | "about" | "eca"): Promise<HomeHighlight[]> {
+  const result = await queryConvex<unknown>("content:listHomeHighlights", {
+    section,
+    limit: 30,
+    now: Date.now(),
+  });
+  return asRecords(result).flatMap((item, index): HomeHighlight[] => {
+    const title = optionalText(item.title);
+    if (!title) return [];
+    return [
+      {
+        id: identifier(item._id ?? item.id, `${section}-${index + 1}`),
+        section,
+        title,
+        summary: optionalText(item.summary),
+        icon: optionalText(item.icon),
+        imageUrl: optionalText(item.imageUrl),
+        imageAlt: optionalText(item.imageAlt),
+        href: optionalText(item.href),
+      },
+    ];
+  });
 }
 
 export async function getTestimonials(limit = 100): Promise<PublicTestimonial[]> {

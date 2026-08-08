@@ -47,7 +47,7 @@ export default async function FrequentlyAskedQuestionsPage({
                 name="q"
                 defaultValue={q}
                 placeholder="Search questions and answers"
-                className="h-12 w-full rounded-xl border border-slate-300 bg-white pr-4 pl-10 text-sm outline-none focus:border-[#0a65a8] focus:ring-4 focus:ring-sky-100"
+                className="h-12 w-full rounded-xl border border-slate-300 bg-white pr-4 pl-10 text-sm outline-none focus:border-[#2e3192] focus:ring-4 focus:ring-sky-100"
               />
             </label>
             <label>
@@ -55,7 +55,7 @@ export default async function FrequentlyAskedQuestionsPage({
               <select
                 name="category"
                 defaultValue={selectedCategory}
-                className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 outline-none focus:border-[#0a65a8]"
+                className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 outline-none focus:border-[#2e3192]"
               >
                 <option value="">All categories</option>
                 {categories.map((item) => (
@@ -65,7 +65,7 @@ export default async function FrequentlyAskedQuestionsPage({
                 ))}
               </select>
             </label>
-            <button className="h-12 rounded-xl bg-[#0a65a8] px-5 text-sm font-bold text-white">
+            <button className="h-12 rounded-xl bg-[#2e3192] px-5 text-sm font-bold text-white">
               Find answers
             </button>
           </form>
@@ -78,17 +78,17 @@ export default async function FrequentlyAskedQuestionsPage({
                   className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm open:border-sky-200 open:shadow-md"
                   open={visible.length <= 3 && index === 0}
                 >
-                  <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left font-extrabold text-[#092f59] marker:hidden sm:px-6 [&::-webkit-details-marker]:hidden">
+                  <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left font-extrabold text-[#1e1f5c] marker:hidden sm:px-6 [&::-webkit-details-marker]:hidden">
                     <span className="min-w-0">{item.question}</span>
                     <ChevronDown
                       size={19}
-                      className="shrink-0 text-[#0a65a8] transition-transform group-open:rotate-180"
+                      className="shrink-0 text-[#2e3192] transition-transform group-open:rotate-180"
                       aria-hidden="true"
                     />
                   </summary>
                   <div className="border-t border-slate-100 px-5 py-5 sm:px-6">
                     {item.category && (
-                      <p className="mb-3 text-[10px] font-extrabold tracking-[.15em] text-[#0a65a8] uppercase">
+                      <p className="mb-3 text-[10px] font-extrabold tracking-[.15em] text-[#2e3192] uppercase">
                         {item.category}
                       </p>
                     )}
@@ -116,11 +116,11 @@ export default async function FrequentlyAskedQuestionsPage({
             </div>
           )}
 
-          <aside className="mt-10 flex flex-col gap-4 rounded-2xl bg-[#edf7ff] p-6 sm:flex-row sm:items-center sm:justify-between">
+          <aside className="mt-10 flex flex-col gap-4 rounded-2xl bg-[#eef0fb] p-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-start gap-3">
-              <HelpCircle className="mt-0.5 shrink-0 text-[#0a65a8]" size={21} />
+              <HelpCircle className="mt-0.5 shrink-0 text-[#2e3192]" size={21} />
               <div>
-                <h2 className="font-extrabold text-[#092f59]">Still need help?</h2>
+                <h2 className="font-extrabold text-[#1e1f5c]">Still need help?</h2>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
                   Send a focused enquiry and include the relevant grade or intake.
                 </p>
@@ -128,7 +128,7 @@ export default async function FrequentlyAskedQuestionsPage({
             </div>
             <Link
               href="/contact"
-              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-[#0a65a8] px-5 text-sm font-bold text-white"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-[#2e3192] px-5 text-sm font-bold text-white"
             >
               Contact the school
             </Link>

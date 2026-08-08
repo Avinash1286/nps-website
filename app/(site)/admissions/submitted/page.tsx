@@ -9,7 +9,7 @@ export default function SubmittedPage() {
         <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-50 text-emerald-600">
           <CheckCircle2 size={30} />
         </span>
-        <h1 className="mt-6 text-3xl font-extrabold tracking-[-.03em] text-[#092f59]">
+        <h1 className="mt-6 text-3xl font-extrabold tracking-[-.03em] text-[#1e1f5c]">
           Your enquiry has been submitted
         </h1>
         <p className="mt-4 text-base leading-7 text-slate-600">
@@ -17,12 +17,12 @@ export default function SubmittedPage() {
           school will provide next steps separately.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link href="/admissions" className="rounded-xl bg-[#0a65a8] px-5 py-3 text-sm font-bold text-white">
+          <Link href="/admissions" className="rounded-xl bg-[#2e3192] px-5 py-3 text-sm font-bold text-white">
             Back to admissions
           </Link>
           <Link
             href="/"
-            className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-bold text-[#173f61]"
+            className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-bold text-[#2f3169]"
           >
             Return home
           </Link>

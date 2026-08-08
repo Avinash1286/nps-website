@@ -30,7 +30,7 @@ export default function AdminError({
       <div className="mt-6 flex flex-wrap gap-3">
         <button
           onClick={reset}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#0758aa] px-4 py-2.5 text-sm font-bold text-white"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#2e3192] px-4 py-2.5 text-sm font-bold text-white"
         >
           <RefreshCcw size={16} /> Try again
         </button>

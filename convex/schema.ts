@@ -164,6 +164,58 @@ export default defineSchema({
     .index("by_updated_at", ["updatedAt"])
     .index("by_status_and_priority_and_updated_at", ["status", "priority", "updatedAt"]),
 
+  /**
+   * Editable copy for each home-page section, keyed by `slug` (one row per
+   * section). Keeps the marketing wording in the CMS instead of the component.
+   */
+  homeSections: defineTable({
+    slug: v.string(),
+    eyebrow: v.optional(v.string()),
+    heading: v.string(),
+    body: v.optional(v.string()),
+    secondaryBody: v.optional(v.string()),
+    imageId: v.optional(v.id("_storage")),
+    imageUrl: v.optional(v.string()),
+    imageAlt: v.optional(v.string()),
+    secondaryImageId: v.optional(v.id("_storage")),
+    secondaryImageUrl: v.optional(v.string()),
+    ctaLabel: v.optional(v.string()),
+    ctaHref: v.optional(v.string()),
+    ...publicationFields,
+  })
+    .index("by_slug", ["slug"])
+    .index("by_status", ["status"])
+    .index("by_image_id", ["imageId"])
+    .index("by_image_url", ["imageUrl"])
+    .index("by_secondary_image_id", ["secondaryImageId"])
+    .index("by_secondary_image_url", ["secondaryImageUrl"])
+    .index("by_status_publish_at", ["status", "publishAt"])
+    .index("by_status_expire_at", ["status", "expireAt"]),
+
+  /**
+   * Ordered cards inside a home-page section: hero carousel slides, the about
+   * value pillars, and the ECA activity cards.
+   */
+  homeHighlights: defineTable({
+    section: v.union(v.literal("hero"), v.literal("about"), v.literal("eca")),
+    title: v.string(),
+    summary: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    imageId: v.optional(v.id("_storage")),
+    imageUrl: v.optional(v.string()),
+    imageAlt: v.optional(v.string()),
+    href: v.optional(v.string()),
+    order: v.number(),
+    ...publicationFields,
+  })
+    .index("by_status", ["status"])
+    .index("by_status_order", ["status", "order"])
+    .index("by_section_status_order", ["section", "status", "order"])
+    .index("by_image_id", ["imageId"])
+    .index("by_image_url", ["imageUrl"])
+    .index("by_status_publish_at", ["status", "publishAt"])
+    .index("by_status_expire_at", ["status", "expireAt"]),
+
   navigationItems: defineTable({
     label: v.string(),
     href: v.string(),

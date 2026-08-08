@@ -1,9 +1,6 @@
 import { makeFunctionReference } from "convex/server";
 
 export type PublicationStatus = "draft" | "scheduled" | "published" | "archived";
-export type SubmissionStatus =
-  "new" | "in_progress" | "resolved" | "closed" | "accepted" | "rejected" | "waitlisted";
-
 export type AdminRecord = {
   _id: string;
   _creationTime?: number;
@@ -68,7 +65,9 @@ export type ContentType =
   | "documents"
   | "galleryAlbums"
   | "testimonials"
-  | "faqs";
+  | "faqs"
+  | "homeSections"
+  | "homeHighlights";
 
 export type SubmissionType = "contacts" | "admissions" | "eventRegistrations";
 
@@ -114,9 +113,6 @@ export const adminApi = {
     { type: ContentType; paginationOpts: PaginationOpts; status?: PublicationStatus },
     PageResult<AdminRecord>
   >("admin:listContent"),
-  getContent: makeFunctionReference<"query", { type: ContentType; id: string }, AdminRecord | null>(
-    "admin:getContent",
-  ),
   upsertContent: makeFunctionReference<
     "mutation",
     { payload: { type: ContentType; id?: string; data: Record<string, unknown> } },
@@ -318,5 +314,3 @@ export const usersApi = {
   ),
   current: makeFunctionReference<"query", Record<string, never>, AdminRecord | null>("users:current"),
 };
-
-export const firstPage = { numItems: 100, cursor: null } as const;

@@ -1,16 +1,22 @@
+import Image from "next/image";
+
 export default function Loading() {
   return (
-    <div
-      className="mx-auto min-h-[55vh] max-w-7xl animate-pulse px-5 py-24 sm:px-8"
-      aria-label="Loading page"
-    >
-      <div className="h-4 w-32 rounded bg-sky-100" />
-      <div className="mt-5 h-12 max-w-2xl rounded bg-sky-100" />
-      <div className="mt-4 h-5 max-w-xl rounded bg-slate-100" />
-      <div className="mt-12 grid gap-5 md:grid-cols-3">
-        {[0, 1, 2].map((item) => (
-          <div key={item} className="h-56 rounded-3xl bg-white shadow-sm" />
-        ))}
+    <div className="grid min-h-[60vh] place-items-center px-5 py-24" role="status" aria-label="Loading page">
+      <div className="flex flex-col items-center">
+        <div className="relative grid h-24 w-24 place-items-center">
+          <span className="anim-ring absolute inset-0 rounded-full border-2 border-sky-100 border-t-[#2e3192]" />
+          <Image
+            src="/media/nps-logo.png"
+            alt=""
+            width={60}
+            height={60}
+            className="anim-logo-in h-[60px] w-[60px] object-contain"
+          />
+        </div>
+        <p className="anim-pulse-soft mt-6 text-[11px] font-extrabold tracking-[.28em] text-[#2e3192] uppercase">
+          Loading
+        </p>
       </div>
     </div>
   );

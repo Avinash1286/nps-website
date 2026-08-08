@@ -19,12 +19,12 @@ export default function ErrorBoundary({
         <p className="text-sm font-extrabold tracking-[0.18em] text-red-700 uppercase">
           Something went wrong
         </p>
-        <h1 className="mt-3 text-3xl font-extrabold text-[#061f4e]">We could not load this page.</h1>
+        <h1 className="mt-3 text-3xl font-extrabold text-[#1e1f5c]">We could not load this page.</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
           Try again. If the problem continues, contact the school office through the contact page.
         </p>
         <button
-          className="mt-7 rounded-xl bg-[#0b5fc4] px-5 py-3 text-sm font-bold text-white"
+          className="mt-7 rounded-xl bg-[#3a3fa5] px-5 py-3 text-sm font-bold text-white"
           onClick={reset}
         >
           Try again

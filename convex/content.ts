@@ -290,6 +290,39 @@ const publicTestimonialValidator = v.object({
   ...publicationOutputFields,
 });
 
+const publicHomeSectionValidator = v.object({
+  _id: v.id("homeSections"),
+  _creationTime: v.number(),
+  slug: v.string(),
+  eyebrow: v.optional(v.string()),
+  heading: v.string(),
+  body: v.optional(v.string()),
+  secondaryBody: v.optional(v.string()),
+  imageId: v.optional(v.id("_storage")),
+  imageUrl: v.optional(v.string()),
+  imageAlt: v.optional(v.string()),
+  secondaryImageId: v.optional(v.id("_storage")),
+  secondaryImageUrl: v.optional(v.string()),
+  ctaLabel: v.optional(v.string()),
+  ctaHref: v.optional(v.string()),
+  ...publicationOutputFields,
+});
+
+const publicHomeHighlightValidator = v.object({
+  _id: v.id("homeHighlights"),
+  _creationTime: v.number(),
+  section: v.union(v.literal("hero"), v.literal("about"), v.literal("eca")),
+  title: v.string(),
+  summary: v.optional(v.string()),
+  icon: v.optional(v.string()),
+  imageId: v.optional(v.id("_storage")),
+  imageUrl: v.optional(v.string()),
+  imageAlt: v.optional(v.string()),
+  href: v.optional(v.string()),
+  order: v.number(),
+  ...publicationOutputFields,
+});
+
 const publicFaqValidator = v.object({
   _id: v.id("faqs"),
   _creationTime: v.number(),
@@ -1250,6 +1283,73 @@ export const listFaqs = query({
       .filter((row) => isPublished(row))
       .slice(0, take)
       .map((row: Doc<"faqs">) => publicFaq(row));
+  },
+});
+
+export const listHomeSections = query({
+  args: { now: v.optional(v.number()) },
+  returns: v.array(publicHomeSectionValidator),
+  handler: async (ctx) => {
+    const rows = await publishedByStatus(ctx, "homeSections", 20, 20);
+    return await Promise.all(
+      rows.map(async (row: Doc<"homeSections">) => ({
+        _id: row._id,
+        _creationTime: row._creationTime,
+        slug: row.slug,
+        eyebrow: row.eyebrow,
+        heading: row.heading,
+        body: row.body,
+        secondaryBody: row.secondaryBody,
+        imageId: row.imageId,
+        imageUrl: await storageUrl(ctx, row.imageId, row.imageUrl),
+        imageAlt: row.imageAlt,
+        secondaryImageId: row.secondaryImageId,
+        secondaryImageUrl: await storageUrl(ctx, row.secondaryImageId, row.secondaryImageUrl),
+        ctaLabel: row.ctaLabel,
+        ctaHref: row.ctaHref,
+        ...publicationDto(row),
+      })),
+    );
+  },
+});
+
+export const listHomeHighlights = query({
+  args: {
+    section: v.optional(v.union(v.literal("hero"), v.literal("about"), v.literal("eca"))),
+    limit: v.optional(v.number()),
+    now: v.optional(v.number()),
+  },
+  returns: v.array(publicHomeHighlightValidator),
+  handler: async (ctx, args) => {
+    const take = limitOf(args.limit, 60);
+    const rows = await (
+      args.section
+        ? ctx.db
+            .query("homeHighlights")
+            .withIndex("by_section_status_order", (q) =>
+              q.eq("section", args.section!).eq("status", "published"),
+            )
+        : ctx.db.query("homeHighlights").withIndex("by_status_order", (q) => q.eq("status", "published"))
+    ).take(take);
+    return await Promise.all(
+      rows
+        .filter((row) => isPublished(row))
+        .slice(0, take)
+        .map(async (row: Doc<"homeHighlights">) => ({
+          _id: row._id,
+          _creationTime: row._creationTime,
+          section: row.section,
+          title: row.title,
+          summary: row.summary,
+          icon: row.icon,
+          imageId: row.imageId,
+          imageUrl: await storageUrl(ctx, row.imageId, row.imageUrl),
+          imageAlt: row.imageAlt,
+          href: row.href,
+          order: row.order,
+          ...publicationDto(row),
+        })),
+    );
   },
 });
 

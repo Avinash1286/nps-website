@@ -3,7 +3,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
 import Link from "next/link";
-import { AlertTriangle, Clock3, Database, LoaderCircle, LockKeyhole } from "lucide-react";
+import { AlertTriangle, Clock3, Database, LoaderCircle, LockKeyhole, ShieldCheck } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { hasAdminAccess, type AdminRole } from "@/lib/admin/authorization";
 import { usersApi } from "./convex-api";
@@ -147,7 +147,44 @@ function AuthenticatedGate({
   return children;
 }
 
+function AdminBootstrapAvailableState() {
+  return (
+    <section
+      aria-labelledby="bootstrap-available-title"
+      className="mx-auto max-w-2xl rounded-3xl border border-sky-200 bg-white p-6 shadow-sm sm:p-9"
+    >
+      <span className="grid h-12 w-12 place-items-center rounded-2xl bg-sky-50 text-sky-800">
+        <ShieldCheck size={24} aria-hidden="true" />
+      </span>
+      <p className="mt-6 text-xs font-extrabold tracking-[.18em] text-sky-700 uppercase">
+        One-time deployment step
+      </p>
+      <h1
+        id="bootstrap-available-title"
+        className="mt-3 text-2xl leading-tight font-black tracking-tight text-slate-950 sm:text-3xl"
+      >
+        This account can activate the first administrator
+      </h1>
+      <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
+        This deployment has no administrator yet, and your signed-in account matches the Clerk user ID it
+        allowlists for the one-time activation. Continue to claim the administrator role.
+      </p>
+      <Link
+        href="/admin/bootstrap"
+        className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2e3192] px-5 py-3 text-sm font-bold text-white"
+      >
+        Activate the first administrator
+      </Link>
+    </section>
+  );
+}
+
 export function AdminApprovalPendingState() {
+  // On a fresh deployment the designated first administrator lands here with no
+  // admin available to approve them, so surface the one-time activation route
+  // whenever this exact account is the one the deployment allowlists.
+  const eligibility = useQuery(usersApi.bootstrapEligibility, {});
+  if (eligibility?.status === "eligible") return <AdminBootstrapAvailableState />;
   return (
     <section
       role="status"
@@ -176,7 +213,7 @@ export function AdminApprovalPendingState() {
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <Link
           href="/"
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#0756a5] px-5 py-3 text-sm font-bold text-white"
+          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2e3192] px-5 py-3 text-sm font-bold text-white"
         >
           Return to website
         </Link>

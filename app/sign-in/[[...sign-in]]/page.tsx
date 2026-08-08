@@ -18,7 +18,7 @@ export default function SignInPage() {
   return (
     <main
       id="main-content"
-      className="relative grid min-h-screen grid-cols-[minmax(0,1fr)] place-items-center overflow-hidden bg-[#041630] px-4 py-8 text-[#071d3d] sm:py-12"
+      className="relative grid min-h-screen grid-cols-[minmax(0,1fr)] place-items-center overflow-hidden bg-[#12123a] px-4 py-8 text-[#12123a] sm:py-12"
     >
       <div
         aria-hidden="true"
@@ -29,7 +29,7 @@ export default function SignInPage() {
           href="/"
           className="inline-flex items-center gap-3 rounded-xl focus:ring-4 focus:ring-sky-100 focus:outline-none"
         >
-          <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#0756a5] text-xs font-black text-white">
+          <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#2e3192] text-xs font-black text-white">
             NPS
           </span>
           <span className="min-w-0">

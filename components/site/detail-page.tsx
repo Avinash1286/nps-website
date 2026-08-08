@@ -34,14 +34,14 @@ export function DetailPage({
           <div className="min-w-0">
             <div className="flex flex-wrap gap-4 border-b border-slate-200 pb-6 text-sm font-semibold text-slate-600">
               <span className="inline-flex max-w-full min-w-0 items-center gap-2">
-                <CalendarDays size={17} className="shrink-0 text-[#0a65a8]" />
+                <CalendarDays size={17} className="shrink-0 text-[#2e3192]" />
                 {event
                   ? formatEventDateTimeRange(event.startsAt, event.endsAt, event.timezone)
                   : formatPublicDate(item.publishedAt)}
               </span>
               {event?.venue && (
                 <span className="inline-flex max-w-full min-w-0 items-center gap-2">
-                  <MapPin size={17} className="shrink-0 text-[#0a65a8]" />
+                  <MapPin size={17} className="shrink-0 text-[#2e3192]" />
                   {event.venue}
                 </span>
               )}
@@ -60,7 +60,7 @@ export function DetailPage({
               )}
               {type === "Notice" && item.audiences.length > 0 && (
                 <span className="inline-flex max-w-full min-w-0 items-center gap-2">
-                  <UsersRound size={17} className="shrink-0 text-[#0a65a8]" />
+                  <UsersRound size={17} className="shrink-0 text-[#2e3192]" />
                   For {item.audiences.join(", ")}
                 </span>
               )}
@@ -95,7 +95,7 @@ export function DetailPage({
               {item.attachmentUrl && (
                 <a
                   href={item.attachmentUrl}
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0a65a8] px-4 py-3 text-sm font-bold text-white"
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#2e3192] px-4 py-3 text-sm font-bold text-white"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -104,7 +104,7 @@ export function DetailPage({
                 </a>
               )}
             </div>
-            <Link href={root} className="inline-flex items-center gap-2 text-sm font-bold text-[#0a65a8]">
+            <Link href={root} className="inline-flex items-center gap-2 text-sm font-bold text-[#2e3192]">
               <ArrowLeft size={15} className="shrink-0" />
               Back to all {type.toLowerCase()}
             </Link>

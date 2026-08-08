@@ -31,7 +31,7 @@ export default async function GalleryPage() {
                 <Link
                   href={`/campus-life/gallery/${album.slug}`}
                   key={album.id}
-                  className="group min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(16,53,84,.1)]"
+                  className="group min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(30,31,92,.1)]"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
                     {album.coverUrl ? (
@@ -50,13 +50,13 @@ export default async function GalleryPage() {
                   </div>
                   <div className="p-6">
                     {album.featured && <FeaturedBadge className="mb-3" />}
-                    <h2 className="text-xl font-extrabold text-[#092f59]">{album.title}</h2>
+                    <h2 className="text-xl font-extrabold text-[#1e1f5c]">{album.title}</h2>
                     {album.description && (
                       <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">
                         {album.description}
                       </p>
                     )}
-                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-[#0a65a8]">
+                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-[#2e3192]">
                       Open album <ArrowRight size={15} />
                     </span>
                   </div>

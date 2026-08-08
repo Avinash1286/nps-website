@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, Menu, Search, X } from "lucide-react";
+import { ChevronDown, Mail, Menu, Phone, Search, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PublicNavigationItem } from "@/lib/data/public";
@@ -26,6 +26,7 @@ function NavigationLink({
   onClick,
   onMouseEnter,
   ariaCurrent,
+  dataActive,
 }: {
   href: string;
   external?: boolean;
@@ -35,6 +36,7 @@ function NavigationLink({
   onClick?: () => void;
   onMouseEnter?: () => void;
   ariaCurrent?: "page";
+  dataActive?: boolean;
 }) {
   return external ? (
     <a
@@ -46,6 +48,7 @@ function NavigationLink({
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       aria-current={ariaCurrent}
+      data-active={dataActive}
     >
       {children}
     </a>
@@ -57,6 +60,7 @@ function NavigationLink({
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       aria-current={ariaCurrent}
+      data-active={dataActive}
     >
       {children}
     </Link>
@@ -74,72 +78,13 @@ function isNavigationCurrent(pathname: string, href: string) {
   return pathname === href.split(/[?#]/, 1)[0];
 }
 
-const defaultNavigation = [
-  {
-    label: "About",
-    href: "/about",
-    items: [
-      ["Overview", "/about"],
-      ["History", "/about/history"],
-      ["Mission & vision", "/about/mission-vision"],
-      ["Leadership", "/about/leadership"],
-      ["Community voices", "/about/testimonials"],
-    ],
-  },
-  {
-    label: "Academics",
-    href: "/academics",
-    items: [
-      ["Overview", "/academics"],
-      ["Primary", "/academics/primary"],
-      ["Secondary", "/academics/secondary"],
-      ["+2 programmes", "/academics/plus-2"],
-      ["Curriculum", "/academics/curriculum"],
-      ["Departments", "/academics/departments"],
-      ["Teachers", "/teachers"],
-    ],
-  },
-  {
-    label: "Campus life",
-    href: "/campus-life",
-    items: [
-      ["Overview", "/campus-life"],
-      ["Facilities", "/campus-life/facilities"],
-      ["Activities", "/campus-life/activities"],
-      ["Gallery", "/campus-life/gallery"],
-      ["Virtual tour", "/campus-life/virtual-tour"],
-      ["Transport", "/campus-life/transport"],
-    ],
-  },
-  {
-    label: "Admissions",
-    href: "/admissions",
-    items: [
-      ["Overview", "/admissions"],
-      ["Process", "/admissions/process"],
-      ["Eligibility", "/admissions/eligibility"],
-      ["Fees & scholarships", "/admissions/fees-scholarships"],
-      ["FAQ", "/admissions/faq"],
-      ["Enquire online", "/admissions/apply"],
-    ],
-  },
-  {
-    label: "Updates",
-    href: "/news",
-    items: [
-      ["News", "/news"],
-      ["Notices", "/notices"],
-      ["Events", "/events"],
-      ["Downloads", "/downloads"],
-    ],
-  },
-] as const satisfies readonly NavigationGroup[];
-
 export function SiteHeader({
   schoolName,
   location,
   tagline,
   logoUrl,
+  phone,
+  email,
   admissionsOpen,
   navigationItems = [],
   utilityNavigationItems = [],
@@ -148,6 +93,8 @@ export function SiteHeader({
   location: string;
   tagline?: string;
   logoUrl?: string;
+  phone?: string;
+  email?: string;
   admissionsOpen: boolean;
   navigationItems?: PublicNavigationItem[];
   utilityNavigationItems?: PublicNavigationItem[];
@@ -156,6 +103,7 @@ export function SiteHeader({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [desktopOpen, setDesktopOpen] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
   const mobileDialogRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const desktopNavRef = useRef<HTMLDivElement>(null);
@@ -178,21 +126,16 @@ export function SiteHeader({
             [candidate.label, candidate.href, candidate.external, candidate.description] as const,
         ),
     }));
-  const baseNavigation: readonly NavigationGroup[] = configuredNavigation.length
-    ? configuredNavigation
-    : defaultNavigation;
   const navigation: readonly NavigationGroup[] = admissionsOpen
-    ? baseNavigation
-    : baseNavigation.map((item) => ({
+    ? configuredNavigation
+    : configuredNavigation.map((item) => ({
         ...item,
         items: item.items.filter(([, href]) => href !== "/admissions/apply"),
       }));
-  const utilityLinks: PublicNavigationItem[] = utilityNavigationItems.length
-    ? utilityNavigationItems
-    : [
-        { id: "accessibility", label: "Accessibility", href: "/accessibility" },
-        { id: "contact", label: "Contact", href: "/contact" },
-      ];
+  const utilityLinks = utilityNavigationItems;
+  // The header always offers a staff entry point. Suppress it when an editor has
+  // already published a utility link to the same route, so it never doubles up.
+  const showStaffLink = !utilityLinks.some((item) => item.href.split(/[?#]/, 1)[0] === "/sign-in");
 
   useModalFocus({
     open: mobileOpen,
@@ -201,6 +144,13 @@ export function SiteHeader({
     onClose: closeMobile,
     initialFocusSelector: "[data-mobile-initial-focus]",
   });
+
+  useEffect(() => {
+    const sync = () => setScrolled(window.scrollY > 16);
+    sync();
+    window.addEventListener("scroll", sync, { passive: true });
+    return () => window.removeEventListener("scroll", sync);
+  }, []);
 
   useEffect(() => {
     if (!desktopOpen) return;
@@ -235,50 +185,91 @@ export function SiteHeader({
     return () => desktopQuery.removeEventListener("change", handleBreakpointChange);
   }, [closeMobile]);
 
+  const telephoneHref = phone ? `tel:${phone.replace(/\s/g, "")}` : undefined;
+
   return (
     <>
-      <div className="border-b border-white/10 bg-[#061d38] px-4 py-2 text-[11px] text-slate-200 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          <p className="truncate">
+      <div
+        className={`overflow-hidden bg-[#12123a] text-[11px] text-slate-300 transition-all duration-500 ${
+          scrolled ? "max-h-0 opacity-0" : "max-h-16 opacity-100"
+        }`}
+      >
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6 lg:px-8">
+          <p className="truncate font-medium">
             {tagline ?? "Official school information"} <span aria-hidden="true">&middot;</span> {location}
           </p>
           <div className="hidden items-center gap-5 sm:flex">
+            {telephoneHref && (
+              <a
+                href={telephoneHref}
+                className="inline-flex items-center gap-1.5 font-semibold transition hover:text-white"
+              >
+                <Phone size={12} className="text-[#f0bd3a]" />
+                {phone}
+              </a>
+            )}
+            {email && (
+              <a
+                href={`mailto:${email}`}
+                className="hidden items-center gap-1.5 font-semibold transition hover:text-white lg:inline-flex"
+              >
+                <Mail size={12} className="text-[#f0bd3a]" />
+                {email}
+              </a>
+            )}
             {utilityLinks.map((item) => (
               <NavigationLink
                 key={item.id}
                 href={item.href}
                 external={item.external}
                 description={item.description}
-                className="font-semibold text-white transition hover:text-sky-200"
+                className="font-semibold transition hover:text-white"
               >
                 {item.label}
               </NavigationLink>
             ))}
-            <Link href="/sign-in" className="font-semibold text-sky-200 transition hover:text-white">
-              Admin login
-            </Link>
+            {showStaffLink && (
+              <Link href="/sign-in" className="font-semibold text-[#f0bd3a] transition hover:text-white">
+                Staff login
+              </Link>
+            )}
           </div>
         </div>
       </div>
-      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-xl">
+
+      <header
+        className={`sticky top-0 z-50 border-b border-white/10 backdrop-blur-xl transition-all duration-500 ${
+          scrolled ? "bg-[#262873]/95 shadow-[0_10px_30px_rgba(18,18,58,.35)]" : "bg-[#2e3192] shadow-none"
+        }`}
+      >
         <nav
           aria-label="Main navigation"
-          className="mx-auto flex h-[76px] max-w-7xl items-center justify-between gap-5 px-4 sm:px-6 lg:px-8"
+          className={`mx-auto flex max-w-7xl items-center justify-between gap-5 px-4 transition-all duration-500 sm:px-6 lg:px-8 ${
+            scrolled ? "h-[68px]" : "h-[86px]"
+          }`}
         >
-          <Link href="/" className="flex min-w-0 items-center gap-3" aria-label={`${schoolName} home`}>
-            <Image
-              src={logoUrl ?? "/media/nps-logo.png"}
-              alt=""
-              width={48}
-              height={48}
-              className="h-12 w-12 shrink-0 rounded-full object-contain"
-              priority
-            />
+          <Link href="/" className="group flex min-w-0 items-center gap-3" aria-label={`${schoolName} home`}>
+            <span className="relative shrink-0">
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 scale-90 rounded-full bg-white/15 opacity-0 transition duration-500 group-hover:scale-110 group-hover:opacity-100"
+              />
+              <Image
+                src={logoUrl ?? "/media/nps-logo.png"}
+                alt=""
+                width={52}
+                height={52}
+                priority
+                className={`relative rounded-full object-contain transition-all duration-500 ${
+                  scrolled ? "h-10 w-10" : "h-12 w-12"
+                }`}
+              />
+            </span>
             <span className="min-w-0 leading-tight">
-              <span className="block truncate text-sm font-extrabold tracking-[-.02em] text-[#092f59] uppercase sm:text-base">
+              <span className="block truncate text-sm font-extrabold tracking-[-.02em] text-white uppercase sm:text-[15px]">
                 {schoolName}
               </span>
-              <span className="mt-0.5 block truncate text-[10px] font-semibold tracking-wide text-slate-500 sm:text-[11px]">
+              <span className="mt-0.5 block truncate text-[10px] font-semibold tracking-[.12em] text-sky-200 uppercase sm:text-[11px]">
                 {location}
               </span>
             </span>
@@ -316,7 +307,10 @@ export function SiteHeader({
                     onMouseEnter={() => setDesktopOpen(item.items.length ? item.href : null)}
                     onClick={() => setDesktopOpen(null)}
                     ariaCurrent={isNavigationCurrent(pathname, item.href) ? "page" : undefined}
-                    className={`flex h-full items-center px-2.5 text-[13px] font-bold whitespace-nowrap transition ${active ? "text-[#0969ad]" : "text-[#183d60] hover:text-[#0969ad]"}`}
+                    dataActive={active}
+                    className={`nav-underline relative flex h-full items-center px-2.5 text-[13px] font-bold whitespace-nowrap transition-colors duration-300 ${
+                      active ? "text-[#f0bd3a]" : "text-white/90 hover:text-white"
+                    }`}
                   >
                     {item.label}
                   </NavigationLink>
@@ -330,7 +324,7 @@ export function SiteHeader({
                       data-desktop-menu-toggle
                       type="button"
                       onClick={() => setDesktopOpen(open ? null : item.href)}
-                      className={`mr-1 grid h-8 w-6 place-items-center rounded-md transition hover:bg-sky-50 focus:ring-2 focus:ring-sky-300 focus:outline-none ${open ? "text-[#0969ad]" : "text-[#183d60]"}`}
+                      className={`mr-1 grid h-8 w-6 place-items-center rounded-md transition hover:bg-white/10 focus:ring-2 focus:ring-[#f0bd3a] focus:outline-none ${open ? "text-[#f0bd3a]" : "text-white/80"}`}
                       aria-label={`${open ? "Close" : "Open"} ${item.label} submenu`}
                       aria-haspopup="true"
                       aria-expanded={open}
@@ -339,7 +333,7 @@ export function SiteHeader({
                       <ChevronDown
                         size={14}
                         aria-hidden="true"
-                        className={`transition-transform ${open ? "rotate-180" : ""}`}
+                        className={`transition-transform duration-300 ${open ? "rotate-180" : ""}`}
                       />
                     </button>
                   )}
@@ -348,8 +342,13 @@ export function SiteHeader({
                       id={submenuId}
                       role="group"
                       aria-label={`${item.label} submenu`}
-                      className={`absolute top-[68px] z-[60] max-h-[calc(100vh-7rem)] w-64 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_18px_50px_rgba(13,38,76,.16)] ${index >= navigation.length - 2 ? "right-0" : "left-0"}`}
+                      style={{ animationDuration: "260ms" }}
+                      className={`anim-fade-up absolute top-full z-[60] mt-1 max-h-[calc(100vh-8rem)] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_24px_60px_rgba(18,18,58,.18)] ${index >= navigation.length - 2 ? "right-0" : "left-0"}`}
                     >
+                      <span
+                        aria-hidden="true"
+                        className={`absolute -top-1.5 h-3 w-3 rotate-45 border-t border-l border-slate-200 bg-white ${index >= navigation.length - 2 ? "right-8" : "left-8"}`}
+                      />
                       {item.items.map(([label, href, external, description]) => (
                         <NavigationLink
                           key={href}
@@ -360,8 +359,12 @@ export function SiteHeader({
                           ariaCurrent={
                             href !== item.href && isNavigationCurrent(pathname, href) ? "page" : undefined
                           }
-                          className="block rounded-xl px-4 py-3 text-sm font-semibold break-words text-slate-700 transition hover:bg-sky-50 hover:text-[#075b99] focus:bg-sky-50 focus:text-[#075b99] focus:outline-none"
+                          className="group relative block rounded-xl px-4 py-2.5 text-sm font-semibold break-words text-slate-700 transition duration-300 hover:bg-sky-50 hover:pl-6 hover:text-[#262873] focus:bg-sky-50 focus:text-[#262873] focus:outline-none"
                         >
+                          <span
+                            aria-hidden="true"
+                            className="absolute top-1/2 left-2.5 h-4 w-0.5 -translate-y-1/2 scale-y-0 rounded-full bg-[#2e3192] transition-transform duration-300 group-hover:scale-y-100"
+                          />
                           {label}
                         </NavigationLink>
                       ))}
@@ -376,14 +379,14 @@ export function SiteHeader({
             <Link
               href="/search"
               aria-label="Search the website"
-              className="grid h-10 w-10 place-items-center rounded-full text-[#183d60] transition hover:bg-slate-100"
+              className="grid h-10 w-10 place-items-center rounded-full text-white transition duration-300 hover:scale-105 hover:bg-white/10"
             >
               <Search size={19} />
             </Link>
             {admissionsOpen && (
               <Link
                 href="/admissions/apply"
-                className="hidden rounded-xl bg-[#0a65a8] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#084f83] sm:inline-flex"
+                className="hidden overflow-hidden rounded-xl bg-[#f0bd3a] px-5 py-2.5 text-xs font-bold text-[#12123a] shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[#ffd15c] hover:shadow-lg hover:shadow-black/20 sm:inline-flex"
               >
                 Admission enquiry
               </Link>
@@ -395,7 +398,7 @@ export function SiteHeader({
                 setDesktopOpen(null);
                 setMobileOpen(true);
               }}
-              className="grid h-10 w-10 place-items-center rounded-full text-[#183d60] hover:bg-slate-100 xl:hidden"
+              className="grid h-10 w-10 place-items-center rounded-full text-white transition hover:bg-white/10 xl:hidden"
               aria-label="Open navigation"
               aria-expanded={mobileOpen}
               aria-controls="mobile-navigation-dialog"
@@ -410,20 +413,34 @@ export function SiteHeader({
         <div
           ref={mobileDialogRef}
           id="mobile-navigation-dialog"
-          className="fixed inset-0 z-[80] bg-[#061d38]/55 backdrop-blur-sm xl:hidden"
+          className="anim-fade-in fixed inset-0 z-[80] bg-[#12123a]/60 backdrop-blur-sm xl:hidden"
+          style={{ animationDuration: "260ms" }}
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation"
           tabIndex={-1}
         >
-          <div className="ml-auto flex h-full w-full max-w-sm flex-col overflow-y-auto bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-200 p-5">
-              <span className="text-sm font-extrabold text-[#092f59]">Menu</span>
+          <div
+            className="ml-auto flex h-full w-full max-w-sm flex-col overflow-y-auto bg-white shadow-2xl"
+            style={{ animation: "nps-drawer-in 380ms cubic-bezier(.16,1,.3,1) both" }}
+          >
+            <style>{`@keyframes nps-drawer-in{from{transform:translateX(100%)}to{transform:none}}`}</style>
+            <div className="flex items-center justify-between bg-[#2e3192] p-5 text-white">
+              <span className="flex items-center gap-2.5">
+                <Image
+                  src={logoUrl ?? "/media/nps-logo.png"}
+                  alt=""
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-full object-contain"
+                />
+                <span className="text-sm font-extrabold">Menu</span>
+              </span>
               <button
                 data-mobile-initial-focus
                 type="button"
                 onClick={closeMobile}
-                className="grid h-10 w-10 place-items-center rounded-full hover:bg-slate-100"
+                className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-white/15"
                 aria-label="Close navigation"
               >
                 <X size={21} />
@@ -431,7 +448,11 @@ export function SiteHeader({
             </div>
             <div className="flex-1 p-4">
               {navigation.map((item, index) => (
-                <div key={item.href} className="border-b border-slate-100 py-1">
+                <div
+                  key={item.href}
+                  className="anim-fade-up border-b border-slate-100 py-1"
+                  style={{ animationDelay: `${60 + index * 45}ms`, animationDuration: "420ms" }}
+                >
                   <div className="flex items-center gap-2">
                     <NavigationLink
                       href={item.href}
@@ -439,7 +460,7 @@ export function SiteHeader({
                       description={item.description}
                       onClick={closeMobile}
                       ariaCurrent={isNavigationCurrent(pathname, item.href) ? "page" : undefined}
-                      className="flex-1 px-3 py-3 text-sm font-extrabold text-[#143b60]"
+                      className="flex-1 px-3 py-3 text-sm font-extrabold text-[#2f3169]"
                     >
                       {item.label}
                     </NavigationLink>
@@ -447,14 +468,14 @@ export function SiteHeader({
                       <button
                         type="button"
                         onClick={() => setExpanded(expanded === item.href ? null : item.href)}
-                        className="grid h-10 w-10 place-items-center rounded-lg hover:bg-slate-100"
+                        className="grid h-10 w-10 place-items-center rounded-lg transition hover:bg-slate-100"
                         aria-label={`${expanded === item.href ? "Hide" : "Show"} ${item.label} links`}
                         aria-expanded={expanded === item.href}
                         aria-controls={`mobile-submenu-${index}`}
                       >
                         <ChevronDown
                           size={17}
-                          className={`transition ${expanded === item.href ? "rotate-180" : ""}`}
+                          className={`transition-transform duration-300 ${expanded === item.href ? "rotate-180" : ""}`}
                         />
                       </button>
                     )}
@@ -464,7 +485,8 @@ export function SiteHeader({
                       id={`mobile-submenu-${index}`}
                       role="group"
                       aria-label={`${item.label} submenu`}
-                      className="mb-2 rounded-xl bg-slate-50 p-2"
+                      className="anim-fade-up mb-2 rounded-xl bg-slate-50 p-2"
+                      style={{ animationDuration: "260ms" }}
                     >
                       {item.items.map(([label, href, external, description]) => (
                         <NavigationLink
@@ -476,7 +498,7 @@ export function SiteHeader({
                           ariaCurrent={
                             href !== item.href && isNavigationCurrent(pathname, href) ? "page" : undefined
                           }
-                          className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-white hover:text-[#075b99]"
+                          className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-white hover:text-[#262873]"
                         >
                           {label}
                         </NavigationLink>
@@ -493,26 +515,28 @@ export function SiteHeader({
                     external={item.external}
                     description={item.description}
                     onClick={closeMobile}
-                    className="block rounded-xl px-3 py-3 text-sm font-extrabold text-[#143b60]"
+                    className="block rounded-xl px-3 py-3 text-sm font-extrabold text-[#2f3169]"
                   >
                     {item.label}
                   </NavigationLink>
                 ))}
+                {showStaffLink && (
+                  <Link
+                    href="/sign-in"
+                    onClick={closeMobile}
+                    className="block rounded-xl px-3 py-3 text-sm font-extrabold text-[#2f3169]"
+                  >
+                    Staff login
+                  </Link>
+                )}
               </div>
-              <Link
-                href="/sign-in"
-                onClick={closeMobile}
-                className="block rounded-xl px-3 py-3 text-sm font-extrabold text-[#143b60]"
-              >
-                Admin login
-              </Link>
             </div>
             {admissionsOpen && (
               <div className="border-t border-slate-200 p-5">
                 <Link
                   href="/admissions/apply"
                   onClick={closeMobile}
-                  className="flex w-full justify-center rounded-xl bg-[#0a65a8] px-4 py-3 text-sm font-bold text-white"
+                  className="flex w-full justify-center rounded-xl bg-[#2e3192] px-4 py-3 text-sm font-bold text-white"
                 >
                   Start an admission enquiry
                 </Link>

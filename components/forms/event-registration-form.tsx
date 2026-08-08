@@ -32,7 +32,7 @@ export function EventRegistrationForm({ eventSlug, eventTitle }: { eventSlug: st
       className="relative mt-10 rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-8"
     >
       <HoneypotField />
-      <h2 className="text-xl font-extrabold text-[#092f59]">Register interest in this event</h2>
+      <h2 className="text-xl font-extrabold text-[#1e1f5c]">Register interest in this event</h2>
       <p className="mt-2 text-sm leading-6 text-slate-600">
         Registration is subject to event capacity and school confirmation.
       </p>
@@ -75,7 +75,7 @@ export function EventRegistrationForm({ eventSlug, eventTitle }: { eventSlug: st
           required
           checked={consent}
           onChange={(event) => setConsent(event.target.checked)}
-          className="mt-1 h-4 w-4 shrink-0 accent-[#0a65a8]"
+          className="mt-1 h-4 w-4 shrink-0 accent-[#2e3192]"
         />
         <span>
           I consent to the school using this information to manage this event registration.{" "}
@@ -88,7 +88,7 @@ export function EventRegistrationForm({ eventSlug, eventTitle }: { eventSlug: st
         <button
           type="submit"
           disabled={status.state === "submitting"}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0a65a8] px-5 py-3 text-sm font-bold text-white disabled:opacity-60 sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#2e3192] px-5 py-3 text-sm font-bold text-white disabled:opacity-60 sm:w-auto"
         >
           <CalendarCheck size={17} className="shrink-0" />
           {status.state === "submitting" ? "Registering…" : "Register interest"}

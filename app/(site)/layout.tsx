@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AssistantAvailability } from "@/components/assistant/assistant-availability";
 import { MaintenanceGate } from "@/components/site/maintenance-gate";
+import { PageLoader } from "@/components/site/page-loader";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { getNavigation, getSiteProfile } from "@/lib/data/public";
@@ -38,7 +39,7 @@ export default async function PublicLayout({ children }: Readonly<{ children: Re
       fallback={
         <main
           id="main-content"
-          className="grid min-h-screen min-w-0 place-items-center bg-[#061d38] px-4 py-12 [overflow-wrap:anywhere] text-white sm:px-5 sm:py-16"
+          className="grid min-h-screen min-w-0 place-items-center bg-[#12123a] px-4 py-12 [overflow-wrap:anywhere] text-white sm:px-5 sm:py-16"
         >
           <section className="w-full max-w-2xl rounded-3xl border border-white/15 bg-white/5 p-6 text-center shadow-2xl backdrop-blur sm:p-12">
             <p className="text-xs font-extrabold tracking-[.2em] text-sky-300 uppercase">
@@ -72,12 +73,15 @@ export default async function PublicLayout({ children }: Readonly<{ children: Re
         </main>
       }
     >
-      <div className="min-h-screen min-w-0 bg-white [overflow-wrap:anywhere] text-[#173f61]">
+      <div className="min-h-screen min-w-0 bg-white [overflow-wrap:anywhere] text-[#2f3169]">
+        <PageLoader logoUrl={site.logoUrl} schoolName={site.schoolName} />
         <SiteHeader
           schoolName={site.schoolName}
           location={site.location}
           tagline={site.tagline}
           logoUrl={site.logoUrl}
+          phone={site.phone}
+          email={site.email}
           admissionsOpen={site.admissionsOpen}
           navigationItems={headerNavigation}
           utilityNavigationItems={utilityNavigation}

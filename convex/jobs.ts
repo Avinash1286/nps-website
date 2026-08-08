@@ -21,6 +21,8 @@ const CONTENT_TYPES = [
   "galleryAlbums",
   "testimonials",
   "faqs",
+  "homeSections",
+  "homeHighlights",
 ] as const;
 
 const jobTypeValidator = v.union(

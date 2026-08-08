@@ -165,6 +165,9 @@ async function findStorageReference(
     ["galleryAlbums", "by_cover_image_id", "coverImageId", storageId],
     ["galleryItems", "by_storage_id", "storageId", storageId],
     ["testimonials", "by_photo_id", "photoId", storageId],
+    ["homeSections", "by_image_id", "imageId", storageId],
+    ["homeSections", "by_secondary_image_id", "secondaryImageId", storageId],
+    ["homeHighlights", "by_image_id", "imageId", storageId],
   ];
   const urlChecks: Array<[string, string, string, unknown]> = mediaUrl
     ? [
@@ -182,6 +185,9 @@ async function findStorageReference(
         ["galleryItems", "by_url", "url", mediaUrl],
         ["galleryItems", "by_thumbnail_url", "thumbnailUrl", mediaUrl],
         ["testimonials", "by_photo_url", "photoUrl", mediaUrl],
+        ["homeSections", "by_image_url", "imageUrl", mediaUrl],
+        ["homeSections", "by_secondary_image_url", "secondaryImageUrl", mediaUrl],
+        ["homeHighlights", "by_image_url", "imageUrl", mediaUrl],
       ]
     : [];
   for (const [table, index, field, target] of [...idChecks, ...urlChecks]) {

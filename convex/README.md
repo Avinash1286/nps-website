@@ -30,6 +30,7 @@ This directory contains the production data model and server functions for the p
 ## Operational notes
 
 - Public queries return only currently published, non-expired content and omit editor identifiers/private contact fields.
+- Home-page copy lives in `homeSections` (one published row per section: `hero`, `about`, `management`, `news`, `eca`, `gallery`, `alumni`) and `homeHighlights` (ordered cards for the hero carousel, the About pillars, and the ECA activities). Both go through the standard content pipeline, so drafts, scheduling, expiry, audit, and media-reference protection all apply. Each home section falls back to built-in wording whenever its record is missing or unpublished.
 - Assistant requests include a millisecond timestamp and lowercase hex HMAC-SHA256 signature over `JSON.stringify({requestTimestamp,fingerprint,sessionId,message,history:history ?? []})`. Signatures are accepted for 120 seconds and cannot be replayed.
 - Assistant answers are grounded only in published site records and published `assistantContexts` maintained by administrators. The bounded context catalog is scored for each question before the top sources enter the prompt; drafts, archived context, admissions, contacts, and other private workflow records are never included.
 - Gemini credentials, model selection, and the assistant signing secret remain Convex deployment environment variables. They are declared in `convex.config.ts` and are never returned by assistant diagnostics or exposed to the browser.

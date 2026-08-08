@@ -95,7 +95,7 @@ function BootstrapForm() {
           type="button"
           onClick={activate}
           disabled={busy}
-          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#0756a5] px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#2e3192] px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           {busy && <LoaderCircle size={16} className="animate-spin" />}
           {busy ? "Activating…" : "Activate administrator"}

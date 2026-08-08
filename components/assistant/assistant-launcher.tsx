@@ -61,7 +61,7 @@ function FloatingAssistantLauncher() {
       <button
         ref={launcherRef}
         type="button"
-        className="fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] z-[60] flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-full border border-white/20 bg-[#0b5fc4] px-3.5 py-3 text-sm font-extrabold text-white shadow-[0_16px_40px_rgba(6,51,120,.32)] transition hover:-translate-y-0.5 hover:bg-[#084f9f] hover:shadow-[0_20px_48px_rgba(6,51,120,.4)] focus-visible:ring-4 focus-visible:ring-sky-300/60 focus-visible:outline-none sm:right-[max(1.5rem,env(safe-area-inset-right))] sm:bottom-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-4"
+        className="fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] z-[60] flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-full border border-white/20 bg-[#3a3fa5] px-3.5 py-3 text-sm font-extrabold text-white shadow-[0_16px_40px_rgba(6,51,120,.32)] transition hover:-translate-y-0.5 hover:bg-[#2e3192] hover:shadow-[0_20px_48px_rgba(6,51,120,.4)] focus-visible:ring-4 focus-visible:ring-sky-300/60 focus-visible:outline-none sm:right-[max(1.5rem,env(safe-area-inset-right))] sm:bottom-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-4"
         onClick={toggle}
         aria-expanded={open}
         aria-controls={hasOpened ? "nps-assistant-dialog" : undefined}

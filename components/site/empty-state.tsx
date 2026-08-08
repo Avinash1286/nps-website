@@ -14,15 +14,15 @@ export function EmptyState({
 }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center">
-      <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-sky-50 text-[#0a65a8]">
+      <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-sky-50 text-[#2e3192]">
         <Inbox size={22} />
       </span>
-      <h2 className="mt-4 text-xl font-extrabold text-[#092f59]">{title}</h2>
+      <h2 className="mt-4 text-xl font-extrabold text-[#1e1f5c]">{title}</h2>
       <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">{description}</p>
       {actionLabel && actionHref && (
         <Link
           href={actionHref}
-          className="mt-6 inline-flex rounded-xl bg-[#0a65a8] px-4 py-2.5 text-sm font-bold text-white"
+          className="mt-6 inline-flex rounded-xl bg-[#2e3192] px-4 py-2.5 text-sm font-bold text-white"
         >
           {actionLabel}
         </Link>

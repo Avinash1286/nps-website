@@ -31,6 +31,8 @@ import {
   eventInputValidator,
   faqInputValidator,
   galleryAlbumInputValidator,
+  homeHighlightInputValidator,
+  homeSectionInputValidator,
   leadershipInputValidator,
   navigationInputValidator,
   newsInputValidator,
@@ -172,6 +174,20 @@ const faqDocumentValidator = faqInputValidator.extend({
   ...adminPublicationOutputFields,
 });
 
+const homeSectionDocumentValidator = homeSectionInputValidator.extend({
+  _id: v.id("homeSections"),
+  _creationTime: v.number(),
+  slug: v.string(),
+  ...adminPublicationOutputFields,
+});
+
+const homeHighlightDocumentValidator = homeHighlightInputValidator.extend({
+  _id: v.id("homeHighlights"),
+  _creationTime: v.number(),
+  order: v.number(),
+  ...adminPublicationOutputFields,
+});
+
 const contentDocumentValidator = v.union(
   pageDocumentValidator,
   programDocumentValidator,
@@ -185,6 +201,8 @@ const contentDocumentValidator = v.union(
   galleryAlbumDocumentValidator,
   testimonialDocumentValidator,
   faqDocumentValidator,
+  homeSectionDocumentValidator,
+  homeHighlightDocumentValidator,
 );
 
 const contactSubmissionValidator = v.object({
@@ -498,7 +516,9 @@ type ContentType =
   | "documents"
   | "galleryAlbums"
   | "testimonials"
-  | "faqs";
+  | "faqs"
+  | "homeSections"
+  | "homeHighlights";
 
 const SLUGGED_TYPES = new Set<ContentType>([
   "pages",
@@ -511,6 +531,7 @@ const SLUGGED_TYPES = new Set<ContentType>([
   "events",
   "documents",
   "galleryAlbums",
+  "homeSections",
 ]);
 
 function isPublisher(user: Doc<"users">): boolean {
@@ -827,7 +848,60 @@ function cleanContent(type: ContentType, input: any): any {
         order: display.order,
         ...publication,
       };
+    case "homeSections":
+      return {
+        slug: homeSectionKey(input.slug),
+        eyebrow: input.eyebrow ? plainText(input.eyebrow, "Eyebrow", 1, 80) : undefined,
+        heading: plainText(input.heading, "Heading", 1, 220),
+        body: input.body ? richText(input.body, "Body", 2000) : undefined,
+        secondaryBody: input.secondaryBody
+          ? richText(input.secondaryBody, "Secondary body", 2000)
+          : undefined,
+        imageId: input.imageId,
+        imageUrl: optionalMediaUrl(input.imageUrl),
+        imageAlt: input.imageAlt ? plainText(input.imageAlt, "Image description", 1, 220) : undefined,
+        secondaryImageId: input.secondaryImageId,
+        secondaryImageUrl: optionalMediaUrl(input.secondaryImageUrl),
+        ctaLabel: input.ctaLabel ? plainText(input.ctaLabel, "Link label", 1, 80) : undefined,
+        ctaHref: input.ctaHref ? internalPath(input.ctaHref, "Link target") : undefined,
+        ...publication,
+      };
+    case "homeHighlights":
+      return {
+        section: input.section,
+        title: plainText(input.title, "Title", 1, 180),
+        summary: input.summary ? plainText(input.summary, "Summary", 1, 600) : undefined,
+        icon: input.icon ? plainText(input.icon, "Icon", 1, 40) : undefined,
+        imageId: input.imageId,
+        imageUrl: optionalMediaUrl(input.imageUrl),
+        imageAlt: input.imageAlt ? plainText(input.imageAlt, "Image description", 1, 220) : undefined,
+        href: input.href ? internalPath(input.href, "Link target") : undefined,
+        order: display.order,
+        ...publication,
+      };
   }
+}
+
+const HOME_SECTION_KEYS = new Set(["hero", "about", "management", "news", "eca", "gallery", "alumni"]);
+
+function homeSectionKey(value: unknown): string {
+  const key = String(value ?? "").trim();
+  if (!HOME_SECTION_KEYS.has(key)) {
+    throw new ConvexError({ code: "INVALID_SECTION", message: "Choose a valid home-page section." });
+  }
+  return key;
+}
+
+/** Accepts a same-site route such as `/about`, or an approved absolute HTTPS URL. */
+function internalPath(value: unknown, field: string): string {
+  const raw = String(value ?? "").trim();
+  if (/^\/(?!\/)[^\s\\]*$/.test(raw)) return raw;
+  const external = optionalUrl(raw);
+  if (external) return external;
+  throw new ConvexError({
+    code: "INVALID_LINK",
+    message: `${field} must be a site route such as /about, or an HTTPS URL.`,
+  });
 }
 
 function validatePublication(values: any, actor: Doc<"users">, existing?: any) {
@@ -898,6 +972,8 @@ export const dashboard = query({
       "galleryAlbums",
       "testimonials",
       "faqs",
+      "homeSections",
+      "homeHighlights",
     ];
     const [counterRows, recentContacts, recentAdmissions, recentAudit] = await Promise.all([
       ctx.db.query("counters").take(500),
@@ -981,16 +1057,6 @@ export const listContent = query({
           .order("desc")
           .paginate(boundedPaginationOpts(args.paginationOpts))
       : await collection.order("desc").paginate(boundedPaginationOpts(args.paginationOpts));
-  },
-});
-
-export const getContent = query({
-  args: { type: contentTypeValidator, id: v.string() },
-  returns: v.union(v.null(), contentDocumentValidator),
-  handler: async (ctx, args) => {
-    await requireRole(ctx, CONTENT_ROLES);
-    const id = normalizeId(ctx, args.type, args.id);
-    return await (ctx.db as any).get(args.type, id);
   },
 });
 

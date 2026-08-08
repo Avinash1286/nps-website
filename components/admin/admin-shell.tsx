@@ -15,8 +15,10 @@ import {
   FolderKanban,
   GalleryHorizontalEnd,
   GraduationCap,
+  Home,
   Images,
   LayoutDashboard,
+  LayoutList,
   Mail,
   Menu,
   MessageSquareQuote,
@@ -62,6 +64,18 @@ const navigation: NavigationGroup[] = [
   {
     label: "Website",
     items: [
+      {
+        label: "Home sections",
+        href: "/admin/home-sections",
+        icon: Home,
+        roles: [...ADMIN_ACCESS_ROLES.content],
+      },
+      {
+        label: "Home cards",
+        href: "/admin/home-cards",
+        icon: LayoutList,
+        roles: [...ADMIN_ACCESS_ROLES.content],
+      },
       { label: "Pages", href: "/admin/pages", icon: FolderKanban, roles: [...ADMIN_ACCESS_ROLES.content] },
       {
         label: "Navigation",
@@ -246,7 +260,7 @@ export function AdminShell({ children, authConfigured }: { children: ReactNode; 
   }, [mobileOpen]);
 
   return (
-    <div className="min-h-screen bg-[#f4f7fb] text-[#0b1e36]">
+    <div className="min-h-screen bg-[#f4f5fd] text-[#12123a]">
       <AdminSessionSync />
       {mobileOpen && (
         <button
@@ -263,7 +277,7 @@ export function AdminShell({ children, authConfigured }: { children: ReactNode; 
         aria-modal={mobileOpen && !desktop ? "true" : undefined}
         aria-label={mobileOpen && !desktop ? "Administration navigation" : undefined}
         inert={!desktop && !mobileOpen ? true : undefined}
-        className={`fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-2rem))] flex-col border-r border-white/10 bg-[#071c38] pb-[env(safe-area-inset-bottom)] text-white shadow-2xl transition-[width,transform] duration-200 lg:translate-x-0 ${sidebarCollapsed ? "lg:w-[5.5rem]" : "lg:w-[18rem]"} ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-50 flex w-[min(18rem,calc(100vw-2rem))] flex-col border-r border-white/10 bg-[#12123a] pb-[env(safe-area-inset-bottom)] text-white shadow-2xl transition-[width,transform] duration-200 lg:translate-x-0 ${sidebarCollapsed ? "lg:w-[5.5rem]" : "lg:w-[18rem]"} ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <button
           type="button"

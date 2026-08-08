@@ -111,7 +111,7 @@ export function AssistantPanel({
             : "flex h-dvh w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-[min(720px,calc(100dvh-3rem))] sm:w-[min(430px,calc(100vw-3rem))] sm:rounded-[1.75rem] sm:border sm:border-white/60"
       }
     >
-      <header className="flex items-center justify-between gap-2 bg-[#061f4e] px-4 pt-[max(.75rem,env(safe-area-inset-top))] pb-3 text-white sm:gap-4 sm:px-5 sm:py-4">
+      <header className="flex items-center justify-between gap-2 bg-[#1e1f5c] px-4 pt-[max(.75rem,env(safe-area-inset-top))] pb-3 text-white sm:gap-4 sm:px-5 sm:py-4">
         <div className="flex min-w-0 items-center gap-3">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sky-500/20 text-sky-100">
             <Bot size={21} aria-hidden="true" />
@@ -139,7 +139,7 @@ export function AssistantPanel({
       </header>
 
       <div
-        className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[#f7fbff] p-4"
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[#f7f8fd] p-4"
         role="log"
         aria-label="Assistant conversation"
         aria-live="polite"
@@ -150,8 +150,8 @@ export function AssistantPanel({
           <article
             className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 [overflow-wrap:anywhere] ${
               message.role === "user"
-                ? "ml-auto rounded-br-md bg-[#0b5fc4] text-white"
-                : "rounded-bl-md border border-sky-100 bg-white text-[#17385f] shadow-sm"
+                ? "ml-auto rounded-br-md bg-[#3a3fa5] text-white"
+                : "rounded-bl-md border border-sky-100 bg-white text-[#2f3169] shadow-sm"
             }`}
             key={`${message.role}-${index}`}
           >
@@ -230,7 +230,7 @@ export function AssistantPanel({
           />
           <button
             type="submit"
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#0b5fc4] text-white transition hover:bg-[#084f9f] focus-visible:ring-4 focus-visible:ring-sky-200 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#3a3fa5] text-white transition hover:bg-[#2e3192] focus-visible:ring-4 focus-visible:ring-sky-200 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             disabled={busy || !value.trim()}
             aria-label="Send question"
           >

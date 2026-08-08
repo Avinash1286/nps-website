@@ -31,7 +31,7 @@ export default async function TestimonialsPage() {
                   key={item.id}
                   className="flex min-w-0 flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7"
                 >
-                  <MessageSquareQuote className="text-[#0a65a8]" size={28} aria-hidden="true" />
+                  <MessageSquareQuote className="text-[#2e3192]" size={28} aria-hidden="true" />
                   <blockquote className="mt-5 flex-1 text-base leading-8 text-slate-700">
                     “{item.quote}”
                   </blockquote>
@@ -41,7 +41,7 @@ export default async function TestimonialsPage() {
                         <Image src={item.photoUrl} alt="" fill className="object-cover" sizes="48px" />
                       </span>
                     ) : (
-                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sky-50 text-sm font-black text-[#0a65a8]">
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sky-50 text-sm font-black text-[#2e3192]">
                         {item.name
                           .split(/\s+/)
                           .slice(0, 2)
@@ -51,7 +51,7 @@ export default async function TestimonialsPage() {
                       </span>
                     )}
                     <span className="min-w-0">
-                      <strong className="block truncate text-sm text-[#092f59]">{item.name}</strong>
+                      <strong className="block truncate text-sm text-[#1e1f5c]">{item.name}</strong>
                       {(item.role || item.organization) && (
                         <span className="mt-1 block text-xs leading-5 text-slate-500">
                           {[item.role, item.organization].filter(Boolean).join(" · ")}
@@ -72,7 +72,7 @@ export default async function TestimonialsPage() {
           )}
           <Link
             href="/about"
-            className="mt-10 inline-flex items-center gap-2 text-sm font-bold text-[#0a65a8]"
+            className="mt-10 inline-flex items-center gap-2 text-sm font-bold text-[#2e3192]"
           >
             <ArrowLeft size={15} /> Back to about the school
           </Link>

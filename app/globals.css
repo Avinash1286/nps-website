@@ -5,22 +5,52 @@
 @import "@fontsource/manrope/800.css";
 @import "tailwindcss";
 
+/* --------------------------------------------------------------------------
+   Brand palette. `--color-primary-*` is the school indigo; the built-in `sky`
+   scale is deliberately overridden to the same hues so every existing
+   `sky-*` utility across the site and admin follows the brand automatically.
+   -------------------------------------------------------------------------- */
+@theme {
+  --color-primary-50: #eef0fb;
+  --color-primary-100: #dfe2f7;
+  --color-primary-200: #c4c9ef;
+  --color-primary-300: #9aa3e2;
+  --color-primary-400: #6d77d1;
+  --color-primary-500: #4a51bd;
+  --color-primary-600: #3a3fa5;
+  --color-primary-700: #2e3192;
+  --color-primary-800: #262873;
+  --color-primary-900: #1e1f5c;
+  --color-primary-950: #12123a;
+
+  --color-sky-50: #eef0fb;
+  --color-sky-100: #dfe2f7;
+  --color-sky-200: #c4c9ef;
+  --color-sky-300: #9aa3e2;
+  --color-sky-400: #6d77d1;
+  --color-sky-500: #4a51bd;
+  --color-sky-600: #3a3fa5;
+  --color-sky-700: #2e3192;
+  --color-sky-800: #262873;
+  --color-sky-900: #1e1f5c;
+  --color-sky-950: #12123a;
+}
+
 :root {
-  --navy-950: #031733;
-  --navy-900: #061f4e;
-  --navy-800: #082f6b;
-  --blue-700: #0b5fc4;
-  --blue-600: #1675df;
-  --sky-100: #e8f4ff;
-  --sky-50: #f5faff;
+  --brand-700: #2e3192;
+  --brand-800: #262873;
+  --brand-900: #1e1f5c;
+  --brand-950: #12123a;
   --gold-500: #e5a90b;
-  --ink: #09295c;
-  --muted: #5b6d87;
+  --gold-400: #f0bd3a;
+  --ink: #1e1f5c;
+  --muted: #5f6386;
   --surface: #ffffff;
-  --page: #f7faff;
-  --border: #dce9f7;
-  --shadow-sm: 0 10px 30px rgba(6, 39, 92, 0.08);
-  --shadow-lg: 0 24px 70px rgba(3, 31, 78, 0.16);
+  --page: #f7f8fd;
+  --border: #dfe2f7;
+  --shadow-sm: 0 10px 30px rgba(30, 31, 92, 0.08);
+  --shadow-lg: 0 24px 70px rgba(18, 18, 58, 0.18);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -35,6 +65,9 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
+  /* `clip` (unlike `hidden`) contains reveal/carousel transforms without
+     breaking the sticky header. */
+  overflow-x: clip;
   background: var(--page);
   color: var(--ink);
   font-family: "Manrope", "Inter", Arial, Helvetica, sans-serif;
@@ -63,12 +96,12 @@ img {
 }
 
 ::selection {
-  background: #bfe1ff;
-  color: var(--navy-950);
+  background: #c4c9ef;
+  color: var(--brand-950);
 }
 
 :focus-visible {
-  outline: 3px solid #38a7ff;
+  outline: 3px solid #6d77d1;
   outline-offset: 3px;
 }
 
@@ -80,7 +113,7 @@ img {
   transform: translateY(-180%);
   border-radius: 0.75rem;
   background: white;
-  color: var(--navy-900);
+  color: var(--brand-900);
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
   font-weight: 800;
@@ -93,24 +126,210 @@ img {
 }
 
 .site-grain {
-  background-image: radial-gradient(rgba(21, 101, 192, 0.1) 0.7px, transparent 0.7px);
+  background-image: radial-gradient(rgba(46, 49, 146, 0.1) 0.7px, transparent 0.7px);
   background-size: 16px 16px;
 }
 
 .prose-school {
-  color: #455b78;
+  color: #4c5175;
   line-height: 1.85;
 }
 
 .prose-school :where(h2, h3) {
-  color: var(--navy-900);
+  color: var(--brand-900);
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
 .prose-school a {
-  color: var(--blue-700);
+  color: var(--brand-700);
   font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   Motion system
+   Scroll reveals are driven by IntersectionObserver in components/site/reveal.tsx,
+   which adds `is-visible`. Everything degrades to a static layout without JS
+   (see the <noscript> rule in app/layout.tsx) and under reduced-motion.
+   -------------------------------------------------------------------------- */
+
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0);
+  transition:
+    opacity 760ms var(--ease-out-expo) var(--reveal-delay, 0ms),
+    transform 760ms var(--ease-out-expo) var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.reveal[data-reveal="left"] {
+  transform: translate3d(-32px, 0, 0);
+}
+
+.reveal[data-reveal="right"] {
+  transform: translate3d(32px, 0, 0);
+}
+
+.reveal[data-reveal="scale"] {
+  transform: scale(0.94);
+}
+
+.reveal[data-reveal="none"] {
+  transform: none;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+@keyframes nps-fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes nps-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes nps-ken-burns {
+  from {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1.14);
+  }
+}
+
+@keyframes nps-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes nps-logo-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes nps-sweep {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes nps-pulse-soft {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+.anim-fade-up {
+  animation: nps-fade-up 800ms var(--ease-out-expo) both;
+}
+
+.anim-fade-in {
+  animation: nps-fade-in 900ms ease both;
+}
+
+.anim-ken-burns {
+  animation: nps-ken-burns 9000ms ease-out both;
+}
+
+.anim-ken-burns-loop {
+  animation: nps-ken-burns 16000ms ease-in-out infinite alternate;
+}
+
+.anim-logo-in {
+  animation: nps-logo-in 900ms var(--ease-out-expo) both;
+}
+
+.anim-ring {
+  animation: nps-ring-spin 1100ms linear infinite;
+}
+
+.anim-pulse-soft {
+  animation: nps-pulse-soft 2400ms ease-in-out infinite;
+}
+
+/* Section eyebrow rule that draws itself in when its section reveals. */
+.rule-sweep {
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 900ms var(--ease-out-expo) 120ms;
+}
+
+.is-visible .rule-sweep,
+.rule-sweep.is-visible {
+  transform: scaleX(1);
+}
+
+/* Underline indicator used by the primary navigation. */
+.nav-underline::after {
+  content: "";
+  position: absolute;
+  left: 0.625rem;
+  right: 0.625rem;
+  bottom: 1.15rem;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 320ms var(--ease-out-expo);
+}
+
+.nav-underline:hover::after,
+.nav-underline[data-active="true"]::after {
+  transform: scaleX(1);
+}
+
+.hover-lift {
+  transition:
+    transform 420ms var(--ease-out-expo),
+    box-shadow 420ms var(--ease-out-expo),
+    border-color 420ms var(--ease-out-expo);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+.media-zoom img {
+  transition: transform 900ms var(--ease-out-expo);
+}
+
+.media-zoom:hover img {
+  transform: scale(1.06);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -124,5 +343,19 @@ img {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .rule-sweep {
+    transform: scaleX(1);
+  }
+
+  .hover-lift:hover,
+  .media-zoom:hover img {
+    transform: none;
   }
 }

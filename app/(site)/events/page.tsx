@@ -37,7 +37,7 @@ export default async function EventsPage() {
             />
           )}
           <div className="mt-8 flex items-start gap-3 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-            <CalendarDays size={18} className="mt-0.5 shrink-0 text-[#0a65a8]" />
+            <CalendarDays size={18} className="mt-0.5 shrink-0 text-[#2e3192]" />
             Event details can change. Recheck the event page or related notice before travelling.
           </div>
         </div>
@@ -52,7 +52,7 @@ function EventList({ title, events }: { title: string; events: PublicEvent[] }) 
     <section aria-labelledby={`${title.toLowerCase().replaceAll(" ", "-")}-heading`}>
       <h2
         id={`${title.toLowerCase().replaceAll(" ", "-")}-heading`}
-        className="mb-5 text-2xl font-extrabold text-[#092f59]"
+        className="mb-5 text-2xl font-extrabold text-[#1e1f5c]"
       >
         {title}
       </h2>
@@ -64,7 +64,7 @@ function EventList({ title, events }: { title: string; events: PublicEvent[] }) 
             className="group grid min-w-0 gap-5 rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-sky-200 hover:shadow-[0_14px_36px_rgba(14,49,80,.07)] sm:grid-cols-[220px_minmax(0,1fr)_auto] sm:items-center sm:p-6"
           >
             <div className="min-w-0">
-              <p className="text-xs leading-5 font-bold text-[#0a65a8]">
+              <p className="text-xs leading-5 font-bold text-[#2e3192]">
                 {formatEventDateTimeRange(event.startsAt, event.endsAt, event.timezone)}
               </p>
               {event.venue && (
@@ -76,10 +76,10 @@ function EventList({ title, events }: { title: string; events: PublicEvent[] }) 
             </div>
             <div className="min-w-0">
               {event.featured && <FeaturedBadge className="mb-2" />}
-              <h3 className="text-xl font-extrabold text-[#092f59]">{event.title}</h3>
+              <h3 className="text-xl font-extrabold text-[#1e1f5c]">{event.title}</h3>
               <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{event.summary}</p>
             </div>
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-sky-50 text-[#0a65a8] transition group-hover:bg-[#0a65a8] group-hover:text-white">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-sky-50 text-[#2e3192] transition group-hover:bg-[#2e3192] group-hover:text-white">
               <ArrowRight size={17} />
             </span>
           </Link>

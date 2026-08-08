@@ -32,7 +32,7 @@ export default async function DownloadsPage({
             <nav aria-label="Document categories" className="mb-8 flex flex-wrap gap-2">
               <Link
                 href="/downloads"
-                className={`rounded-full px-4 py-2 text-xs font-bold ${!category ? "bg-[#0a65a8] text-white" : "bg-slate-100 text-slate-700"}`}
+                className={`rounded-full px-4 py-2 text-xs font-bold ${!category ? "bg-[#2e3192] text-white" : "bg-slate-100 text-slate-700"}`}
               >
                 All documents
               </Link>
@@ -40,7 +40,7 @@ export default async function DownloadsPage({
                 <Link
                   key={item}
                   href={`/downloads?category=${encodeURIComponent(item)}`}
-                  className={`max-w-full rounded-full px-4 py-2 text-center text-xs font-bold ${category === item ? "bg-[#0a65a8] text-white" : "bg-slate-100 text-slate-700"}`}
+                  className={`max-w-full rounded-full px-4 py-2 text-center text-xs font-bold ${category === item ? "bg-[#2e3192] text-white" : "bg-slate-100 text-slate-700"}`}
                 >
                   {item}
                 </Link>
@@ -55,15 +55,15 @@ export default async function DownloadsPage({
                   className="grid min-w-0 gap-4 py-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                 >
                   <div className="flex min-w-0 gap-4">
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sky-50 text-[#0a65a8]">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sky-50 text-[#2e3192]">
                       <FileText size={20} />
                     </span>
                     <div className="min-w-0">
                       {document.featured && <FeaturedBadge className="mb-2" />}
-                      <p className="text-[11px] font-extrabold tracking-[.13em] text-[#0a65a8] uppercase">
+                      <p className="text-[11px] font-extrabold tracking-[.13em] text-[#2e3192] uppercase">
                         {document.category}
                       </p>
-                      <h2 className="mt-1 leading-6 font-extrabold text-[#092f59]">{document.title}</h2>
+                      <h2 className="mt-1 leading-6 font-extrabold text-[#1e1f5c]">{document.title}</h2>
                       {document.description && (
                         <p className="mt-2 text-sm leading-6 text-slate-600">{document.description}</p>
                       )}
@@ -79,7 +79,7 @@ export default async function DownloadsPage({
                       href={document.downloadUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0a65a8] px-4 py-2.5 text-sm font-bold text-white sm:w-auto"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#2e3192] px-4 py-2.5 text-sm font-bold text-white sm:w-auto"
                     >
                       <Download size={16} className="shrink-0" />
                       Download

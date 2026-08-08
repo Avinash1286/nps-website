@@ -36,10 +36,10 @@ export default async function NoticesPage({ searchParams }: { searchParams: Prom
                 name="q"
                 defaultValue={q}
                 placeholder="Search notice titles and categories"
-                className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none focus:border-[#0a65a8] focus:ring-4 focus:ring-sky-100"
+                className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none focus:border-[#2e3192] focus:ring-4 focus:ring-sky-100"
               />
             </label>
-            <button className="h-12 rounded-xl bg-[#0a65a8] px-5 text-sm font-bold text-white">
+            <button className="h-12 rounded-xl bg-[#2e3192] px-5 text-sm font-bold text-white">
               Search notices
             </button>
           </form>
@@ -65,20 +65,20 @@ export default async function NoticesPage({ searchParams }: { searchParams: Prom
                         </span>
                       )}
                       {notice.category && (
-                        <span className="rounded-full bg-sky-50 px-2 py-1 text-[10px] font-extrabold tracking-[.08em] text-[#0a65a8] uppercase">
+                        <span className="rounded-full bg-sky-50 px-2 py-1 text-[10px] font-extrabold tracking-[.08em] text-[#2e3192] uppercase">
                           {notice.category}
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="leading-6 font-extrabold text-[#092f59]">
+                    <h2 className="leading-6 font-extrabold text-[#1e1f5c]">
                       <Link href={`/notices/${notice.slug}`}>{notice.title}</Link>
                     </h2>
                     <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{notice.summary}</p>
                     {notice.audiences.length > 0 && (
                       <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-                        <UsersRound size={13} className="shrink-0 text-[#0a65a8]" />
+                        <UsersRound size={13} className="shrink-0 text-[#2e3192]" />
                         <span className="truncate">For {notice.audiences.join(", ")}</span>
                       </p>
                     )}
@@ -87,7 +87,7 @@ export default async function NoticesPage({ searchParams }: { searchParams: Prom
                     <Link
                       href={`/notices/${notice.slug}`}
                       aria-label={`Read ${notice.title}`}
-                      className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 text-[#0a65a8]"
+                      className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 text-[#2e3192]"
                     >
                       <ArrowRight size={16} />
                     </Link>
@@ -97,7 +97,7 @@ export default async function NoticesPage({ searchParams }: { searchParams: Prom
                         target="_blank"
                         rel="noreferrer"
                         aria-label={`Download attachment for ${notice.title}`}
-                        className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 text-[#0a65a8]"
+                        className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 text-[#2e3192]"
                       >
                         <Download size={16} />
                       </a>

@@ -104,7 +104,7 @@ export function AdmissionsForm({ academicYear }: { academicYear?: string }) {
           required
           checked={consent}
           onChange={(event) => setConsent(event.target.checked)}
-          className="mt-1 h-4 w-4 shrink-0 accent-[#0a65a8]"
+          className="mt-1 h-4 w-4 shrink-0 accent-[#2e3192]"
         />
         <span>
           I confirm this information is accurate and consent to the school using it to respond about
@@ -118,7 +118,7 @@ export function AdmissionsForm({ academicYear }: { academicYear?: string }) {
         <button
           type="submit"
           disabled={status.state === "submitting"}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0a65a8] px-5 py-3 text-sm font-bold text-white hover:bg-[#084f83] disabled:cursor-wait disabled:opacity-60 sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#2e3192] px-5 py-3 text-sm font-bold text-white hover:bg-[#262873] disabled:cursor-wait disabled:opacity-60 sm:w-auto"
         >
           <Send size={17} className="shrink-0" />
           {status.state === "submitting" ? "Submitting…" : "Submit enquiry"}

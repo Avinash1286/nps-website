@@ -10,6 +10,7 @@ import {
   getDepartment,
   getFaqs,
   getLeader,
+  getLeadership,
   getNews,
   getNotice,
   getPrograms,
@@ -40,6 +41,12 @@ describe("public Convex data normalization", () => {
       bio: "Long-form professional biography.",
       message: "Welcome to our school community.",
     });
+  });
+
+  it("does not invent leadership profiles when no admin-authored records are published", async () => {
+    fetchQueryMock.mockResolvedValueOnce([]);
+
+    await expect(getLeadership()).resolves.toEqual([]);
   });
 
   it("preserves notice priority and every intended audience", async () => {

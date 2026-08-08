@@ -15,40 +15,17 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-const baselinePathways = [
-  {
-    title: "Primary years",
-    description: "Strong foundations in language, numeracy, inquiry, and learning habits.",
-    href: "/academics/primary",
-    meta: "Pathway",
-  },
-  {
-    title: "Secondary years",
-    description: "Deeper subject learning, independent study, and progress guidance.",
-    href: "/academics/secondary",
-    meta: "Pathway",
-  },
-  {
-    title: "+2 programmes",
-    description: "Current programme and subject information for higher-secondary applicants.",
-    href: "/academics/plus-2",
-    meta: "Pathway",
-  },
-];
-
 export default async function AcademicsPage() {
   const [configured, page] = await Promise.all([getPrograms(), getCmsPage("academics")]);
   const paragraphs = page ? pageParagraphs(page) : [];
-  const pathways = configured.length
-    ? configured.map((program) => ({
-        title: program.name,
-        description: program.shortDescription,
-        href: `/academics/${program.slug}`,
-        meta: program.featured
-          ? `Featured programme${program.gradeRange ? ` · ${program.gradeRange}` : ""}`
-          : (program.gradeRange ?? "Programme"),
-      }))
-    : baselinePathways;
+  const pathways = configured.map((program) => ({
+    title: program.name,
+    description: program.shortDescription,
+    href: `/academics/${program.slug}`,
+    meta: program.featured
+      ? `Featured programme${program.gradeRange ? ` · ${program.gradeRange}` : ""}`
+      : (program.gradeRange ?? "Programme"),
+  }));
 
   return (
     <OverviewPage

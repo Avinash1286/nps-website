@@ -53,8 +53,8 @@ export function OverviewPage({
       <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[.9fr_1.1fr] lg:items-center">
           <div className="min-w-0">
-            <p className="text-xs font-extrabold tracking-[.2em] text-[#0a65a8] uppercase">{introEyebrow}</p>
-            <h2 className="mt-4 text-3xl leading-tight font-extrabold tracking-[-.035em] text-[#092f59] sm:text-4xl">
+            <p className="text-xs font-extrabold tracking-[.2em] text-[#2e3192] uppercase">{introEyebrow}</p>
+            <h2 className="mt-4 text-3xl leading-tight font-extrabold tracking-[-.035em] text-[#1e1f5c] sm:text-4xl">
               {introTitle}
             </h2>
             <p className="mt-5 text-base leading-8 text-slate-600">{intro}</p>
@@ -75,10 +75,10 @@ export function OverviewPage({
           </div>
         </div>
       </section>
-      <section className="bg-[#f0f6fa] px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+      <section className="bg-[#eef0fb] px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="flex items-end justify-between gap-4">
-            <h2 className="max-w-2xl text-3xl font-extrabold tracking-[-.03em] text-[#092f59]">
+            <h2 className="max-w-2xl text-3xl font-extrabold tracking-[-.03em] text-[#1e1f5c]">
               {cardHeading}
             </h2>
           </div>
@@ -90,13 +90,13 @@ export function OverviewPage({
                 className="group min-w-0 rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_16px_38px_rgba(14,49,80,.08)]"
               >
                 {card.meta && (
-                  <p className="text-[11px] font-extrabold tracking-[.15em] text-[#0a65a8] uppercase">
+                  <p className="text-[11px] font-extrabold tracking-[.15em] text-[#2e3192] uppercase">
                     {card.meta}
                   </p>
                 )}
-                <h3 className="mt-3 text-xl font-extrabold tracking-[-.02em] text-[#092f59]">{card.title}</h3>
+                <h3 className="mt-3 text-xl font-extrabold tracking-[-.02em] text-[#1e1f5c]">{card.title}</h3>
                 <p className="mt-3 text-sm leading-6 text-slate-600">{card.description}</p>
-                <span className="mt-6 inline-flex items-center gap-2 text-sm font-extrabold text-[#0a65a8]">
+                <span className="mt-6 inline-flex items-center gap-2 text-sm font-extrabold text-[#2e3192]">
                   Explore <ArrowRight size={15} className="shrink-0" />
                 </span>
               </Link>
@@ -107,16 +107,16 @@ export function OverviewPage({
       <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.75fr_1.25fr]">
           <div>
-            <p className="text-xs font-extrabold tracking-[.2em] text-[#0a65a8] uppercase">Our approach</p>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-[-.03em] text-[#092f59]">
+            <p className="text-xs font-extrabold tracking-[.2em] text-[#2e3192] uppercase">Our approach</p>
+            <h2 className="mt-4 text-3xl font-extrabold tracking-[-.03em] text-[#1e1f5c]">
               Clear information, thoughtful support.
             </h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {principles.map((principle) => (
               <article key={principle.title} className="rounded-2xl border border-slate-200 p-5">
-                <CheckCircle2 size={19} className="text-[#0a65a8]" />
-                <h3 className="mt-4 font-extrabold text-[#173f61]">{principle.title}</h3>
+                <CheckCircle2 size={19} className="text-[#2e3192]" />
+                <h3 className="mt-4 font-extrabold text-[#2f3169]">{principle.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{principle.description}</p>
               </article>
             ))}
@@ -124,7 +124,7 @@ export function OverviewPage({
         </div>
       </section>
       <section className="px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-3xl bg-[#082946] p-8 text-white sm:p-10">
+        <div className="mx-auto max-w-7xl rounded-3xl bg-[#1e1f5c] p-8 text-white sm:p-10">
           <h2 className="text-3xl font-extrabold tracking-[-.03em]">{cta.title}</h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300">{cta.description}</p>
           <div className="mt-7 flex flex-wrap gap-3">

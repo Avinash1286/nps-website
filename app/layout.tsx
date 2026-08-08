@@ -52,7 +52,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#061f4e",
+  themeColor: "#1e1f5c",
   colorScheme: "light",
 };
 
@@ -79,6 +79,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
+        {/* Scroll reveals are progressive enhancement: without scripting the
+            content must render in its final state rather than stay hidden. */}
+        <noscript>
+          <style>{`.reveal{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
         <a className="skip-link" href="#main-content">
           Skip to main content
         </a>
