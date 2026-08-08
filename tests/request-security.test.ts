@@ -3,7 +3,10 @@ import { NextRequest } from "next/server";
 import { getRequestIp, requestFingerprint, safeSameOriginPath } from "@/lib/server/request-security";
 import { signPublicFormPayload } from "@/lib/server/public-forms";
 import { createHmac } from "node:crypto";
-import { canonicalAssistantSignaturePayload } from "@/convex/lib/assistantSignature";
+import {
+  canonicalAssistantSignaturePayload,
+  normalizeAssistantServiceSecret,
+} from "@/convex/lib/assistantSignature";
 
 describe("safeSameOriginPath", () => {
   it("accepts normal application routes", () => {
@@ -74,5 +77,12 @@ describe("canonicalAssistantSignaturePayload", () => {
     expect(routePayload).toBe(
       '["nps-assistant-v1",1786016400000,"fingerprint","session-id","How do I apply?",[["assistant","Hello."]]]',
     );
+  });
+
+  it("normalizes deployment line endings before signing", () => {
+    const secret = "assistant-service-secret-that-is-long-enough";
+
+    expect(normalizeAssistantServiceSecret(`  ${secret}\r\n`)).toBe(secret);
+    expect(normalizeAssistantServiceSecret(" \r\n ")).toBeUndefined();
   });
 });

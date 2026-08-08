@@ -549,7 +549,13 @@ export function getCollectionDefinition(collection: CollectionKey): CollectionDe
   };
 }
 
-export function AdminCollectionPage({ collection }: { collection: CollectionKey }) {
+export function AdminCollectionPage({
+  collection,
+  initialSearch = "",
+}: {
+  collection: CollectionKey;
+  initialSearch?: string;
+}) {
   const definition = getCollectionDefinition(collection);
   return (
     <>
@@ -558,23 +564,35 @@ export function AdminCollectionPage({ collection }: { collection: CollectionKey 
         title={definition.title}
         description={definition.description}
       />
-      <AdminCollectionScreen definition={definition} />
+      <AdminCollectionScreen definition={definition} initialSearch={initialSearch} />
     </>
   );
 }
 
-export function AdminCollectionScreen({ definition }: { definition: CollectionDefinition }) {
+export function AdminCollectionScreen({
+  definition,
+  initialSearch = "",
+}: {
+  definition: CollectionDefinition;
+  initialSearch?: string;
+}) {
   return (
     <AdminFeatureGate requiredRoles={ADMIN_ACCESS_ROLES.content}>
-      <CollectionManager definition={definition} />
+      <CollectionManager definition={definition} initialSearch={initialSearch} />
     </AdminFeatureGate>
   );
 }
 
-function CollectionManager({ definition }: { definition: CollectionDefinition }) {
+function CollectionManager({
+  definition,
+  initialSearch,
+}: {
+  definition: CollectionDefinition;
+  initialSearch: string;
+}) {
   const viewer = useQuery(usersApi.current, {});
   const [filter, setFilter] = useState<"all" | PublicationStatus>("all");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch);
   const [editing, setEditing] = useState<AdminRecord | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [values, setValues] = useState<Record<string, string | boolean>>({});

@@ -15,7 +15,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/admin",
 }));
 
-import { AdminShell } from "@/components/admin/admin-shell";
+import { AdminShell, adminNavigation, isAdminNavigationItemActive } from "@/components/admin/admin-shell";
 
 describe("administration sidebar", () => {
   beforeEach(() => {
@@ -58,5 +58,43 @@ describe("administration sidebar", () => {
     expect(screen.getByRole("button", { name: "Expand sidebar" })).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("title", "Dashboard");
     expect(screen.getByText("Administration content")).toBeInTheDocument();
+  });
+
+  it("orders editors around the same sections as the public website", () => {
+    expect(adminNavigation.map((group) => group.label)).toEqual([
+      "Overview",
+      "Home & site",
+      "About",
+      "Academics",
+      "Campus life",
+      "Admissions",
+      "Updates",
+      "Communications",
+      "AI & automation",
+      "Administration",
+    ]);
+
+    const hrefs = adminNavigation.flatMap((group) => group.items.map((item) => item.href));
+    expect(new Set(hrefs).size).toBe(hrefs.length);
+    expect(hrefs).toEqual(
+      expect.arrayContaining([
+        "/admin/website",
+        "/admin/home-sections",
+        "/admin/leadership",
+        "/admin/programs",
+        "/admin/gallery",
+        "/admin/admissions",
+        "/admin/news",
+        "/admin/contacts",
+        "/admin/ai",
+        "/admin/settings",
+      ]),
+    );
+  });
+
+  it("does not mark prefix-collision routes as active", () => {
+    expect(isAdminNavigationItemActive("/admin/newsletter", "/admin/news")).toBe(false);
+    expect(isAdminNavigationItemActive("/admin/newsletter", "/admin/newsletter")).toBe(true);
+    expect(isAdminNavigationItemActive("/admin/admissions/record-id", "/admin/admissions")).toBe(true);
   });
 });

@@ -3,7 +3,10 @@ import { fetchAction } from "convex/nextjs";
 import { makeFunctionReference } from "convex/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { canonicalAssistantSignaturePayload } from "@/convex/lib/assistantSignature";
+import {
+  canonicalAssistantSignaturePayload,
+  normalizeAssistantServiceSecret,
+} from "@/convex/lib/assistantSignature";
 import { isConfiguredSecret } from "@/lib/security/configuration";
 import { requestFingerprint, safeSameOriginPath } from "@/lib/server/request-security";
 
@@ -46,7 +49,7 @@ const askAssistant = makeFunctionReference<
 
 export async function POST(request: NextRequest) {
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-  const serviceSecret = process.env.ASSISTANT_SERVICE_SECRET;
+  const serviceSecret = normalizeAssistantServiceSecret(process.env.ASSISTANT_SERVICE_SECRET);
   if (!convexUrl || !isConfiguredSecret(serviceSecret)) {
     return NextResponse.json(
       { error: "The information assistant is not configured yet." },

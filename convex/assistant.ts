@@ -8,9 +8,12 @@ import { components, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { action, env, internalAction } from "./_generated/server";
 import type { ActionCtx } from "./_generated/server";
+import {
+  canonicalAssistantSignaturePayload,
+  normalizeAssistantServiceSecret,
+} from "./lib/assistantSignature";
 import { shortHash } from "./lib/input";
 import { isConfiguredSecret } from "./lib/secrets";
-import { canonicalAssistantSignaturePayload } from "./lib/assistantSignature";
 import { assistantHistoryValidator } from "./lib/validators";
 
 type GroundingSnapshot = {
@@ -302,7 +305,7 @@ function verifySignature(args: {
   if ((args.history?.length ?? 0) > 12 || args.history?.some((entry) => entry.content.length > 2000)) {
     throw new ConvexError({ code: "INVALID_HISTORY", message: "Conversation history is too large." });
   }
-  const secret = env.ASSISTANT_SERVICE_SECRET;
+  const secret = normalizeAssistantServiceSecret(env.ASSISTANT_SERVICE_SECRET);
   if (!isConfiguredSecret(secret)) {
     throw new ConvexError({
       code: "ASSISTANT_NOT_CONFIGURED",

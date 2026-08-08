@@ -6,7 +6,9 @@ import {
   Activity,
   Bot,
   BookOpenCheck,
+  Building2,
   CalendarDays,
+  ChevronDown,
   ChevronRight,
   CircleHelp,
   ClipboardList,
@@ -14,7 +16,7 @@ import {
   FileText,
   FolderKanban,
   GalleryHorizontalEnd,
-  GraduationCap,
+  Globe2,
   Home,
   Images,
   LayoutDashboard,
@@ -25,10 +27,14 @@ import {
   Newspaper,
   PanelLeftClose,
   PanelLeftOpen,
+  Search,
   School,
+  ScrollText,
   Settings,
   ShieldCheck,
+  Tickets,
   Users,
+  UsersRound,
   Waypoints,
   X,
 } from "lucide-react";
@@ -46,165 +52,304 @@ type NavigationItem = {
   href: string;
   icon: ComponentType<{ size?: number; className?: string }>;
   roles: AdminRole[];
+  description: string;
+  searchTerms?: string;
 };
-type NavigationGroup = { label: string; items: NavigationItem[] };
+type NavigationGroup = { label: string; description: string; items: NavigationItem[] };
 
-const navigation: NavigationGroup[] = [
+export const adminNavigation: NavigationGroup[] = [
   {
-    label: "Workspace",
+    label: "Overview",
+    description: "Start here",
     items: [
       {
         label: "Dashboard",
         href: "/admin",
         icon: LayoutDashboard,
         roles: [...ADMIN_ACCESS_ROLES.activeStaff],
+        description: "Activity, metrics and common tasks",
+      },
+      {
+        label: "Website editor",
+        href: "/admin/website",
+        icon: Globe2,
+        roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Browse content by public website section",
+        searchTerms: "content map public site",
       },
     ],
   },
   {
-    label: "Website",
+    label: "Home & site",
+    description: "Homepage and site structure",
     items: [
       {
-        label: "Home sections",
+        label: "Homepage sections",
         href: "/admin/home-sections",
         icon: Home,
         roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Hero, welcome and feature sections",
+        searchTerms: "homepage front page hero welcome features call to action",
       },
       {
-        label: "Home cards",
+        label: "Homepage highlights",
         href: "/admin/home-cards",
         icon: LayoutList,
         roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Slides, value pillars and activity cards",
+        searchTerms: "home cards carousel slides values activities eca",
       },
-      { label: "Pages", href: "/admin/pages", icon: FolderKanban, roles: [...ADMIN_ACCESS_ROLES.content] },
       {
-        label: "Navigation",
+        label: "Website pages",
+        href: "/admin/pages",
+        icon: FolderKanban,
+        roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "About, academics, campus and admissions pages",
+        searchTerms: "history mission vision curriculum facilities transport eligibility fees custom pages",
+      },
+      {
+        label: "Navigation menus",
         href: "/admin/navigation",
         icon: Waypoints,
         roles: [...ADMIN_ACCESS_ROLES.navigation],
+        description: "Header, footer and utility links",
+        searchTerms: "menu links header footer navbar",
       },
-      {
-        label: "Programmes",
-        href: "/admin/programs",
-        icon: BookOpenCheck,
-        roles: [...ADMIN_ACCESS_ROLES.content],
-      },
-      {
-        label: "Departments",
-        href: "/admin/departments",
-        icon: GraduationCap,
-        roles: [...ADMIN_ACCESS_ROLES.content],
-      },
+    ],
+  },
+  {
+    label: "About",
+    description: "School identity and people",
+    items: [
       {
         label: "Leadership",
         href: "/admin/leadership",
         icon: ShieldCheck,
         roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Leadership profiles and messages",
+        searchTerms: "principal management people about",
       },
       {
         label: "Testimonials",
         href: "/admin/testimonials",
         icon: MessageSquareQuote,
         roles: [...ADMIN_ACCESS_ROLES.content],
-      },
-      {
-        label: "Teachers",
-        href: "/admin/teachers",
-        icon: GraduationCap,
-        roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Community voices and quotations",
+        searchTerms: "reviews alumni parents students community voices",
       },
     ],
   },
   {
-    label: "Publishing",
+    label: "Academics",
+    description: "Learning programmes and staff",
     items: [
-      { label: "News", href: "/admin/news", icon: Newspaper, roles: [...ADMIN_ACCESS_ROLES.content] },
       {
-        label: "Notices",
-        href: "/admin/notices",
-        icon: ClipboardList,
+        label: "Programmes",
+        href: "/admin/programs",
+        icon: BookOpenCheck,
         roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Primary, secondary and +2 programmes",
+        searchTerms: "courses primary secondary plus 2 curriculum academics",
       },
       {
-        label: "FAQs",
-        href: "/admin/faqs",
-        icon: CircleHelp,
+        label: "Departments",
+        href: "/admin/departments",
+        icon: Building2,
         roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Academic departments and responsibilities",
+        searchTerms: "faculty subjects academics",
       },
-      { label: "Events", href: "/admin/events", icon: CalendarDays, roles: [...ADMIN_ACCESS_ROLES.content] },
+      {
+        label: "Teachers",
+        href: "/admin/teachers",
+        icon: UsersRound,
+        roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Teacher profiles, subjects and contacts",
+        searchTerms: "staff faculty academics people",
+      },
+    ],
+  },
+  {
+    label: "Campus life",
+    description: "Campus media and experiences",
+    items: [
       {
         label: "Gallery",
         href: "/admin/gallery",
         icon: GalleryHorizontalEnd,
         roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Public photo and video albums",
+        searchTerms: "campus photos videos albums",
       },
       {
-        label: "Documents",
-        href: "/admin/documents",
-        icon: FileText,
+        label: "Media library",
+        href: "/admin/media",
+        icon: Images,
         roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Uploaded images and reusable files",
+        searchTerms: "uploads assets photos files images",
       },
-      { label: "Media", href: "/admin/media", icon: Images, roles: [...ADMIN_ACCESS_ROLES.content] },
     ],
   },
   {
-    label: "Operations",
+    label: "Admissions",
+    description: "Admissions content and applications",
     items: [
       {
-        label: "Admissions",
+        label: "Admission applications",
         href: "/admin/admissions",
         icon: School,
         roles: [...ADMIN_ACCESS_ROLES.admissions],
+        description: "Review and manage submitted applications",
+        searchTerms: "admissions enquiries forms applicants students",
       },
       {
-        label: "Contacts",
+        label: "Admissions FAQs",
+        href: "/admin/faqs",
+        icon: CircleHelp,
+        roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Published questions and answers",
+        searchTerms: "frequently asked questions help ai assistant",
+      },
+    ],
+  },
+  {
+    label: "Updates",
+    description: "News, notices and resources",
+    items: [
+      {
+        label: "News",
+        href: "/admin/news",
+        icon: Newspaper,
+        roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "School stories and published updates",
+        searchTerms: "articles stories announcements",
+      },
+      {
+        label: "Notices",
+        href: "/admin/notices",
+        icon: ClipboardList,
+        roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Official notices and announcements",
+        searchTerms: "urgent alerts updates",
+      },
+      {
+        label: "Events",
+        href: "/admin/events",
+        icon: CalendarDays,
+        roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Calendar, capacity and registration settings",
+        searchTerms: "dates calendar activities schedule",
+      },
+      {
+        label: "Downloads & documents",
+        href: "/admin/documents",
+        icon: FileText,
+        roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Public forms, files and resources",
+        searchTerms: "downloads files resources documents",
+      },
+    ],
+  },
+  {
+    label: "Communications",
+    description: "Enquiries and audience engagement",
+    items: [
+      {
+        label: "Contact enquiries",
         href: "/admin/contacts",
         icon: ContactRound,
         roles: [...ADMIN_ACCESS_ROLES.adminOnly],
+        description: "Messages submitted through the contact form",
+        searchTerms: "contacts inbox messages support",
       },
       {
         label: "Event registrations",
         href: "/admin/registrations",
-        icon: CalendarDays,
+        icon: Tickets,
         roles: [...ADMIN_ACCESS_ROLES.adminOnly],
+        description: "Attendees and registration records",
+        searchTerms: "events bookings attendees",
       },
       {
         label: "Newsletter",
         href: "/admin/newsletter",
         icon: Mail,
         roles: [...ADMIN_ACCESS_ROLES.adminOnly],
+        description: "Subscribers and email campaigns",
+        searchTerms: "mailing list email outreach",
       },
-      { label: "AI assistant", href: "/admin/ai", icon: Bot, roles: [...ADMIN_ACCESS_ROLES.adminOnly] },
+    ],
+  },
+  {
+    label: "AI & automation",
+    description: "Digital support and reliable delivery",
+    items: [
+      {
+        label: "AI assistant",
+        href: "/admin/ai",
+        icon: Bot,
+        roles: [...ADMIN_ACCESS_ROLES.adminOnly],
+        description: "Knowledge context and Gemini settings",
+        searchTerms: "chatbot context gemini knowledge digital support",
+      },
       {
         label: "Background jobs",
         href: "/admin/jobs",
         icon: Activity,
         roles: [...ADMIN_ACCESS_ROLES.adminOnly],
+        description: "Delivery queue, failures and retries",
+        searchTerms: "automation queue cron retry email",
       },
     ],
   },
   {
     label: "Administration",
+    description: "Access, security and configuration",
     items: [
-      { label: "Users & roles", href: "/admin/users", icon: Users, roles: [...ADMIN_ACCESS_ROLES.adminOnly] },
+      {
+        label: "Users & roles",
+        href: "/admin/users",
+        icon: Users,
+        roles: [...ADMIN_ACCESS_ROLES.adminOnly],
+        description: "Approvals, roles and account access",
+        searchTerms: "permissions staff administrators",
+      },
       {
         label: "Audit log",
         href: "/admin/audit",
-        icon: ClipboardList,
+        icon: ScrollText,
         roles: [...ADMIN_ACCESS_ROLES.adminOnly],
+        description: "History of administrative changes",
+        searchTerms: "security activity records history",
       },
       {
-        label: "Settings",
+        label: "Site settings",
         href: "/admin/settings",
         icon: Settings,
         roles: [...ADMIN_ACCESS_ROLES.adminOnly],
+        description: "School profile, contact details and site controls",
+        searchTerms: "logo school seo configuration maintenance contact",
       },
     ],
   },
 ];
 
+export function isAdminNavigationItemActive(pathname: string, href: string) {
+  return href === "/admin" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function currentNavigationLocation(pathname: string) {
+  for (const group of adminNavigation) {
+    const item = group.items.find((candidate) => isAdminNavigationItemActive(pathname, candidate.href));
+    if (item) return { group, item };
+  }
+  return null;
+}
+
 export function AdminShell({ children, authConfigured }: { children: ReactNode; authConfigured: boolean }) {
   const pathname = usePathname();
+  const currentLocation = currentNavigationLocation(pathname);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [desktop, setDesktop] = useState(true);
@@ -214,8 +359,18 @@ export function AdminShell({ children, authConfigured }: { children: ReactNode; 
   const servicesConfigured = authConfigured && clerkConfigured && convexConfigured;
 
   useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setSidebarCollapsed(window.localStorage.getItem("nps-admin-sidebar-collapsed") === "true");
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
     const media = window.matchMedia("(min-width: 1024px)");
-    const update = () => setDesktop(media.matches);
+    const update = () => {
+      setDesktop(media.matches);
+      if (media.matches) setMobileOpen(false);
+    };
     update();
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
@@ -238,7 +393,7 @@ export function AdminShell({ children, authConfigured }: { children: ReactNode; 
         asideRef.current.querySelectorAll<HTMLElement>(
           "a[href],button:not([disabled]),[tabindex]:not([tabindex='-1'])",
         ),
-      );
+      ).filter((element) => element.getClientRects().length > 0);
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable.at(-1)!;
@@ -258,6 +413,14 @@ export function AdminShell({ children, authConfigured }: { children: ReactNode; 
       menuButton?.focus();
     };
   }, [mobileOpen]);
+
+  function toggleSidebar() {
+    setSidebarCollapsed((collapsed) => {
+      const next = !collapsed;
+      window.localStorage.setItem("nps-admin-sidebar-collapsed", String(next));
+      return next;
+    });
+  }
 
   return (
     <div className="min-h-screen bg-[#f4f5fd] text-[#12123a]">
@@ -281,7 +444,7 @@ export function AdminShell({ children, authConfigured }: { children: ReactNode; 
       >
         <button
           type="button"
-          onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}
+          onClick={toggleSidebar}
           className="absolute top-6 -right-3.5 z-10 hidden h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-md transition hover:border-sky-300 hover:text-sky-700 focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:outline-none lg:inline-flex"
           aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-expanded={!sidebarCollapsed}
@@ -295,9 +458,9 @@ export function AdminShell({ children, authConfigured }: { children: ReactNode; 
           className={`flex h-20 items-center justify-between border-b border-white/10 px-5 ${sidebarCollapsed ? "lg:justify-center lg:px-3" : ""}`}
         >
           <Link
-            href="/"
-            aria-label={sidebarCollapsed ? "Nepal Police School public website" : undefined}
-            title={sidebarCollapsed ? "Nepal Police School public website" : undefined}
+            href="/admin"
+            aria-label={sidebarCollapsed ? "Administration dashboard" : undefined}
+            title={sidebarCollapsed ? "Administration dashboard" : undefined}
             className={`flex min-w-0 items-center gap-3 rounded-lg focus:ring-2 focus:ring-sky-300 focus:outline-none ${sidebarCollapsed ? "lg:justify-center" : ""}`}
           >
             <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-white p-1 shadow-lg shadow-sky-950/40">
@@ -352,7 +515,7 @@ export function AdminShell({ children, authConfigured }: { children: ReactNode; 
             title={sidebarCollapsed ? "View public website" : undefined}
             className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-300 hover:bg-white/8 hover:text-white ${sidebarCollapsed ? "lg:justify-center lg:px-0" : ""}`}
           >
-            <PanelLeftClose size={17} aria-hidden="true" />
+            <Globe2 size={17} aria-hidden="true" />
             <span className={sidebarCollapsed ? "lg:hidden" : ""}>View public website</span>
           </Link>
         </div>
@@ -376,9 +539,11 @@ export function AdminShell({ children, authConfigured }: { children: ReactNode; 
             </button>
             <div className="min-w-0">
               <p className="truncate text-[10px] font-extrabold tracking-[.18em] text-sky-700 uppercase">
-                Nepal Police School
+                Nepal Police School{currentLocation ? ` · ${currentLocation.group.label}` : ""}
               </p>
-              <p className="mt-1 truncate text-sm font-bold text-slate-700">Secure administration</p>
+              <p className="mt-1 truncate text-sm font-bold text-slate-700">
+                {currentLocation?.item.label ?? "Secure administration"}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -421,6 +586,18 @@ function RoleAwareNavigation({
           ["admin", "publisher", "editor", "admissions"].includes(String(role)),
         )
       : [];
+  if (user === undefined) {
+    return (
+      <div className={`space-y-3 px-2 ${collapsed ? "lg:px-0" : ""}`} aria-label="Loading navigation">
+        {Array.from({ length: 5 }, (_, index) => (
+          <span
+            key={index}
+            className={`block h-11 animate-pulse rounded-xl bg-white/8 ${collapsed ? "lg:mx-auto lg:w-11" : ""}`}
+          />
+        ))}
+      </div>
+    );
+  }
   return <NavigationLinks pathname={pathname} onNavigate={onNavigate} roles={roles} collapsed={collapsed} />;
 }
 
@@ -435,47 +612,159 @@ function NavigationLinks({
   roles: AdminRole[];
   collapsed: boolean;
 }) {
-  return navigation.map((group) => {
+  const [query, setQuery] = useState("");
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
+    const activeGroup = adminNavigation.find((group) =>
+      group.items.some((item) => isAdminNavigationItemActive(pathname, item.href)),
+    );
+    return [activeGroup?.label ?? "Overview"];
+  });
+  const normalizedQuery = query.trim().toLocaleLowerCase("en-US");
+  const roleVisibleGroups = adminNavigation.flatMap((group) => {
     const items = group.items.filter(
       (item) =>
         (item.href === "/admin" && roles.length === 0) || item.roles.some((role) => roles.includes(role)),
     );
-    if (!items.length) return null;
-    return (
-      <div key={group.label} className={collapsed ? "mb-3 lg:mb-4" : "mb-6"}>
-        <p
-          className={`mb-2 px-3 text-[10px] font-extrabold tracking-[.18em] text-slate-400 uppercase ${collapsed ? "lg:hidden" : ""}`}
-        >
-          {group.label}
-        </p>
-        <div className="space-y-1">
-          {items.map(({ label, href, icon: Icon }) => {
-            const active = href === "/admin" ? pathname === href : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                onClick={onNavigate}
-                aria-label={collapsed ? label : undefined}
-                aria-current={active ? "page" : undefined}
-                title={collapsed ? label : undefined}
-                className={`group flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${collapsed ? "lg:justify-center lg:px-0" : ""} ${
-                  active
-                    ? "bg-sky-500 text-white shadow-lg shadow-sky-950/30"
-                    : "text-slate-300 hover:bg-white/8 hover:text-white"
-                }`}
-              >
-                <Icon
-                  size={17}
-                  className={active ? "text-white" : "text-slate-400 group-hover:text-sky-300"}
-                />
-                <span className={`flex-1 ${collapsed ? "lg:hidden" : ""}`}>{label}</span>
-                {active && <ChevronRight size={14} className={collapsed ? "lg:hidden" : ""} />}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-    );
+    return items.length ? [{ ...group, items }] : [];
   });
+  const visibleGroups = roleVisibleGroups.flatMap((group) => {
+    if (!normalizedQuery) return [group];
+    if (group.label.toLocaleLowerCase("en-US").includes(normalizedQuery)) return [group];
+    const items = group.items.filter((item) =>
+      [item.label, item.description, item.searchTerms ?? ""]
+        .join(" ")
+        .toLocaleLowerCase("en-US")
+        .includes(normalizedQuery),
+    );
+    return items.length ? [{ ...group, items }] : [];
+  });
+  const activeGroupLabel = roleVisibleGroups.find((group) =>
+    group.items.some((item) => isAdminNavigationItemActive(pathname, item.href)),
+  )?.label;
+
+  function toggleGroup(label: string) {
+    setExpandedGroups((current) =>
+      current.includes(label) ? current.filter((item) => item !== label) : [...current, label],
+    );
+  }
+
+  return (
+    <>
+      <div className={`sticky top-0 z-10 mb-4 bg-[#12123a] pb-1 ${collapsed ? "lg:hidden" : ""}`}>
+        <label className="relative block">
+          <span className="sr-only">Find an administration section</span>
+          <Search
+            size={16}
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
+          />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Find a section…"
+            className="h-11 w-full rounded-xl border border-white/10 bg-white/7 pr-10 pl-10 text-sm text-white outline-none placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              aria-label="Clear section search"
+              className="absolute top-1/2 right-1.5 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-slate-400 hover:bg-white/10 hover:text-white"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </label>
+      </div>
+
+      {visibleGroups.length ? (
+        visibleGroups.map((group, groupIndex) => {
+          const groupId = `admin-navigation-group-${groupIndex}`;
+          const expanded =
+            Boolean(normalizedQuery) ||
+            expandedGroups.includes(group.label) ||
+            activeGroupLabel === group.label;
+          return (
+            <section
+              key={group.label}
+              aria-labelledby={`${groupId}-heading`}
+              className={`border-b border-white/8 py-2 last:border-0 ${collapsed ? "lg:py-1" : ""}`}
+            >
+              <button
+                id={`${groupId}-heading`}
+                type="button"
+                onClick={() => toggleGroup(group.label)}
+                aria-expanded={expanded}
+                aria-controls={groupId}
+                className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-white/6 focus:ring-2 focus:ring-sky-400 focus:outline-none ${collapsed ? "lg:hidden" : ""}`}
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[10px] font-extrabold tracking-[.16em] text-slate-300 uppercase">
+                    {group.label}
+                  </span>
+                  <span className="mt-0.5 block truncate text-[11px] text-slate-400">
+                    {group.description}
+                  </span>
+                </span>
+                <ChevronDown
+                  size={15}
+                  aria-hidden="true"
+                  className={`shrink-0 text-slate-500 transition-transform ${expanded ? "rotate-180" : ""}`}
+                />
+              </button>
+              <ul
+                id={groupId}
+                className={`${expanded ? "mt-1 space-y-1" : "hidden"} ${collapsed ? "lg:mt-0 lg:block lg:space-y-1" : ""}`}
+              >
+                {group.items.map(({ label, href, icon: Icon, description }) => {
+                  const active = isAdminNavigationItemActive(pathname, href);
+                  return (
+                    <li key={href}>
+                      <Link
+                        href={href}
+                        onClick={onNavigate}
+                        aria-label={collapsed ? label : undefined}
+                        aria-current={active ? "page" : undefined}
+                        title={collapsed ? label : undefined}
+                        className={`group flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${collapsed ? "lg:justify-center lg:px-0" : ""} ${
+                          active
+                            ? "bg-sky-500 text-white shadow-lg shadow-sky-950/30"
+                            : "text-slate-300 hover:bg-white/8 hover:text-white"
+                        }`}
+                      >
+                        <Icon
+                          size={17}
+                          aria-hidden="true"
+                          className={`shrink-0 ${active ? "text-white" : "text-slate-400 group-hover:text-sky-300"}`}
+                        />
+                        <span className={`min-w-0 flex-1 ${collapsed ? "lg:hidden" : ""}`}>
+                          <span className="block truncate">{label}</span>
+                          <span
+                            className={`mt-0.5 block truncate text-[11px] font-normal ${active ? "text-sky-50" : "text-slate-400 group-hover:text-slate-200"}`}
+                          >
+                            {description}
+                          </span>
+                        </span>
+                        {active && <ChevronRight size={14} className={collapsed ? "lg:hidden" : ""} />}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          );
+        })
+      ) : (
+        <div
+          className={`rounded-xl border border-white/10 bg-white/5 px-4 py-6 text-center ${collapsed ? "lg:hidden" : ""}`}
+        >
+          <p className="text-sm font-bold text-white">No matching section</p>
+          <p className="mt-1 text-xs leading-5 text-slate-400">
+            Try a page name such as “notices” or “teachers”.
+          </p>
+        </div>
+      )}
+    </>
+  );
 }
