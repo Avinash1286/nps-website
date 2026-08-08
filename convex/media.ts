@@ -261,6 +261,23 @@ export const listMedia = query({
   },
 });
 
+export const getMediaByStorageId = query({
+  args: { storageId: v.id("_storage") },
+  returns: v.union(mediaAssetValidator, v.null()),
+  handler: async (ctx, args) => {
+    await requireRole(ctx, MEDIA_ROLES);
+    const asset = await ctx.db
+      .query("mediaAssets")
+      .withIndex("by_storage_id", (q) => q.eq("storageId", args.storageId))
+      .unique();
+    if (!asset || asset.status !== "ready") return null;
+    return {
+      ...asset,
+      url: (await ctx.storage.getUrl(asset.storageId)) ?? asset.url,
+    };
+  },
+});
+
 export const listGalleryItemsAdmin = query({
   args: { albumId: v.id("galleryAlbums"), paginationOpts: paginationOptsValidator },
   returns: paginationResultValidator(galleryItemValidator),

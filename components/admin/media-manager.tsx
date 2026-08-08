@@ -7,6 +7,7 @@ import { ADMIN_ACCESS_ROLES } from "@/lib/admin/authorization";
 import { AdminFeatureGate } from "./admin-gate";
 import { mediaApi, type AdminRecord } from "./convex-api";
 import { formatDate } from "./content-manager";
+import { MediaThumbnail } from "./media-thumbnail";
 import {
   EmptyState,
   Feedback,
@@ -240,18 +241,24 @@ function MediaData() {
   );
 }
 
-function MediaCard({ item, onDelete }: { item: AdminRecord; onDelete: () => void }) {
+export function MediaCard({ item, onDelete }: { item: AdminRecord; onDelete: () => void }) {
   const mime = String(item.mimeType ?? "");
   const Icon = mime.startsWith("image/") ? FileImage : mime === "application/pdf" ? FileText : File;
   const url = typeof item.url === "string" ? item.url : null;
+  const fileName = String(item.fileName ?? "Media file");
+  const previewAlt = typeof item.alt === "string" && item.alt.trim() ? item.alt : fileName;
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="grid h-32 place-items-center bg-gradient-to-br from-slate-50 to-sky-50">
-        <Icon className="text-sky-700" size={38} />
-      </div>
+      {mime.startsWith("image/") && url ? (
+        <MediaThumbnail url={url} alt={previewAlt} />
+      ) : (
+        <div className="grid h-40 place-items-center bg-gradient-to-br from-slate-50 to-sky-50">
+          <Icon className="text-sky-700" size={38} />
+        </div>
+      )}
       <div className="p-4">
-        <p className="truncate text-sm font-extrabold" title={String(item.fileName ?? "Media file")}>
-          {String(item.fileName ?? "Media file")}
+        <p className="truncate text-sm font-extrabold" title={fileName}>
+          {fileName}
         </p>
         <p className="mt-1 truncate text-xs text-slate-500">
           {String(item.folder ?? "general")} · {formatBytes(Number(item.size ?? 0))}

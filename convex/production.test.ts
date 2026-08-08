@@ -612,7 +612,7 @@ describe("media pagination invariants", () => {
   it("filters ready media in the folder index before selecting a page", async () => {
     const t = convexTest(schema, modules);
     const adminId = await insertUser(t, "media-admin", ["admin"]);
-    await t.run(async (ctx) => {
+    const storageIds = await t.run(async (ctx) => {
       const readyStorageId = await ctx.storage.store(new Blob(["ready"], { type: "image/png" }));
       const deletedStorageId = await ctx.storage.store(new Blob(["deleted"], { type: "image/png" }));
       await ctx.db.insert("mediaAssets", {
@@ -638,16 +638,25 @@ describe("media pagination invariants", () => {
         updatedAt: 2,
         deletedAt: 2,
       });
+      return { readyStorageId, deletedStorageId };
     });
 
-    const page = await t.withIdentity({ subject: "media-admin" }).query(api.media.listMedia, {
+    const asAdmin = t.withIdentity({ subject: "media-admin" });
+    const page = await asAdmin.query(api.media.listMedia, {
       folder: "news",
       paginationOpts: { cursor: null, numItems: 1 },
     });
 
     expect(page.page).toHaveLength(1);
     expect(page.page[0]?.fileName).toBe("ready.png");
+    expect(page.page[0]?.url).toMatch(/^https?:\/\//);
     expect(page.isDone).toBe(true);
+    await expect(
+      asAdmin.query(api.media.getMediaByStorageId, { storageId: storageIds.readyStorageId }),
+    ).resolves.toMatchObject({ fileName: "ready.png", status: "ready" });
+    await expect(
+      asAdmin.query(api.media.getMediaByStorageId, { storageId: storageIds.deletedStorageId }),
+    ).resolves.toBeNull();
   });
 
   it("paginates gallery items without a fixed album-size ceiling", async () => {

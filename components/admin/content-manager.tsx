@@ -24,6 +24,7 @@ import {
 } from "@/lib/content/admin-editor";
 import { ADMIN_ACCESS_ROLES } from "@/lib/admin/authorization";
 import { AdminFeatureGate } from "./admin-gate";
+import { MediaThumbnail } from "./media-thumbnail";
 import {
   adminApi,
   mediaApi,
@@ -68,6 +69,34 @@ export type EditorField = {
   options?: readonly { label: string; value: string }[];
   defaultValue?: string | boolean;
 };
+
+const mediaUrlFields: Record<string, string> = {
+  heroImageId: "heroImageUrl",
+  featuredImageId: "featuredImageUrl",
+  attachmentId: "attachmentUrl",
+  photoId: "photoUrl",
+  storageId: "externalUrl",
+  coverImageId: "coverImageUrl",
+  imageId: "imageUrl",
+  secondaryImageId: "secondaryImageUrl",
+};
+
+export function mediaFallbackUrl(values: Record<string, string | boolean>, storageField: string): string {
+  const urlField = mediaUrlFields[storageField];
+  return urlField ? String(values[urlField] ?? "").trim() : "";
+}
+
+function mediaFallbackAlt(values: Record<string, string | boolean>, field: EditorField): string {
+  const keys =
+    field.key === "secondaryImageId"
+      ? ["heading", "title", "name", "slug"]
+      : ["imageAlt", "title", "name", "heading", "slug"];
+  for (const key of keys) {
+    const value = String(values[key] ?? "").trim();
+    if (value) return value;
+  }
+  return field.label;
+}
 
 const seoFields = [
   {
@@ -1033,6 +1062,8 @@ function EditorModal({
                   key={field.key}
                   field={field}
                   value={String(values[field.key] ?? "")}
+                  fallbackUrl={mediaFallbackUrl(values, field.key)}
+                  fallbackAlt={mediaFallbackAlt(values, field)}
                   onSelect={(asset) => {
                     const next = { ...values, [field.key]: asset ? String(asset.storageId ?? "") : "" };
                     if (definition.type === "documents" && field.key === "storageId") {
@@ -1139,10 +1170,14 @@ function ReferenceEditorControl({
 function MediaEditorControl({
   field,
   value,
+  fallbackUrl,
+  fallbackAlt,
   onSelect,
 }: {
   field: EditorField;
   value: string;
+  fallbackUrl: string;
+  fallbackAlt: string;
   onSelect: (asset: AdminRecord | null) => void;
 }) {
   const { results, status, loadMore } = usePaginatedQuery(mediaApi.listMedia, {}, { initialNumItems: 100 });
@@ -1150,7 +1185,22 @@ function MediaEditorControl({
     const mimeType = String(asset.mimeType ?? "");
     return field.mediaKind === "image" ? mimeType.startsWith("image/") : !mimeType.startsWith("video/");
   });
-  const selected = assets.find((asset) => asset.storageId === value);
+  const attachedAsset = useQuery(mediaApi.getMediaByStorageId, value ? { storageId: value } : "skip");
+  const directAsset =
+    attachedAsset &&
+    (field.mediaKind === "image"
+      ? String(attachedAsset.mimeType ?? "").startsWith("image/")
+      : !String(attachedAsset.mimeType ?? "").startsWith("video/"))
+      ? attachedAsset
+      : undefined;
+  const selectedInPage = assets.find((asset) => asset.storageId === value);
+  const selected = selectedInPage ?? directAsset;
+  const selectedUrl = typeof selected?.url === "string" ? selected.url : "";
+  const previewUrl = selectedUrl || fallbackUrl;
+  const previewAlt =
+    (typeof selected?.alt === "string" && selected.alt.trim()) ||
+    (typeof selected?.fileName === "string" && selected.fileName.trim()) ||
+    fallbackAlt;
   const Icon = field.mediaKind === "image" ? ImageIcon : File;
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:col-span-2">
@@ -1171,9 +1221,21 @@ function MediaEditorControl({
               className={inputClass}
             >
               <option value="">
-                {status === "LoadingFirstPage" ? "Loading media library…" : "No stored media selected"}
+                {status === "LoadingFirstPage"
+                  ? "Loading media library…"
+                  : fallbackUrl
+                    ? field.mediaKind === "image"
+                      ? "Using URL image shown below"
+                      : "Using external file URL"
+                    : "No stored media selected"}
               </option>
-              {value && !selected && <option value={value}>Currently attached media</option>}
+              {value && !selectedInPage && (
+                <option value={value}>
+                  {selected
+                    ? String(selected.fileName ?? "Currently attached media")
+                    : "Currently attached media"}
+                </option>
+              )}
               {assets.map((asset) => (
                 <option key={asset._id} value={String(asset.storageId)}>
                   {String(asset.fileName ?? "Media file")} · {String(asset.folder ?? "general")}
@@ -1185,7 +1247,11 @@ function MediaEditorControl({
             <span>
               {selected
                 ? `${String(selected.mimeType ?? "File")} · ${formatBytes(Number(selected.size ?? 0))}`
-                : "Choose a finalized upload from Convex storage."}
+                : fallbackUrl
+                  ? "This record uses the image URL previewed below. Choose a Convex upload to replace it."
+                  : value
+                    ? "Loading the currently attached Convex media…"
+                    : "Choose a finalized upload from Convex storage."}
             </span>
             <span className="flex items-center gap-3">
               {status === "CanLoadMore" && (
@@ -1200,6 +1266,24 @@ function MediaEditorControl({
           </div>
         </div>
       </div>
+      {field.mediaKind === "image" && previewUrl && (
+        <div className="mt-4 grid gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:grid-cols-[12rem_1fr] sm:items-center">
+          <MediaThumbnail url={previewUrl} alt={previewAlt} className="h-32 rounded-lg" sizes="192px" />
+          <div className="min-w-0">
+            <p className="text-xs font-extrabold tracking-wide text-slate-700 uppercase">
+              {selected ? "Convex media selected" : "URL image shown on the website"}
+            </p>
+            <p className="mt-2 truncate text-sm font-semibold text-slate-800" title={previewUrl}>
+              {typeof selected?.fileName === "string" ? selected.fileName : previewUrl}
+            </p>
+            {!selected && (
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                This image is valid public content, but it is not a stored media-library upload.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

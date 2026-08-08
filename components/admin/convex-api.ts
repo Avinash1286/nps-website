@@ -273,6 +273,9 @@ export const mediaApi = {
     { paginationOpts: PaginationOpts; folder?: string },
     PageResult<AdminRecord>
   >("media:listMedia"),
+  getMediaByStorageId: makeFunctionReference<"query", { storageId: string }, AdminRecord | null>(
+    "media:getMediaByStorageId",
+  ),
   listGalleryItemsAdmin: makeFunctionReference<
     "query",
     { albumId: string; paginationOpts: PaginationOpts },
