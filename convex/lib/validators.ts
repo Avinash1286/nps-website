@@ -2,6 +2,8 @@ import { paginationOptsValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import {
   contentStatusValidator,
+  facilityIconKeyValidator,
+  facilityVerificationStatusValidator,
   newsletterCampaignStatusValidator,
   newsletterSubscriberStatusValidator,
   roleValidator,
@@ -48,6 +50,22 @@ export const pageInputValidator = v.object({
   template: v.optional(v.string()),
   heroImageId: v.optional(v.id("_storage")),
   heroImageUrl: v.optional(v.string()),
+  ...optionalDisplayInput,
+  ...optionalPublicationInput,
+});
+
+export const facilityInputValidator = v.object({
+  slug: v.string(),
+  name: v.string(),
+  summary: v.string(),
+  details: v.optional(v.string()),
+  iconKey: facilityIconKeyValidator,
+  verificationStatus: facilityVerificationStatusValidator,
+  sourceLabel: v.optional(v.string()),
+  sourceUrl: v.optional(v.string()),
+  imageId: v.optional(v.id("_storage")),
+  imageUrl: v.optional(v.string()),
+  imageAlt: v.optional(v.string()),
   ...optionalDisplayInput,
   ...optionalPublicationInput,
 });
@@ -246,6 +264,7 @@ export const homeHighlightInputValidator = v.object({
 
 export const contentTypeValidator = v.union(
   v.literal("pages"),
+  v.literal("facilities"),
   v.literal("programs"),
   v.literal("departments"),
   v.literal("leadership"),
@@ -263,6 +282,7 @@ export const contentTypeValidator = v.union(
 
 export const contentInputValidator = v.union(
   pageInputValidator,
+  facilityInputValidator,
   programInputValidator,
   departmentInputValidator,
   leadershipInputValidator,
@@ -282,6 +302,7 @@ const optionalContentId = { id: v.optional(v.string()) };
 
 export const contentUpsertArgsValidator = v.union(
   v.object({ type: v.literal("pages"), ...optionalContentId, data: pageInputValidator }),
+  v.object({ type: v.literal("facilities"), ...optionalContentId, data: facilityInputValidator }),
   v.object({ type: v.literal("programs"), ...optionalContentId, data: programInputValidator }),
   v.object({ type: v.literal("departments"), ...optionalContentId, data: departmentInputValidator }),
   v.object({ type: v.literal("leadership"), ...optionalContentId, data: leadershipInputValidator }),

@@ -360,7 +360,7 @@ export const schoolLifePages: Record<string, StandardPageContent> = {
       },
     ],
     related: [
-      { label: "Facilities", href: "/campus-life/facilities" },
+      { label: "Facilities", href: "/facilities" },
       { label: "Contact and directions", href: "/contact" },
     ],
   },

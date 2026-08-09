@@ -87,6 +87,7 @@ describe("administration sidebar", () => {
         "/admin/home-sections",
         "/admin/leadership",
         "/admin/programs",
+        "/admin/facilities",
         "/admin/gallery",
         "/admin/admissions",
         "/admin/news",
@@ -105,7 +106,11 @@ describe("administration sidebar", () => {
       "Tools",
       "Administration",
     ]);
-    expect(primaryAdminNavigation[0].items.map((item) => item.label)).toEqual(["Dashboard", "Edit website"]);
+    expect(primaryAdminNavigation[0].items.map((item) => item.label)).toEqual([
+      "Dashboard",
+      "Edit website",
+      "Facilities",
+    ]);
     expect(primaryAdminNavigation.flatMap((group) => group.items).map((item) => item.href)).toEqual(
       expect.arrayContaining(["/admin/news", "/admin/admissions", "/admin/media", "/admin/settings"]),
     );

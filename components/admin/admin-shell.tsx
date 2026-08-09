@@ -174,6 +174,14 @@ export const adminNavigation: NavigationGroup[] = [
     description: "School activities and media",
     items: [
       {
+        label: "Facilities",
+        href: "/admin/facilities",
+        icon: Building2,
+        roles: [...ADMIN_ACCESS_ROLES.content],
+        description: "Facility cards, evidence, images, and verification status",
+        searchTerms: "facilities classrooms labs library hostel dining medical sports transport grounds",
+      },
+      {
         label: "Gallery",
         href: "/admin/gallery",
         icon: GalleryHorizontalEnd,
@@ -351,7 +359,7 @@ export const primaryAdminNavigation: NavigationGroup[] = [
   {
     label: "Start",
     description: "Overview and website editing",
-    items: navigationItems("/admin", "/admin/website"),
+    items: navigationItems("/admin", "/admin/website", "/admin/facilities"),
   },
   {
     label: "Publish",

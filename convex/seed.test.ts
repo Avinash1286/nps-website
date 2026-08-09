@@ -34,7 +34,12 @@ describe("baseline seed", () => {
         .withIndex("by_singleton_key", (q) => q.eq("singletonKey", "main"))
         .unique(),
       navigation: await ctx.db.query("navigationItems").collect(),
+      pages: await ctx.db.query("pages").collect(),
+      facilities: await ctx.db.query("facilities").collect(),
       programs: await ctx.db.query("programs").collect(),
+      news: await ctx.db.query("news").collect(),
+      notices: await ctx.db.query("notices").collect(),
+      events: await ctx.db.query("events").collect(),
       leadership: await ctx.db.query("leadership").collect(),
       testimonials: await ctx.db.query("testimonials").collect(),
       albums: await ctx.db.query("galleryAlbums").collect(),
@@ -46,6 +51,35 @@ describe("baseline seed", () => {
     expect(seeded.settings).toMatchObject({
       logoUrl: "/media/nps-logo.png",
       faviconUrl: "/media/nps-logo.png",
+      tagline: "Better Schooling for Ideal Citizenship",
+      contact: {
+        address: "Basbitti Jingadiya, Garuda Municipality-8, Rautahat",
+        city: "Garuda",
+        country: "Nepal",
+        phone: "9855021699",
+        email: "mrpschool@nepalpolice.gov.np",
+        officeHours: "School office hours are published through official notices.",
+      },
+    });
+    expect(seeded.pages.map((page) => page.slug)).toEqual(
+      expect.arrayContaining(["about", "about/history", "about/mission-vision", "facilities"]),
+    );
+    expect(seeded.facilities).toHaveLength(12);
+    expect(
+      seeded.facilities
+        .filter((facility) => facility.verificationStatus === "school_confirmation_required")
+        .map((facility) => facility.slug),
+    ).toEqual(["science-laboratory", "indoor-sports", "transportation", "auditorium-multipurpose-hall"]);
+    expect(seeded.news).toHaveLength(3);
+    expect(seeded.news.every((story) => story.status === "published")).toBe(true);
+    expect(seeded.notices.map((notice) => notice.status)).toEqual(
+      expect.arrayContaining(["published", "archived", "draft"]),
+    );
+    expect(seeded.events).toHaveLength(1);
+    expect(seeded.events[0]).toMatchObject({
+      slug: "sample-school-event-template",
+      status: "draft",
+      registrationEnabled: false,
     });
     expect(seeded.programs.map((program) => program.slug)).toEqual(
       expect.arrayContaining(["primary", "secondary", "plus-2"]),
@@ -54,13 +88,18 @@ describe("baseline seed", () => {
       "principal",
       "vice-principal",
       "commandant",
+      "pastoral-vice-principal",
     ]);
+    expect(seeded.leadership.find((member) => member.slug === "principal")).toMatchObject({
+      name: "Ramsharan Rijal",
+      role: "Principal",
+    });
     expect(seeded.testimonials.map((testimonial) => testimonial.name)).toEqual([
       "Alumni voices",
       "Share your story",
     ]);
-    expect(seeded.albums).toHaveLength(5);
-    expect(seeded.galleryItems).toHaveLength(5);
+    expect(seeded.albums).toHaveLength(6);
+    expect(seeded.galleryItems).toHaveLength(8);
     expect(seeded.sections.find((section) => section.slug === "about")).toMatchObject({
       imageUrl: "/media/nps-campus-building.png",
       secondaryImageUrl: "/media/nps-hero-gate.png",
@@ -77,8 +116,22 @@ describe("baseline seed", () => {
     const updates = headerRoots.find((item) => item.label === "Updates");
     const academics = headerRoots.find((item) => item.label === "Academics");
     expect(headerRoots.map((item) => item.label)).toEqual(
-      expect.arrayContaining(["Home", "About", "Academics", "School life", "Admissions", "Updates"]),
+      expect.arrayContaining([
+        "Home",
+        "About",
+        "Academics",
+        "School life",
+        "Facilities",
+        "Admissions",
+        "Updates",
+      ]),
     );
+    expect(headerRoots.filter((item) => item.href === "/facilities")).toHaveLength(1);
+    expect(
+      seeded.navigation.filter(
+        (item) => item.location === "header" && item.parentId !== undefined && item.href === "/facilities",
+      ),
+    ).toHaveLength(0);
     expect(
       seeded.navigation.filter((item) => item.parentId === updates?._id).map((item) => item.label),
     ).toEqual(["News", "Notices", "Events", "Downloads"]);
@@ -103,13 +156,20 @@ describe("baseline seed", () => {
         .query("leadership")
         .withIndex("by_slug", (q) => q.eq("slug", "principal"))
         .unique();
-      if (!about || !principal) throw new Error("Expected seeded records.");
+      const library = await ctx.db
+        .query("facilities")
+        .withIndex("by_slug", (q) => q.eq("slug", "library"))
+        .unique();
+      if (!about || !principal || !library) throw new Error("Expected seeded records.");
       await ctx.db.patch("homeSections", about._id, {
         heading: "An administrator-authored heading",
         imageUrl: "/media/custom-campus.jpg",
       });
       await ctx.db.patch("leadership", principal._id, {
         name: "Verified principal name",
+      });
+      await ctx.db.patch("facilities", library._id, {
+        summary: "Administrator-confirmed library information.",
       });
     });
 
@@ -125,12 +185,17 @@ describe("baseline seed", () => {
         .query("leadership")
         .withIndex("by_slug", (q) => q.eq("slug", "principal"))
         .unique(),
+      library: await ctx.db
+        .query("facilities")
+        .withIndex("by_slug", (q) => q.eq("slug", "library"))
+        .unique(),
     }));
     expect(preserved.about).toMatchObject({
       heading: "An administrator-authored heading",
       imageUrl: "/media/custom-campus.jpg",
     });
     expect(preserved.principal?.name).toBe("Verified principal name");
+    expect(preserved.library?.summary).toBe("Administrator-confirmed library information.");
   });
 
   it("migrates legacy programme routes while retaining admin-authored programme copy", async () => {
@@ -170,6 +235,63 @@ describe("baseline seed", () => {
       description: "This programme copy must survive the route migration.",
     });
     expect(programs.some((program) => program.slug === "primary-education")).toBe(false);
+  });
+
+  it("promotes the legacy Facilities child to one visible top-level link", async () => {
+    const t = convexTest(schema, modules);
+    const asAdmin = await insertAdmin(t);
+    await t.run(async (ctx) => {
+      const admin = await ctx.db
+        .query("users")
+        .withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", "seed-admin"))
+        .unique();
+      if (!admin) throw new Error("Expected seed administrator.");
+      const now = Date.now();
+      const schoolLifeId = await ctx.db.insert("navigationItems", {
+        label: "School life",
+        href: "/campus-life",
+        location: "header",
+        order: 30,
+        external: false,
+        visible: true,
+        createdBy: admin._id,
+        updatedBy: admin._id,
+        createdAt: now,
+        updatedAt: now,
+      });
+      await ctx.db.insert("navigationItems", {
+        label: "Facilities",
+        href: "/campus-life/facilities",
+        location: "header",
+        parentId: schoolLifeId,
+        order: 10,
+        external: false,
+        visible: true,
+        createdBy: admin._id,
+        updatedBy: admin._id,
+        createdAt: now,
+        updatedAt: now,
+      });
+    });
+
+    await asAdmin.mutation(api.seed.baseline, {});
+    const facilitiesLinks = await t.run(async (ctx) =>
+      (await ctx.db.query("navigationItems").collect()).filter(
+        (item) => item.location === "header" && item.label === "Facilities",
+      ),
+    );
+    expect(facilitiesLinks.filter((item) => item.parentId === undefined && item.visible)).toHaveLength(1);
+    expect(facilitiesLinks.filter((item) => item.parentId !== undefined)).toEqual([
+      expect.objectContaining({ href: "/facilities", visible: false }),
+    ]);
+
+    await asAdmin.mutation(api.seed.baseline, {});
+    const rerunFacilitiesLinks = await t.run(async (ctx) =>
+      (await ctx.db.query("navigationItems").collect()).filter(
+        (item) => item.location === "header" && item.label === "Facilities",
+      ),
+    );
+    expect(rerunFacilitiesLinks).toHaveLength(2);
   });
 
   it("adopts legacy School-life records without creating duplicate navigation or hero cards", async () => {

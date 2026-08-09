@@ -22,7 +22,7 @@ export default function SchoolLifePage() {
           title: "Facilities",
           description:
             "Spaces used for teaching, practical learning, reading, administration, and activities.",
-          href: "/campus-life/facilities",
+          href: "/facilities",
           meta: "The school",
         },
         {

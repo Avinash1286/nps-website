@@ -29,6 +29,7 @@ import {
   departmentInputValidator,
   documentInputValidator,
   eventInputValidator,
+  facilityInputValidator,
   faqInputValidator,
   galleryAlbumInputValidator,
   homeHighlightInputValidator,
@@ -77,6 +78,15 @@ const adminPublicationOutputFields = {
 
 const pageDocumentValidator = pageInputValidator.extend({
   _id: v.id("pages"),
+  _creationTime: v.number(),
+  featured: v.boolean(),
+  order: v.number(),
+  seo: seoOutputValidator,
+  ...adminPublicationOutputFields,
+});
+
+const facilityDocumentValidator = facilityInputValidator.extend({
+  _id: v.id("facilities"),
   _creationTime: v.number(),
   featured: v.boolean(),
   order: v.number(),
@@ -190,6 +200,7 @@ const homeHighlightDocumentValidator = homeHighlightInputValidator.extend({
 
 const contentDocumentValidator = v.union(
   pageDocumentValidator,
+  facilityDocumentValidator,
   programDocumentValidator,
   departmentDocumentValidator,
   leadershipDocumentValidator,
@@ -506,6 +517,7 @@ const dashboardValidator = v.object({
 });
 type ContentType =
   | "pages"
+  | "facilities"
   | "programs"
   | "departments"
   | "leadership"
@@ -522,6 +534,7 @@ type ContentType =
 
 const SLUGGED_TYPES = new Set<ContentType>([
   "pages",
+  "facilities",
   "programs",
   "departments",
   "leadership",
@@ -662,6 +675,20 @@ function optionalEventCapacity(value?: number): number | undefined {
   return value;
 }
 
+function optionalHttpsUrl(value?: string): string | undefined {
+  if (!value) return undefined;
+  try {
+    const parsed = new URL(value.trim());
+    if (parsed.protocol !== "https:" || parsed.username || parsed.password) throw new Error("origin");
+    return parsed.toString();
+  } catch {
+    throw new ConvexError({
+      code: "INVALID_URL",
+      message: "Source URL must be a public HTTPS address.",
+    });
+  }
+}
+
 function cleanContent(type: ContentType, input: any): any {
   const display = {
     featured: input.featured ?? false,
@@ -686,6 +713,32 @@ function cleanContent(type: ContentType, input: any): any {
         ...display,
         ...publication,
       };
+    case "facilities": {
+      const imageUrl = optionalMediaUrl(input.imageUrl);
+      const imageAlt = input.imageAlt ? plainText(input.imageAlt, "Image description", 1, 220) : undefined;
+      if ((input.imageId || imageUrl) && !imageAlt) {
+        throw new ConvexError({
+          code: "IMAGE_ALT_REQUIRED",
+          message: "Add an image description before saving a facility image.",
+        });
+      }
+      return {
+        slug: normalizedSlug(input.slug),
+        name: plainText(input.name, "Name", 1, 180),
+        summary: plainText(input.summary, "Summary", 1, 600),
+        details: input.details ? richText(input.details, "Details", 10_000) : undefined,
+        iconKey: input.iconKey,
+        verificationStatus: input.verificationStatus,
+        sourceLabel: input.sourceLabel ? plainText(input.sourceLabel, "Source label", 1, 180) : undefined,
+        sourceUrl: optionalHttpsUrl(input.sourceUrl),
+        imageId: input.imageId,
+        imageUrl,
+        imageAlt,
+        seo: cleanSeo(input.seo),
+        ...display,
+        ...publication,
+      };
+    }
     case "programs":
       return {
         slug: normalizedSlug(input.slug),
@@ -961,6 +1014,7 @@ export const dashboard = query({
     const canViewAudit = isAdmin;
     const contentTypes: ContentType[] = [
       "pages",
+      "facilities",
       "programs",
       "departments",
       "leadership",

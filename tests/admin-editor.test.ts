@@ -30,6 +30,22 @@ describe("generic CMS editor field serialization", () => {
       referenceMatchCurrentIdBy: "departmentId",
     });
     expect(getCollectionDefinition("events").fields.some((field) => field.key === "featured")).toBe(true);
+
+    const facilityFields = getCollectionDefinition("facilities").fields;
+    expect(facilityFields.map((field) => field.key)).toEqual(
+      expect.arrayContaining([
+        "name",
+        "verificationStatus",
+        "sourceLabel",
+        "sourceUrl",
+        "imageId",
+        "imageAlt",
+        "seo.title",
+      ]),
+    );
+    expect(facilityFields.find((field) => field.key === "verificationStatus")).toMatchObject({
+      defaultValue: "school_confirmation_required",
+    });
   });
 
   it("reads nested SEO fields and serializes only supported values", () => {

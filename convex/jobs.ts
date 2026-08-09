@@ -10,6 +10,7 @@ import { isConfiguredSecret } from "./lib/secrets";
 
 const CONTENT_TYPES = [
   "pages",
+  "facilities",
   "programs",
   "departments",
   "leadership",

@@ -101,6 +101,38 @@ export type PublicCmsPage = {
   seo?: PublicSeo;
 };
 
+export type FacilityIconKey =
+  | "classroom"
+  | "science"
+  | "computer"
+  | "library"
+  | "sports"
+  | "indoor-sports"
+  | "hostel"
+  | "dining"
+  | "medical"
+  | "transport"
+  | "auditorium"
+  | "grounds";
+
+export type PublicFacility = {
+  id: string;
+  slug: string;
+  name: string;
+  summary: string;
+  details?: string;
+  iconKey: FacilityIconKey;
+  verificationStatus: "confirmed" | "school_confirmation_required";
+  sourceLabel?: string;
+  sourceUrl?: string;
+  imageId?: string;
+  imageUrl?: string;
+  imageAlt?: string;
+  featured: boolean;
+  order: number;
+  seo?: PublicSeo;
+};
+
 export type PublicPost = {
   id: string;
   slug: string;
@@ -416,6 +448,49 @@ function normalizeCmsPage(item: UnknownRecord, index: number): PublicCmsPage {
   };
 }
 
+const facilityIconKeys = new Set<FacilityIconKey>([
+  "classroom",
+  "science",
+  "computer",
+  "library",
+  "sports",
+  "indoor-sports",
+  "hostel",
+  "dining",
+  "medical",
+  "transport",
+  "auditorium",
+  "grounds",
+]);
+
+function normalizeFacilityIcon(value: unknown): FacilityIconKey {
+  return typeof value === "string" && facilityIconKeys.has(value as FacilityIconKey)
+    ? (value as FacilityIconKey)
+    : "classroom";
+}
+
+function normalizeFacility(item: UnknownRecord, index: number): PublicFacility {
+  const slug = text(item.slug, `facility-${index + 1}`);
+  return {
+    id: identifier(item._id ?? item.id, slug),
+    slug,
+    name: text(item.name, "School facility"),
+    summary: text(item.summary, "Details are being reviewed by the school administration."),
+    details: optionalText(item.details),
+    iconKey: normalizeFacilityIcon(item.iconKey),
+    verificationStatus:
+      item.verificationStatus === "confirmed" ? "confirmed" : "school_confirmation_required",
+    sourceLabel: optionalText(item.sourceLabel),
+    sourceUrl: optionalText(item.sourceUrl),
+    imageId: optionalText(item.imageId),
+    imageUrl: optionalText(item.imageUrl),
+    imageAlt: optionalText(item.imageAlt),
+    featured: item.featured === true,
+    order: typeof item.order === "number" && Number.isFinite(item.order) ? item.order : index * 10,
+    seo: normalizeSeo(item.seo),
+  };
+}
+
 function normalizePost(item: UnknownRecord, index: number): PublicPost {
   const slug = text(item.slug, `update-${index + 1}`);
   return {
@@ -605,6 +680,14 @@ export async function getCmsPage(slug: string): Promise<PublicCmsPage | null> {
     now: Date.now(),
   });
   return data ? normalizeCmsPage(data, 0) : null;
+}
+
+export async function getFacilities(limit = 100): Promise<PublicFacility[]> {
+  const result = await queryConvex<unknown>("content:listFacilities", {
+    limit,
+    now: Date.now(),
+  });
+  return asRecords(result).map(normalizeFacility);
 }
 
 export async function getNews(limit = 20, featured?: boolean): Promise<PublicPost[]> {

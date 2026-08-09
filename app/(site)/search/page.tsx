@@ -6,6 +6,7 @@ import {
   getCmsPages,
   getDepartments,
   getEvents,
+  getFacilities,
   getFaqs,
   getNavigation,
   getNews,
@@ -25,6 +26,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     pages,
     programs,
     departments,
+    facilities,
     faqs,
     headerNavigation,
     footerNavigation,
@@ -38,12 +40,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         getCmsPages(),
         getPrograms(),
         getDepartments(),
+        getFacilities(),
         getFaqs(undefined, 120),
         getNavigation("header"),
         getNavigation("footer"),
         getNavigation("utility"),
       ])
-    : [[], [], [], [], [], [], [], [], [], [], []];
+    : [[], [], [], [], [], [], [], [], [], [], [], []];
   const navigationPages = [...headerNavigation, ...footerNavigation, ...utilityNavigation].filter(
     (item) => !item.external && item.href.startsWith("/"),
   );
@@ -72,6 +75,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           description: item.description,
           href: `/academics/departments/${item.slug}`,
           type: "Department",
+        })),
+        ...facilities.map((item) => ({
+          title: item.name,
+          description: [item.summary, item.details].filter(Boolean).join(" "),
+          href: `/facilities#${item.slug}`,
+          type: "Facility",
         })),
         ...news.map((item) => ({
           title: item.title,
@@ -111,7 +120,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <PageHero
         eyebrow="Website search"
         title="Find school information"
-        description="Search pages, faculty profiles, news, notices, and events."
+        description="Search pages, facilities, faculty profiles, news, notices, and events."
         crumbs={[{ label: "Search" }]}
       />
       <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
@@ -174,7 +183,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             <div className="mt-10 rounded-2xl bg-slate-50 p-6">
               <h2 className="font-extrabold text-[#1e1f5c]">Search tips</h2>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Try a programme, teacher name, notice title, event, department, or service such as transport.
+                Try a facility, programme, teacher name, notice title, event, department, or service such as
+                transport.
               </p>
             </div>
           )}

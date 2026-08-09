@@ -194,6 +194,7 @@ const expiryField = {
 
 const seoContentTypes = new Set<ContentType>([
   "pages",
+  "facilities",
   "programs",
   "departments",
   "teachers",
@@ -215,6 +216,7 @@ export type CollectionDefinition = {
 
 const collections: Record<
   | "pages"
+  | "facilities"
   | "programs"
   | "departments"
   | "leadership"
@@ -263,6 +265,80 @@ const collections: Record<
       { key: "heroImageId", label: "Hero image from media library", type: "media", mediaKind: "image" },
       { key: "heroImageUrl", label: "Hero image URL", type: "url" },
       { key: "featured", label: "Feature this page", type: "boolean" },
+    ],
+  },
+  facilities: {
+    type: "facilities",
+    singular: "facility",
+    title: "Facilities",
+    eyebrow: "School environment",
+    description:
+      "Publish verified learning, residential, wellbeing, and activity facilities with transparent sources and confirmation status.",
+    fields: [
+      { key: "name", label: "Facility name", required: true, placeholder: "Computer laboratory" },
+      {
+        key: "slug",
+        label: "Facility anchor",
+        required: true,
+        placeholder: "computer-laboratory",
+        help: "Use lowercase words separated by hyphens. This creates the direct link on the Facilities page.",
+      },
+      { key: "summary", label: "Card summary", type: "textarea", required: true },
+      {
+        key: "details",
+        label: "Additional details",
+        type: "textarea",
+        help: "Add only school-confirmed details. Avoid promising unrestricted access, fixed schedules, or availability.",
+      },
+      {
+        key: "iconKey",
+        label: "Facility icon",
+        type: "select",
+        required: true,
+        defaultValue: "classroom",
+        options: [
+          { label: "Classroom", value: "classroom" },
+          { label: "Science", value: "science" },
+          { label: "Computer", value: "computer" },
+          { label: "Library", value: "library" },
+          { label: "Outdoor sports", value: "sports" },
+          { label: "Indoor sports", value: "indoor-sports" },
+          { label: "Hostel", value: "hostel" },
+          { label: "Dining or canteen", value: "dining" },
+          { label: "Medical and first aid", value: "medical" },
+          { label: "Transport", value: "transport" },
+          { label: "Auditorium", value: "auditorium" },
+          { label: "School grounds", value: "grounds" },
+        ],
+      },
+      {
+        key: "verificationStatus",
+        label: "Verification status",
+        type: "select",
+        required: true,
+        defaultValue: "school_confirmation_required",
+        help: "Keep new or uncertain information pending until an authorised school representative confirms it.",
+        options: [
+          { label: "School-confirmed", value: "confirmed" },
+          { label: "School confirmation required", value: "school_confirmation_required" },
+        ],
+      },
+      {
+        key: "sourceLabel",
+        label: "Verification source label",
+        placeholder: "SAMPADA 2082 annual magazine",
+        help: "Name the school or official record that supports this facility description.",
+      },
+      { key: "sourceUrl", label: "Verification source URL", type: "url" },
+      { key: "imageId", label: "Documentary image from media library", type: "media", mediaKind: "image" },
+      { key: "imageUrl", label: "Documentary image URL", type: "url" },
+      {
+        key: "imageAlt",
+        label: "Image description",
+        help: "Describe what is visibly shown for visitors using a screen reader.",
+      },
+      { key: "featured", label: "Highlight this facility", type: "boolean" },
+      { key: "order", label: "Display order", type: "number", defaultValue: "0" },
     ],
   },
   programs: {

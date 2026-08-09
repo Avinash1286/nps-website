@@ -86,17 +86,17 @@ export const baseline = mutation({
         singletonKey: "main",
         schoolName: "Nepal Police School, Garuda",
         shortName: "NPS Garuda",
-        tagline: "Discipline, dignity, learning, and service.",
+        tagline: "Better Schooling for Ideal Citizenship",
         description:
-          "The official information portal for Nepal Police School, Garuda, serving students, families, staff, and the wider school community.",
+          "Nepal Police School, Garuda, Rautahat is a residential and day school established in 2058 BS (2002 AD) under the Nepal Police welfare programme.",
         logoUrl: "/media/nps-logo.png",
         faviconUrl: "/media/nps-logo.png",
         contact: {
-          address: "Garuda Municipality, Ward No. 7, Rautahat",
+          address: "Basbitti Jingadiya, Garuda Municipality-8, Rautahat",
           city: "Garuda",
           country: "Nepal",
-          phone: "",
-          email: "",
+          phone: "9855021699",
+          email: "mrpschool@nepalpolice.gov.np",
           officeHours: "School office hours are published through official notices.",
         },
         social: {},
@@ -116,6 +116,31 @@ export const baseline = mutation({
       markCreated();
     } else {
       const settingsPatch: Partial<Doc<"siteSettings">> = {};
+      if (settings.tagline === "Discipline, dignity, learning, and service.") {
+        settingsPatch.tagline = "Better Schooling for Ideal Citizenship";
+      }
+      if (
+        settings.description ===
+        "The official information portal for Nepal Police School, Garuda, serving students, families, staff, and the wider school community."
+      ) {
+        settingsPatch.description =
+          "Nepal Police School, Garuda, Rautahat is a residential and day school established in 2058 BS (2002 AD) under the Nepal Police welfare programme.";
+      }
+      const verifiedContact = { ...settings.contact };
+      let contactChanged = false;
+      if (verifiedContact.address === "Garuda Municipality, Ward No. 7, Rautahat") {
+        verifiedContact.address = "Basbitti Jingadiya, Garuda Municipality-8, Rautahat";
+        contactChanged = true;
+      }
+      if (!verifiedContact.phone.trim()) {
+        verifiedContact.phone = "9855021699";
+        contactChanged = true;
+      }
+      if (!verifiedContact.email.trim()) {
+        verifiedContact.email = "mrpschool@nepalpolice.gov.np";
+        contactChanged = true;
+      }
+      if (contactChanged) settingsPatch.contact = verifiedContact;
       if (settings.logoId === undefined && settings.logoUrl === undefined) {
         settingsPatch.logoUrl = "/media/nps-logo.png";
       }
@@ -256,6 +281,13 @@ export const baseline = mutation({
       undefined,
       { renameRootLabel: "Campus life" },
     );
+    await ensureNavigation({
+      label: "Facilities",
+      href: "/facilities",
+      location: "header",
+      order: 35,
+      description: "Learning spaces, residential support, wellbeing, and activity facilities.",
+    });
     const admissionsNavigationId = await ensureNavigation({
       label: "Admissions",
       href: "/admissions",
@@ -267,6 +299,30 @@ export const baseline = mutation({
       undefined,
       { renameRootLabel: "News" },
     );
+
+    // Facilities is now a first-level navigation item. Retire only the exact
+    // legacy child so an existing deployment does not show the same link both
+    // at the top level and inside School life. Administrator-created links are
+    // left untouched.
+    const legacyFacilitiesNavigation = currentNavigation.find(
+      (item) =>
+        item.location === "header" &&
+        item.parentId === schoolLifeNavigationId &&
+        item.label === "Facilities" &&
+        (item.href === "/campus-life/facilities" || item.href === "/facilities"),
+    );
+    if (
+      legacyFacilitiesNavigation &&
+      (legacyFacilitiesNavigation.href !== "/facilities" || legacyFacilitiesNavigation.visible)
+    ) {
+      await ctx.db.patch("navigationItems", legacyFacilitiesNavigation._id, {
+        href: "/facilities",
+        visible: false,
+        updatedBy: actor._id,
+        updatedAt: now,
+      });
+      markUpdated();
+    }
 
     const headerGroups: Array<{
       parentId: Id<"navigationItems">;
@@ -314,7 +370,6 @@ export const baseline = mutation({
         parentId: schoolLifeNavigationId,
         items: [
           { label: "Overview", href: "/campus-life", location: "header", order: 0 },
-          { label: "Facilities", href: "/campus-life/facilities", location: "header", order: 10 },
           { label: "Activities", href: "/campus-life/activities", location: "header", order: 20 },
           { label: "Gallery", href: "/campus-life/gallery", location: "header", order: 30 },
           {
@@ -404,6 +459,7 @@ export const baseline = mutation({
             order: 20,
           },
           { label: "Teachers", href: "/teachers", location: "footer", order: 30 },
+          { label: "Facilities", href: "/facilities", location: "footer", order: 35 },
           {
             label: "School life",
             href: "/campus-life",
@@ -461,13 +517,48 @@ export const baseline = mutation({
       await ensureNavigation(item);
     }
 
-    const pages = [
+    const pages: Array<{
+      slug: string;
+      title: string;
+      summary: string;
+      body: string;
+      order: number;
+      template?: string;
+      heroImageUrl?: string;
+      legacy?: Partial<Pick<Doc<"pages">, "title" | "summary" | "body" | "heroImageUrl">>;
+    }> = [
       {
         slug: "about",
         title: "About Nepal Police School, Garuda",
-        summary: "Our purpose, values, leadership, and shared responsibilities.",
-        body: "Nepal Police School, Garuda serves students and families in Rautahat. Verified history, leadership details, policies, and milestones are maintained by authorised school staff.",
+        summary:
+          "Established in 2058 BS (2002 AD), the school provides residential and day education from Nursery through Grade 12 in Garuda, Rautahat.",
+        body: "Nepal Police School, Garuda, Rautahat is a nonprofit residential and day school operating under the welfare programme of the Nepal Police Organization. Established on 25 March 2002 (2058 BS), it serves children of police personnel and civilians from Rautahat and surrounding communities.\n\nLocated in Garuda Municipality-8, the school provides education from Nursery through Grade 12. School-published materials describe an educational approach that combines academic learning with discipline, responsibility, creativity, co-curricular participation, and holistic student development.\n\nThe school motto published in SAMPADA 2082 is ‘Better Schooling for Ideal Citizenship.’ Institutional facts on this page were reviewed against the school annual magazine and government education records in August 2026. Current admissions, fees, staff appointments, and schedules must always be confirmed through current notices.",
+        heroImageUrl: "/media/nps-campus-building.png",
+        template: "landing",
         order: 10,
+        legacy: {
+          summary: "Our purpose, values, leadership, and shared responsibilities.",
+          body: "Nepal Police School, Garuda serves students and families in Rautahat. Verified history, leadership details, policies, and milestones are maintained by authorised school staff.",
+        },
+      },
+      {
+        slug: "about/history",
+        title: "Our history",
+        summary: "The establishment and development of Nepal Police School, Garuda, Rautahat.",
+        body: "Nepal Police School, Garuda was established on 25 March 2002 (2058 BS) under the welfare programme of the Nepal Police Organization. It was developed as a nonprofit residential and day-boarding school for children of police personnel and civilian families.\n\nA historical school-contributed profile records the support of local land donors and the school’s growth in Garuda, Rautahat. The school-published SAMPADA 2082 annual magazine marked its 24th anniversary in 2026, independently supporting the 2002 establishment year.\n\nToday the school’s published materials describe classes from Nursery through Grade 12. Historical land, donor, and milestone details should be updated only after documentary review by the school administration.",
+        heroImageUrl: "/media/nps-hero-gate.png",
+        template: "information",
+        order: 11,
+      },
+      {
+        slug: "about/mission-vision",
+        title: "Mission and educational direction",
+        summary:
+          "An educational direction centred on disciplined learning, responsibility, creativity, and ideal citizenship.",
+        body: "The school’s current public materials describe its purpose as preparing students for examinations and for responsible life beyond school. Academic learning is supported by discipline, moral values, creativity, participation, confidence, and service to the wider community.\n\nThe school motto, ‘Better Schooling for Ideal Citizenship,’ expresses this direction. SAMPADA 2082 also emphasises partnership among students, teachers, and families, along with respect for each learner’s individuality and potential.\n\nThis page summarises published institutional themes rather than inventing a formal policy statement. Any future official mission or vision document should replace this summary through the administration workspace.",
+        heroImageUrl: "/media/nps-campus-building.png",
+        template: "information",
+        order: 12,
       },
       {
         slug: "academics",
@@ -490,14 +581,42 @@ export const baseline = mutation({
         body: "For accurate, time-sensitive information, contact the school office through the verified details on this website. Do not send sensitive documents through a general contact message.",
         order: 40,
       },
+      {
+        slug: "facilities",
+        title: "Our facilities",
+        summary:
+          "Explore learning spaces and student-support facilities, with clear labels wherever current availability still needs school confirmation.",
+        body: "School-published SAMPADA 2082 identifies a library, computer laboratory, medical hall, hostel, and canteen. It also describes a large school area, classrooms, house competitions, and organised sports activity.\n\nThis page separates facilities supported by school publications from items that are included for direct confirmation. Access rules, equipment, schedules, residential availability, meal arrangements, and transport services can change. Contact the school office or use current official notices before making plans that depend on a particular facility.",
+        heroImageUrl: "/media/nps-hero-gate.png",
+        template: "landing",
+        order: 35,
+      },
     ];
-    for (const page of pages) {
+    for (const seededPage of pages) {
+      const { legacy, ...page } = seededPage;
       const existing = await ctx.db
         .query("pages")
         .withIndex("by_slug", (q) => q.eq("slug", page.slug))
         .unique();
       if (existing) {
-        markSkipped();
+        const baseline = { ...page } as Partial<Doc<"pages">>;
+        if (existing.heroImageId !== undefined) baseline.heroImageUrl = undefined;
+        const patch = missingFields(existing, baseline);
+        for (const key of ["title", "summary", "body", "heroImageUrl"] as const) {
+          if (legacy?.[key] !== undefined && existing[key] === legacy[key] && baseline[key] !== undefined) {
+            patch[key] = baseline[key] as never;
+          }
+        }
+        if (hasFields(patch)) {
+          await ctx.db.patch("pages", existing._id, {
+            ...patch,
+            updatedBy: actor._id,
+            updatedAt: now,
+          });
+          markUpdated();
+        } else {
+          markSkipped();
+        }
         continue;
       }
       await ctx.db.insert("pages", {
@@ -513,6 +632,203 @@ export const baseline = mutation({
         updatedAt: now,
       });
       await recordCreated(ctx, "content:pages", "published");
+      markCreated();
+    }
+
+    const facilitySource = {
+      sourceLabel: "SAMPADA 2082, Nepal Police School Rautahat annual magazine",
+      sourceUrl: "https://anyflip.com/uhkfx/qzov/basic",
+    };
+    const facilities = [
+      {
+        slug: "classrooms",
+        name: "Classrooms",
+        summary: "Classroom learning spaces support the school programme from Nursery through Grade 12.",
+        details:
+          "The annual school publication describes classroom learning across the full grade range. Room allocation, access, and equipment are managed by the school.",
+        iconKey: "classroom" as const,
+        verificationStatus: "confirmed" as const,
+        ...facilitySource,
+        featured: true,
+        order: 10,
+      },
+      {
+        slug: "science-laboratory",
+        name: "Science laboratory",
+        summary:
+          "Laboratory and practical-learning provision is listed for confirmation by the school administration.",
+        details:
+          "Separate Physics, Chemistry, or Biology laboratories and their current equipment have not been confirmed by the reviewed sources.",
+        iconKey: "science" as const,
+        verificationStatus: "school_confirmation_required" as const,
+        featured: false,
+        order: 20,
+      },
+      {
+        slug: "computer-laboratory",
+        name: "Computer laboratory",
+        summary: "A computer learning facility supports digital skills and computer-based learning.",
+        details:
+          "The school annual magazine identifies a computer lab, and the school’s official channel documented a computer-lab inauguration in July 2025.",
+        iconKey: "computer" as const,
+        verificationStatus: "confirmed" as const,
+        sourceLabel: "Nepal Police School computer-lab inauguration, 31 July 2025",
+        sourceUrl: "https://www.youtube.com/watch?v=16jUkpL8jtk",
+        featured: true,
+        order: 30,
+      },
+      {
+        slug: "library",
+        name: "Library",
+        summary: "The school library supports reading, reference work, and independent learning.",
+        details:
+          "Current opening times, borrowing arrangements, and available collections are maintained by the school.",
+        iconKey: "library" as const,
+        verificationStatus: "confirmed" as const,
+        ...facilitySource,
+        featured: true,
+        order: 40,
+      },
+      {
+        slug: "outdoor-sports",
+        name: "Outdoor sports and activities",
+        summary: "Outdoor activity spaces support Sports Week, house competitions, teamwork, and fitness.",
+        details:
+          "The school annual publication and official school channel document organised sports activity. Specific sports and schedules vary by programme and academic calendar.",
+        iconKey: "sports" as const,
+        verificationStatus: "confirmed" as const,
+        sourceLabel: "Nepal Police School Sports Week 2082",
+        sourceUrl: "https://www.youtube.com/watch?v=F6VqOD_qYtc",
+        featured: true,
+        order: 50,
+      },
+      {
+        slug: "indoor-sports",
+        name: "Indoor sports",
+        summary: "A dedicated indoor-sports facility is included for direct confirmation by the school.",
+        details:
+          "Do not assume that a separate indoor-sports hall or particular indoor activities are currently available.",
+        iconKey: "indoor-sports" as const,
+        verificationStatus: "school_confirmation_required" as const,
+        featured: false,
+        order: 60,
+      },
+      {
+        slug: "hostel",
+        name: "Hostel and residential facilities",
+        summary: "Residential hostel facilities support enrolled boarders alongside day scholars.",
+        details:
+          "Hostel availability, eligibility, supervision, charges, and residential rules must be confirmed for the current academic year.",
+        iconKey: "hostel" as const,
+        verificationStatus: "confirmed" as const,
+        sourceLabel: "SAMPADA 2082 and school inspection published 5 August 2026",
+        sourceUrl: "https://www.youtube.com/watch?v=nFhl1qrErJw",
+        featured: true,
+        order: 70,
+      },
+      {
+        slug: "canteen-meal-service",
+        name: "Canteen and meal service",
+        summary: "The school provides canteen or mess support for students’ daily meal arrangements.",
+        details:
+          "Menus, meal times, eligibility, and charges are operational details that families should confirm directly with the school.",
+        iconKey: "dining" as const,
+        verificationStatus: "confirmed" as const,
+        sourceLabel: "SAMPADA 2082 and school inspection published 5 August 2026",
+        sourceUrl: "https://www.youtube.com/watch?v=nFhl1qrErJw",
+        featured: true,
+        order: 80,
+      },
+      {
+        slug: "medical-first-aid",
+        name: "Medical and first-aid room",
+        summary: "A medical hall supports basic student health and first-aid needs at school.",
+        details:
+          "This is not a substitute for emergency or specialist medical care. Families should follow the school’s current health and emergency procedures.",
+        iconKey: "medical" as const,
+        verificationStatus: "confirmed" as const,
+        sourceLabel: "SAMPADA 2082 and school First Aid Awareness programme, 19 March 2026",
+        sourceUrl: "https://www.youtube.com/watch?v=98fI9JyCWo0",
+        featured: true,
+        order: 90,
+      },
+      {
+        slug: "transportation",
+        name: "Transportation",
+        summary: "Current school transport availability and routes require direct confirmation.",
+        details:
+          "A school-specific bus photograph is retained as historical visual evidence only. It does not confirm current routes, seats, stops, charges, or service availability.",
+        iconKey: "transport" as const,
+        verificationStatus: "school_confirmation_required" as const,
+        imageUrl: "/media/nps-transport.png",
+        imageAlt: "School buses photographed at Nepal Police School, Garuda",
+        featured: false,
+        order: 100,
+      },
+      {
+        slug: "auditorium-multipurpose-hall",
+        name: "Auditorium or multipurpose hall",
+        summary: "A dedicated auditorium or multipurpose hall is included for school confirmation.",
+        details:
+          "The reviewed sources do not establish a separate hall or its current capacity, equipment, or availability.",
+        iconKey: "auditorium" as const,
+        verificationStatus: "school_confirmation_required" as const,
+        featured: false,
+        order: 110,
+      },
+      {
+        slug: "school-grounds",
+        name: "School grounds",
+        summary: "The school grounds provide space for learning, assembly, movement, and outdoor activity.",
+        details:
+          "School publications describe a large, peaceful environment, and the school has documented planting and environmental-awareness activities.",
+        iconKey: "grounds" as const,
+        verificationStatus: "confirmed" as const,
+        sourceLabel: "SAMPADA 2082 and school environmental programme, 9 June 2026",
+        sourceUrl: "https://www.youtube.com/watch?v=n8Mc1LyABs0",
+        imageUrl: "/media/nps-campus-building.png",
+        imageAlt: "Nepal Police School building and grounds at Garuda",
+        featured: true,
+        order: 120,
+      },
+    ];
+    for (const facility of facilities) {
+      const existing = await ctx.db
+        .query("facilities")
+        .withIndex("by_slug", (q) => q.eq("slug", facility.slug))
+        .unique();
+      if (existing) {
+        const baseline = { ...facility } as Partial<Doc<"facilities">>;
+        if (existing.imageId !== undefined) baseline.imageUrl = undefined;
+        const patch = missingFields(existing, baseline);
+        if (hasFields(patch)) {
+          await ctx.db.patch("facilities", existing._id, {
+            ...patch,
+            updatedBy: actor._id,
+            updatedAt: now,
+          });
+          markUpdated();
+        } else {
+          markSkipped();
+        }
+        continue;
+      }
+      await ctx.db.insert("facilities", {
+        ...facility,
+        seo: {
+          ...DEFAULT_SEO,
+          title: facility.name,
+          description: facility.summary,
+        },
+        status: "published",
+        publishAt: now,
+        publishedAt: now,
+        createdBy: actor._id,
+        updatedBy: actor._id,
+        createdAt: now,
+        updatedAt: now,
+      });
+      await recordCreated(ctx, "content:facilities", "published");
       markCreated();
     }
 
@@ -615,47 +931,291 @@ export const baseline = mutation({
       markCreated();
     }
 
-    const leadership = [
+    const newsStories = [
+      {
+        slug: "class-xi-welcome-programme-2083",
+        title: "Class XI students welcomed to the school community",
+        excerpt:
+          "Nepal Police School, Garuda held a welcome programme for Class XI students on 7 August 2026.",
+        body: "Nepal Police School, Garuda published coverage of its Class XI Welcome Programme on 7 August 2026. The programme welcomed higher-secondary students and marked the beginning of their new stage of school life.\n\nThis story records a completed school activity; it is not an admissions announcement. Source: the school’s official video, https://www.youtube.com/watch?v=LhfvQmGDSKY",
+        category: "School community",
+        tags: ["Class XI", "welcome programme", "student life"],
+        authorName: "Nepal Police School, Garuda",
+        featured: true,
+        sourcePublishedAt: Date.UTC(2026, 7, 7, 6, 15),
+      },
+      {
+        slug: "class-8-public-speaking-programme",
+        title: "Class 8 students build confidence through public speaking",
+        excerpt:
+          "A school public-speaking programme gave Class 8 students a platform to practise confidence and creative expression.",
+        body: "On 6 August 2026, Nepal Police School, Garuda published a Class 8 public-speaking programme highlighting student confidence, communication, and creativity.\n\nThe activity reflects the school’s emphasis on participation and learning beyond examinations. Source: the school’s official video, https://www.youtube.com/watch?v=OCEEIRgYE1k",
+        category: "Student learning",
+        tags: ["Class 8", "public speaking", "confidence"],
+        authorName: "Nepal Police School, Garuda",
+        featured: true,
+        sourcePublishedAt: Date.UTC(2026, 7, 6, 6, 15),
+      },
+      {
+        slug: "madhesh-police-chief-school-inspection-2083",
+        title: "Madhesh Province Police Chief inspects the school",
+        excerpt:
+          "A 5 August 2026 inspection reviewed the school’s academic, administrative, residential, and physical arrangements.",
+        body: "On 5 August 2026 (2083-04-20 BS), Madhesh Province Police Chief DIG Om Prasad Adhikari inspected Nepal Police School, Garuda. School-published coverage records a review of the academic and administrative condition as well as the building, hostel, mess, and administration.\n\nSource: the school’s official video, https://www.youtube.com/watch?v=nFhl1qrErJw",
+        category: "School update",
+        tags: ["inspection", "school facilities", "administration"],
+        authorName: "Nepal Police School, Garuda",
+        featuredImageUrl: "/media/nps-campus-building.png",
+        featured: true,
+        sourcePublishedAt: Date.UTC(2026, 7, 5, 6, 15),
+      },
+    ];
+    for (const story of newsStories) {
+      const { sourcePublishedAt, ...news } = story;
+      const existing = await ctx.db
+        .query("news")
+        .withIndex("by_slug", (q) => q.eq("slug", news.slug))
+        .unique();
+      if (existing) {
+        const baseline = { ...news } as Partial<Doc<"news">>;
+        if (existing.featuredImageId !== undefined) baseline.featuredImageUrl = undefined;
+        const patch = missingFields(existing, baseline);
+        if (hasFields(patch)) {
+          await ctx.db.patch("news", existing._id, {
+            ...patch,
+            updatedBy: actor._id,
+            updatedAt: now,
+          });
+          markUpdated();
+        } else {
+          markSkipped();
+        }
+        continue;
+      }
+      await ctx.db.insert("news", {
+        ...news,
+        seo: { ...DEFAULT_SEO, title: news.title, description: news.excerpt },
+        status: "published",
+        publishAt: sourcePublishedAt,
+        publishedAt: sourcePublishedAt,
+        createdBy: actor._id,
+        updatedBy: actor._id,
+        createdAt: now,
+        updatedAt: now,
+      });
+      await recordCreated(ctx, "content:news", "published");
+      markCreated();
+    }
+
+    const notices = [
+      {
+        slug: "official-school-contact-channels",
+        title: "Official school contact channels",
+        summary:
+          "Use the verified school telephone and Nepal Police email for current, time-sensitive information.",
+        body: "The school contact details reviewed in August 2026 are telephone 9855021699 and email mrpschool@nepalpolice.gov.np. The school is located at Garuda Municipality-8, Rautahat, Madhesh Province.\n\nIf a contact channel changes or does not respond, consult the current Madhesh Province Police directory or a current school notice. Never send passwords, payment-card data, or unnecessary student identity documents through a general enquiry.",
+        priority: "important" as const,
+        audiences: ["students", "families", "visitors"],
+        status: "published" as const,
+        seo: {
+          ...DEFAULT_SEO,
+          title: "Official contact channels | Nepal Police School, Garuda",
+          description: "Verified contact guidance for Nepal Police School, Garuda, Rautahat.",
+        },
+      },
+      {
+        slug: "first-terminal-examination-result-2083-historical",
+        title: "First Terminal Examination result notice 2083 (historical)",
+        summary: "Archived record of the result-collection notice published on 31 July 2026.",
+        body: "This notice is retained as an archived example and is no longer actionable. The original result collection window was 1 August 2026 from 11:00 AM to 1:00 PM.\n\nSource: the school’s official video, https://www.youtube.com/watch?v=mofFLsbUvqU. Use only a current notice for examination results or collection arrangements.",
+        priority: "normal" as const,
+        audiences: ["students", "families"],
+        status: "archived" as const,
+        seo: { ...DEFAULT_SEO, noIndex: true },
+      },
+      {
+        slug: "class-xi-admissions-2083-84-historical",
+        title: "Class XI admissions 2083/84 (historical)",
+        summary: "Archived record of the Class XI Management admissions campaign published in May 2026.",
+        body: "This admissions campaign is historical and must not be treated as a current opening. It advertised Class XI Management admissions for academic session 2083/84.\n\nSource: the school’s official video, https://www.youtube.com/watch?v=r5psB8Ts-1k. Confirm all current streams, seats, fees, documents, and deadlines through a new official notice or the school office.",
+        priority: "normal" as const,
+        audiences: ["prospective students", "families"],
+        status: "archived" as const,
+        seo: { ...DEFAULT_SEO, noIndex: true },
+      },
+      {
+        slug: "sample-parent-orientation-reminder",
+        title: "[Sample draft] Parent orientation reminder",
+        summary: "Training content for administrators; replace every placeholder before publication.",
+        body: "SAMPLE ONLY — This draft demonstrates how to prepare a parent notice. Replace the title, confirmed date, time, venue, audience, contact details, and instructions with approved school information before publishing.",
+        priority: "normal" as const,
+        audiences: ["families"],
+        status: "draft" as const,
+        seo: { ...DEFAULT_SEO, noIndex: true },
+      },
+    ];
+    for (const notice of notices) {
+      const existing = await ctx.db
+        .query("notices")
+        .withIndex("by_slug", (q) => q.eq("slug", notice.slug))
+        .unique();
+      if (existing) {
+        const patch = missingFields(existing, notice);
+        if (hasFields(patch)) {
+          await ctx.db.patch("notices", existing._id, {
+            ...patch,
+            updatedBy: actor._id,
+            updatedAt: now,
+          });
+          markUpdated();
+        } else {
+          markSkipped();
+        }
+        continue;
+      }
+      await ctx.db.insert("notices", {
+        ...notice,
+        ...(notice.status === "published" ? { publishAt: now, publishedAt: now } : {}),
+        createdBy: actor._id,
+        updatedBy: actor._id,
+        createdAt: now,
+        updatedAt: now,
+      });
+      await recordCreated(ctx, "content:notices", notice.status);
+      markCreated();
+    }
+
+    const sampleEvents = [
+      {
+        slug: "sample-school-event-template",
+        title: "[Sample draft] School event template",
+        summary: "A safe editing example for preparing a future school event.",
+        description:
+          "SAMPLE ONLY — Replace the title, confirmed date, start and end times, venue, audience guidance, registration settings, and contact details with approved school information before publishing.",
+        startAt: Date.UTC(2027, 0, 15, 4, 15),
+        endAt: Date.UTC(2027, 0, 15, 6, 15),
+        timezone: "Asia/Kathmandu",
+        venue: "Replace with the confirmed venue",
+        isOnline: false,
+        registrationEnabled: false,
+        featured: false,
+        seo: { ...DEFAULT_SEO, noIndex: true },
+        status: "draft" as const,
+      },
+    ];
+    for (const event of sampleEvents) {
+      const existing = await ctx.db
+        .query("events")
+        .withIndex("by_slug", (q) => q.eq("slug", event.slug))
+        .unique();
+      if (existing) {
+        const patch = missingFields(existing, event);
+        if (hasFields(patch)) {
+          await ctx.db.patch("events", existing._id, {
+            ...patch,
+            updatedBy: actor._id,
+            updatedAt: now,
+          });
+          markUpdated();
+        } else {
+          markSkipped();
+        }
+        continue;
+      }
+      await ctx.db.insert("events", {
+        ...event,
+        createdBy: actor._id,
+        updatedBy: actor._id,
+        createdAt: now,
+        updatedAt: now,
+      });
+      await recordCreated(ctx, "content:events", "draft");
+      markCreated();
+    }
+
+    const leadership: Array<{
+      slug: string;
+      name: string;
+      role: string;
+      bio: string;
+      order: number;
+      legacy?: Partial<Pick<Doc<"leadership">, "name" | "role" | "bio" | "quote" | "photoUrl">>;
+    }> = [
       {
         slug: "principal",
-        name: "Principal's Office",
-        role: "Academic leadership",
-        bio: "The principal's office coordinates academic direction, student support, and communication with families. A verified profile and message will be published by the school administration.",
-        quote:
-          "The principal's office coordinates academic direction, student support, and communication with families. A verified profile and message will be published by the school administration.",
-        photoUrl: "/media/principal-placeholder.png",
+        name: "Ramsharan Rijal",
+        role: "Principal",
+        bio: "Ramsharan Rijal is identified as Principal of Nepal Police School, Garuda, Rautahat in the school-published SAMPADA 2082 annual magazine dated 23 March 2026. Leadership appointments can change, so current office holders should be reconfirmed through the school administration.",
         order: 10,
+        legacy: {
+          name: "Principal's Office",
+          role: "Academic leadership",
+          bio: "The principal's office coordinates academic direction, student support, and communication with families. A verified profile and message will be published by the school administration.",
+          quote:
+            "The principal's office coordinates academic direction, student support, and communication with families. A verified profile and message will be published by the school administration.",
+          photoUrl: "/media/principal-placeholder.png",
+        },
       },
       {
         slug: "vice-principal",
-        name: "Vice Principal's Office",
-        role: "Academic coordination",
-        bio: "The vice principal's office supports teaching, learning, assessment, and the day-to-day academic programme. Verified office details will be maintained by the school administration.",
-        quote:
-          "The vice principal's office supports teaching, learning, assessment, and the day-to-day academic programme. Verified office details will be maintained by the school administration.",
-        photoUrl: "/media/vice-principal-placeholder.png",
+        name: "Hari Bahadur G.C.",
+        role: "Academic Vice Principal",
+        bio: "Hari Bahadur G.C. is identified as Academic Vice Principal in the school-published SAMPADA 2082 annual magazine dated 23 March 2026. Leadership appointments can change, so current office holders should be reconfirmed through the school administration.",
         order: 20,
+        legacy: {
+          name: "Vice Principal's Office",
+          role: "Academic coordination",
+          bio: "The vice principal's office supports teaching, learning, assessment, and the day-to-day academic programme. Verified office details will be maintained by the school administration.",
+          quote:
+            "The vice principal's office supports teaching, learning, assessment, and the day-to-day academic programme. Verified office details will be maintained by the school administration.",
+          photoUrl: "/media/vice-principal-placeholder.png",
+        },
       },
       {
         slug: "commandant",
-        name: "Commandant's Office",
-        role: "Institutional leadership",
-        bio: "The commandant's office supports institutional governance, student welfare, and the disciplined operation of the school. Verified profile details will be published by the administration.",
-        quote:
-          "The commandant's office supports institutional governance, student welfare, and the disciplined operation of the school. Verified profile details will be published by the administration.",
-        photoUrl: "/media/commandant-placeholder.png",
+        name: "Subas Timilsina",
+        role: "School Commandant",
+        bio: "Inspector Subas Timilsina is identified as Commandant of Nepal Police School, Rautahat in the school-published SAMPADA 2082 annual magazine dated 23 March 2026. Leadership appointments can change, so current office holders should be reconfirmed through the school administration.",
         order: 30,
+        legacy: {
+          name: "Commandant's Office",
+          role: "Institutional leadership",
+          bio: "The commandant's office supports institutional governance, student welfare, and the disciplined operation of the school. Verified profile details will be published by the administration.",
+          quote:
+            "The commandant's office supports institutional governance, student welfare, and the disciplined operation of the school. Verified profile details will be published by the administration.",
+          photoUrl: "/media/commandant-placeholder.png",
+        },
+      },
+      {
+        slug: "pastoral-vice-principal",
+        name: "Ashok Kumar Yadav",
+        role: "Pastoral Vice Principal",
+        bio: "Ashok Kumar Yadav is identified as Pastoral Vice Principal in the school-published SAMPADA 2082 annual magazine dated 23 March 2026. Leadership appointments can change, so current office holders should be reconfirmed through the school administration.",
+        order: 40,
       },
     ];
-    for (const member of leadership) {
+    for (const seededMember of leadership) {
+      const { legacy, ...member } = seededMember;
       const existing = await ctx.db
         .query("leadership")
         .withIndex("by_slug", (q) => q.eq("slug", member.slug))
         .unique();
       if (existing) {
-        const patch = missingFields<Doc<"leadership">>(existing, {
+        const baseline = {
           ...(existing.photoId === undefined ? member : { ...member, photoUrl: undefined }),
-        });
+        } as Partial<Doc<"leadership">>;
+        const patch = missingFields<Doc<"leadership">>(existing, baseline);
+        for (const key of ["name", "role", "bio"] as const) {
+          if (legacy?.[key] !== undefined && existing[key] === legacy[key]) patch[key] = member[key];
+        }
+        if (legacy?.quote !== undefined && existing.quote === legacy.quote) patch.quote = undefined;
+        if (
+          existing.photoId === undefined &&
+          legacy?.photoUrl !== undefined &&
+          existing.photoUrl === legacy.photoUrl
+        ) {
+          patch.photoUrl = undefined;
+        }
         if (hasFields(patch)) {
           await ctx.db.patch("leadership", existing._id, {
             ...patch,
@@ -769,6 +1329,16 @@ export const baseline = mutation({
         featured: false,
         order: 50,
       },
+      {
+        slug: "facilities",
+        title: "Facilities",
+        description:
+          "Documentary views of the school building, entrance, grounds, and historically photographed transport.",
+        imageUrl: "/media/nps-campus-building.png",
+        alt: "Nepal Police School building and grounds at Garuda",
+        featured: true,
+        order: 60,
+      },
     ];
     for (const album of gallery) {
       let existing = await ctx.db
@@ -820,24 +1390,48 @@ export const baseline = mutation({
       if (existingItems.length === 100) {
         throw new Error(`Gallery seed stopped because album ${album.slug} exceeds the safe item limit.`);
       }
-      if (existingItems.some((item) => item.url === album.imageUrl)) {
-        markSkipped();
-        continue;
+      const facilityImages =
+        album.slug === "facilities"
+          ? [
+              {
+                url: "/media/nps-campus-building.png",
+                alt: "Nepal Police School building and grounds at Garuda",
+                caption: "The school building and grounds at Nepal Police School, Garuda.",
+              },
+              {
+                url: "/media/nps-hero-gate.png",
+                alt: "Entrance gate of Nepal Police School, Garuda",
+                caption: "The main entrance of Nepal Police School, Garuda, Rautahat.",
+              },
+              {
+                url: "/media/nps-transport.png",
+                alt: "School buses photographed at Nepal Police School, Garuda",
+                caption:
+                  "Historical photograph of school buses. Current routes, seats, charges, and service availability require confirmation.",
+              },
+            ]
+          : [{ url: album.imageUrl, alt: album.alt, caption: album.description }];
+      for (const [index, galleryItem] of facilityImages.entries()) {
+        if (existingItems.some((item) => item.url === galleryItem.url)) {
+          markSkipped();
+          continue;
+        }
+        const id = await ctx.db.insert("galleryItems", {
+          albumId: existing._id,
+          url: galleryItem.url,
+          thumbnailUrl: galleryItem.url,
+          mediaType: "image",
+          alt: galleryItem.alt,
+          caption: galleryItem.caption,
+          order: (existingItems.length + index) * 10,
+          visible: true,
+          createdBy: actor._id,
+          createdAt: now,
+          updatedAt: now,
+        });
+        existingItems.push((await ctx.db.get("galleryItems", id))!);
+        markCreated();
       }
-      await ctx.db.insert("galleryItems", {
-        albumId: existing._id,
-        url: album.imageUrl,
-        thumbnailUrl: album.imageUrl,
-        mediaType: "image",
-        alt: album.alt,
-        caption: album.description,
-        order: existingItems.length * 10,
-        visible: true,
-        createdBy: actor._id,
-        createdAt: now,
-        updatedAt: now,
-      });
-      markCreated();
     }
 
     const faqs = [

@@ -153,8 +153,15 @@ export const websiteEditorSections: readonly WebsiteEditorSection[] = [
     icon: Building2,
     destinations: [
       {
+        label: "Manage facilities",
+        description: "Edit facility cards, documentary images, sources, and confirmation status.",
+        href: "/admin/facilities",
+        icon: Building2,
+        roles: contentRoles,
+      },
+      {
         label: "Edit School life pages",
-        description: "Edit facilities, activities, transport, and other routed School life pages.",
+        description: "Edit activities, transport, the virtual tour, and other routed School life pages.",
         href: "/admin/pages?section=campus-life",
         icon: FileText,
         roles: contentRoles,

@@ -47,6 +47,26 @@ export const seoValidator = v.object({
   noIndex: v.optional(v.boolean()),
 });
 
+export const facilityIconKeyValidator = v.union(
+  v.literal("classroom"),
+  v.literal("science"),
+  v.literal("computer"),
+  v.literal("library"),
+  v.literal("sports"),
+  v.literal("indoor-sports"),
+  v.literal("hostel"),
+  v.literal("dining"),
+  v.literal("medical"),
+  v.literal("transport"),
+  v.literal("auditorium"),
+  v.literal("grounds"),
+);
+
+export const facilityVerificationStatusValidator = v.union(
+  v.literal("confirmed"),
+  v.literal("school_confirmation_required"),
+);
+
 const publicationFields = {
   status: contentStatusValidator,
   publishAt: v.optional(v.number()),
@@ -257,6 +277,34 @@ export default defineSchema({
     .index("by_status_expire_at", ["status", "expireAt"])
     .searchIndex("search_title", { searchField: "title", filterFields: ["status"] })
     .searchIndex("search_body", { searchField: "body", filterFields: ["status"] }),
+
+  facilities: defineTable({
+    slug: v.string(),
+    name: v.string(),
+    summary: v.string(),
+    details: v.optional(v.string()),
+    iconKey: facilityIconKeyValidator,
+    verificationStatus: facilityVerificationStatusValidator,
+    sourceLabel: v.optional(v.string()),
+    sourceUrl: v.optional(v.string()),
+    imageId: v.optional(v.id("_storage")),
+    imageUrl: v.optional(v.string()),
+    imageAlt: v.optional(v.string()),
+    featured: v.boolean(),
+    order: v.number(),
+    seo: seoValidator,
+    ...publicationFields,
+  })
+    .index("by_slug", ["slug"])
+    .index("by_status", ["status"])
+    .index("by_status_order", ["status", "order"])
+    .index("by_status_and_verification_status_and_order", ["status", "verificationStatus", "order"])
+    .index("by_image_id", ["imageId"])
+    .index("by_image_url", ["imageUrl"])
+    .index("by_status_publish_at", ["status", "publishAt"])
+    .index("by_status_expire_at", ["status", "expireAt"])
+    .searchIndex("search_name", { searchField: "name", filterFields: ["status"] })
+    .searchIndex("search_summary", { searchField: "summary", filterFields: ["status"] }),
 
   programs: defineTable({
     slug: v.string(),

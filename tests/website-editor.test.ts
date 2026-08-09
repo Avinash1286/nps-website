@@ -26,6 +26,7 @@ describe("website editor section map", () => {
     expect(hrefs).toContain("/admin/pages?section=about");
     expect(hrefs).toContain("/admin/pages?section=academics");
     expect(hrefs).toContain("/admin/pages?section=campus-life");
+    expect(hrefs).toContain("/admin/facilities");
     expect(hrefs).toContain("/admin/pages?section=admissions");
     expect(hrefs).toContain("/admin/navigation");
     expect(hrefs).toContain("/admin/media");

@@ -55,6 +55,7 @@ export type NewsletterMetrics = {
 
 export type ContentType =
   | "pages"
+  | "facilities"
   | "programs"
   | "departments"
   | "leadership"

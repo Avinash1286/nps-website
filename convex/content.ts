@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internalQuery, query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
+import { facilityIconKeyValidator, facilityVerificationStatusValidator } from "./schema";
 
 const contentStatusValidator = v.union(
   v.literal("draft"),
@@ -92,6 +93,26 @@ const publicPageValidator = v.object({
   template: v.optional(v.string()),
   heroImageId: v.optional(v.id("_storage")),
   heroImageUrl: v.optional(v.string()),
+  featured: v.boolean(),
+  order: v.number(),
+  seo: seoOutputValidator,
+  ...publicationOutputFields,
+});
+
+const publicFacilityValidator = v.object({
+  _id: v.id("facilities"),
+  _creationTime: v.number(),
+  slug: v.string(),
+  name: v.string(),
+  summary: v.string(),
+  details: v.optional(v.string()),
+  iconKey: facilityIconKeyValidator,
+  verificationStatus: facilityVerificationStatusValidator,
+  sourceLabel: v.optional(v.string()),
+  sourceUrl: v.optional(v.string()),
+  imageId: v.optional(v.id("_storage")),
+  imageUrl: v.optional(v.string()),
+  imageAlt: v.optional(v.string()),
   featured: v.boolean(),
   order: v.number(),
   seo: seoOutputValidator,
@@ -342,6 +363,15 @@ const groundingSnapshotValidator = v.object({
       body: v.string(),
     }),
   ),
+  facilities: v.array(
+    v.object({
+      slug: v.string(),
+      name: v.string(),
+      summary: v.string(),
+      details: v.optional(v.string()),
+      verificationStatus: facilityVerificationStatusValidator,
+    }),
+  ),
   programs: v.array(v.object({ slug: v.string(), name: v.string(), description: v.string() })),
   departments: v.array(v.object({ slug: v.string(), name: v.string(), description: v.string() })),
   leadership: v.array(
@@ -483,6 +513,28 @@ function publicPage(page: Doc<"pages">, heroImageUrl: string | undefined) {
     order: page.order,
     seo: seoDto(page.seo),
     ...publicationDto(page),
+  };
+}
+
+function publicFacility(facility: Doc<"facilities">, imageUrl: string | undefined) {
+  return {
+    _id: facility._id,
+    _creationTime: facility._creationTime,
+    slug: facility.slug,
+    name: facility.name,
+    summary: facility.summary,
+    details: facility.details,
+    iconKey: facility.iconKey,
+    verificationStatus: facility.verificationStatus,
+    sourceLabel: facility.sourceLabel,
+    sourceUrl: facility.sourceUrl,
+    imageId: facility.imageId,
+    imageUrl,
+    imageAlt: facility.imageAlt,
+    featured: facility.featured,
+    order: facility.order,
+    seo: seoDto(facility.seo),
+    ...publicationDto(facility),
   };
 }
 
@@ -811,6 +863,24 @@ export const getPage = query({
       .unique();
     if (!page || !isPublished(page)) return null;
     return publicPage(page, await storageUrl(ctx, page.heroImageId, page.heroImageUrl));
+  },
+});
+
+export const listFacilities = query({
+  args: { limit: v.optional(v.number()), now: v.optional(v.number()) },
+  returns: v.array(publicFacilityValidator),
+  handler: async (ctx, args) => {
+    const take = limitOf(args.limit, 50);
+    const rows = await ctx.db
+      .query("facilities")
+      .withIndex("by_status_order", (q) => q.eq("status", "published"))
+      .take(take);
+    return await Promise.all(
+      rows
+        .filter((row) => isPublished(row))
+        .slice(0, take)
+        .map(async (row) => publicFacility(row, await storageUrl(ctx, row.imageId, row.imageUrl))),
+    );
   },
 });
 
@@ -1360,6 +1430,7 @@ export const groundingSnapshot = internalQuery({
   handler: async (ctx, args) => {
     const search = args.query?.trim().slice(0, 512);
     let pages: Doc<"pages">[];
+    let facilities: Doc<"facilities">[];
     let programs: Doc<"programs">[];
     let departments: Doc<"departments">[];
     let leadership: Doc<"leadership">[];
@@ -1374,6 +1445,8 @@ export const groundingSnapshot = internalQuery({
       const [
         pageBody,
         pageTitle,
+        facilitySummary,
+        facilityName,
         programDescription,
         programName,
         departmentDescription,
@@ -1401,6 +1474,14 @@ export const groundingSnapshot = internalQuery({
         ctx.db
           .query("pages")
           .withSearchIndex("search_title", (q) => q.search("title", search).eq("status", "published"))
+          .take(4),
+        ctx.db
+          .query("facilities")
+          .withSearchIndex("search_summary", (q) => q.search("summary", search).eq("status", "published"))
+          .take(8),
+        ctx.db
+          .query("facilities")
+          .withSearchIndex("search_name", (q) => q.search("name", search).eq("status", "published"))
           .take(4),
         ctx.db
           .query("programs")
@@ -1486,6 +1567,7 @@ export const groundingSnapshot = internalQuery({
           .take(8),
       ]);
       pages = uniquePublished([pageBody, pageTitle], args.now, 12);
+      facilities = uniquePublished([facilitySummary, facilityName], args.now, 12);
       programs = uniquePublished([programDescription, programName], args.now, 12);
       departments = uniquePublished([departmentDescription, departmentName], args.now, 12);
       leadership = uniquePublished([leadershipBio, leadershipRole, leadershipName], args.now, 12);
@@ -1500,6 +1582,10 @@ export const groundingSnapshot = internalQuery({
         ctx.db
           .query("pages")
           .withIndex("by_status", (q) => q.eq("status", "published"))
+          .take(12),
+        ctx.db
+          .query("facilities")
+          .withIndex("by_status_order", (q) => q.eq("status", "published"))
           .take(12),
         ctx.db
           .query("programs")
@@ -1539,15 +1625,16 @@ export const groundingSnapshot = internalQuery({
           .take(18),
       ]);
       pages = uniquePublished([fallback[0]], args.now, 12);
-      programs = uniquePublished([fallback[1]], args.now, 12);
-      departments = uniquePublished([fallback[2]], args.now, 12);
-      leadership = uniquePublished([fallback[3]], args.now, 12);
-      teachers = uniquePublished([fallback[4]], args.now, 18);
-      news = uniquePublished([fallback[5]], args.now, 12);
-      notices = uniquePublished([fallback[6]], args.now, 12);
-      events = uniquePublished([fallback[7]], args.now, 12);
-      documents = uniquePublished([fallback[8]], args.now, 10);
-      faqs = uniquePublished([fallback[9]], args.now, 18);
+      facilities = uniquePublished([fallback[1]], args.now, 12);
+      programs = uniquePublished([fallback[2]], args.now, 12);
+      departments = uniquePublished([fallback[3]], args.now, 12);
+      leadership = uniquePublished([fallback[4]], args.now, 12);
+      teachers = uniquePublished([fallback[5]], args.now, 18);
+      news = uniquePublished([fallback[6]], args.now, 12);
+      notices = uniquePublished([fallback[7]], args.now, 12);
+      events = uniquePublished([fallback[8]], args.now, 12);
+      documents = uniquePublished([fallback[9]], args.now, 10);
+      faqs = uniquePublished([fallback[10]], args.now, 18);
     }
 
     return {
@@ -1556,6 +1643,13 @@ export const groundingSnapshot = internalQuery({
         title: row.title,
         summary: row.summary,
         body: row.body.slice(0, 4000),
+      })),
+      facilities: facilities.map((row) => ({
+        slug: row.slug,
+        name: row.name,
+        summary: row.summary,
+        details: row.details?.slice(0, 2000),
+        verificationStatus: row.verificationStatus,
       })),
       programs: programs.map((row) => ({
         slug: row.slug,

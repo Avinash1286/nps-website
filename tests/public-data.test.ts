@@ -8,6 +8,7 @@ vi.mock("convex/server", () => ({ makeFunctionReference: (name: string) => name 
 import {
   getCmsPage,
   getDepartment,
+  getFacilities,
   getFaqs,
   getLeader,
   getLeadership,
@@ -125,6 +126,56 @@ describe("public Convex data normalization", () => {
         noIndex: false,
       },
     });
+  });
+
+  it("normalizes facility evidence and defaults unknown verification values to pending", async () => {
+    fetchQueryMock.mockResolvedValueOnce([
+      {
+        _id: "facility-library",
+        slug: "library",
+        name: "Library",
+        summary: "Reading and independent-learning resources.",
+        iconKey: "library",
+        verificationStatus: "confirmed",
+        sourceLabel: "SAMPADA 2082",
+        sourceUrl: "https://example.com/sampada",
+        imageId: "storage-1",
+        imageUrl: "https://example.convex.cloud/library.webp",
+        imageAlt: "Library reading tables and bookshelves",
+        featured: true,
+        order: 20,
+      },
+      {
+        _id: "facility-auditorium",
+        slug: "auditorium",
+        name: "Auditorium",
+        summary: "Awaiting confirmation.",
+        iconKey: "unsupported-icon",
+        verificationStatus: "unknown",
+        featured: false,
+        order: 90,
+      },
+    ]);
+
+    await expect(getFacilities()).resolves.toMatchObject([
+      {
+        id: "facility-library",
+        iconKey: "library",
+        verificationStatus: "confirmed",
+        imageId: "storage-1",
+        featured: true,
+      },
+      {
+        id: "facility-auditorium",
+        iconKey: "classroom",
+        verificationStatus: "school_confirmation_required",
+      },
+    ]);
+    expect(fetchQueryMock).toHaveBeenLastCalledWith(
+      "content:listFacilities",
+      expect.objectContaining({ limit: 100, now: expect.any(Number) }),
+      expect.any(Object),
+    );
   });
 
   it("retains teacher subjects and resolves the published department head", async () => {
