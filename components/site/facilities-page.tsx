@@ -1,11 +1,9 @@
 import Link from "next/link";
 import {
-  BadgeCheck,
   BedDouble,
   BookOpen,
   Building2,
   BusFront,
-  Clock3,
   Dumbbell,
   ExternalLink,
   FlaskConical,
@@ -37,21 +35,6 @@ const facilityIcons: Record<FacilityIconKey, LucideIcon> = {
   grounds: Trees,
 };
 
-function VerificationBadge({ status }: { status: PublicFacility["verificationStatus"] }) {
-  const confirmed = status === "confirmed";
-  const Icon = confirmed ? BadgeCheck : Clock3;
-  return (
-    <span
-      className={`inline-flex min-h-7 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-[.08em] uppercase ${
-        confirmed ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-900"
-      }`}
-    >
-      <Icon size={13} aria-hidden="true" />
-      {confirmed ? "School-confirmed" : "Confirmation pending"}
-    </span>
-  );
-}
-
 function FacilitySource({ facility }: { facility: PublicFacility }) {
   if (!facility.sourceLabel && !facility.sourceUrl) return null;
   const label = facility.sourceLabel ?? "View verification source";
@@ -78,14 +61,12 @@ export function FacilitiesPage({
   page: PublicCmsPage | null;
   facilities: PublicFacility[];
 }) {
-  const confirmedCount = facilities.filter((facility) => facility.verificationStatus === "confirmed").length;
-  const pendingCount = facilities.length - confirmedCount;
-  const imageFacilities = facilities.filter((facility) => Boolean(facility.imageUrl));
+  const firstFacilityImage = facilities.find((facility) => Boolean(facility.imageUrl))?.imageUrl;
   const bodyParagraphs = page?.body
     .split(/\n{2,}/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean);
-  const heroImage = page?.heroImageUrl ?? imageFacilities[0]?.imageUrl ?? "/media/nps-campus-building.png";
+  const heroImage = page?.heroImageUrl ?? firstFacilityImage ?? "/media/nps-campus-building.png";
 
   return (
     <>
@@ -126,25 +107,20 @@ export function FacilitiesPage({
               </div>
 
               <aside className="rounded-2xl border border-sky-100 bg-sky-50 p-5 sm:p-6">
-                <h2 className="font-black text-[#12123a]">How verification is shown</h2>
-                <div className="mt-4 space-y-4">
-                  <div className="flex items-start gap-3">
-                    <BadgeCheck className="mt-0.5 shrink-0 text-emerald-700" size={19} aria-hidden="true" />
-                    <p className="text-sm leading-6 text-slate-600">
-                      <strong className="text-slate-900">{confirmedCount} school-confirmed</strong> facilities
-                      have supporting school or official records.
-                    </p>
-                  </div>
-                  {pendingCount > 0 && (
-                    <div className="flex items-start gap-3">
-                      <Clock3 className="mt-0.5 shrink-0 text-amber-700" size={19} aria-hidden="true" />
-                      <p className="text-sm leading-6 text-slate-600">
-                        <strong className="text-slate-900">{pendingCount} awaiting confirmation</strong> are
-                        listed transparently and should not be treated as currently available until verified.
-                      </p>
-                    </div>
-                  )}
-                </div>
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-[#2e3192] shadow-sm">
+                  <Building2 size={22} strokeWidth={1.9} aria-hidden="true" />
+                </span>
+                <h2 className="mt-4 font-black text-[#12123a]">Plan before you visit</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Access, schedules, residential arrangements, and transport can change. Contact the school
+                  before making plans that depend on a particular facility.
+                </p>
+                <Link
+                  href="/contact"
+                  className="mt-4 inline-flex min-h-10 items-center text-sm font-extrabold text-[#2e3192] underline decoration-sky-200 underline-offset-4 hover:text-sky-800 focus:ring-2 focus:ring-sky-400 focus:outline-none"
+                >
+                  Contact the school
+                </Link>
               </aside>
             </div>
           </div>
@@ -161,44 +137,65 @@ export function FacilitiesPage({
                   Explore our facilities
                 </h2>
               </div>
-              <p className="text-sm font-semibold text-slate-500">
-                {facilities.length} {facilities.length === 1 ? "facility" : "facilities"} published
-              </p>
+              <div className="max-w-sm text-left sm:text-right">
+                <p className="text-sm font-semibold text-slate-500">
+                  {facilities.length} {facilities.length === 1 ? "facility" : "facilities"} published
+                </p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Representative imagery is used where an approved school photograph is not available.
+                </p>
+              </div>
             </div>
 
             {facilities.length ? (
               <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {facilities.map((facility) => {
                   const Icon = facilityIcons[facility.iconKey] ?? Building2;
-                  const pending = facility.verificationStatus === "school_confirmation_required";
                   return (
                     <article
                       id={facility.slug}
                       key={facility.id}
-                      className={`scroll-mt-32 rounded-2xl border bg-white p-5 shadow-[0_12px_30px_rgba(15,23,42,.05)] sm:p-6 ${
-                        pending ? "border-amber-200" : "border-slate-200"
-                      } ${facility.featured ? "ring-2 ring-sky-100" : ""}`}
+                      className={`group flex scroll-mt-32 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,.05)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_rgba(15,23,42,.1)] ${
+                        facility.featured ? "ring-2 ring-sky-100" : ""
+                      }`}
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <span
-                          className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${
-                            pending ? "bg-amber-50 text-amber-800" : "bg-sky-50 text-[#2e3192]"
-                          }`}
-                        >
+                      <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-sky-50 to-indigo-100">
+                        {facility.imageUrl ? (
+                          <PublicImage
+                            src={facility.imageUrl}
+                            alt={facility.imageAlt ?? facility.name}
+                            fill
+                            className={`transition duration-500 group-hover:scale-[1.03] ${
+                              facility.slug === "transportation" ? "object-contain" : "object-cover"
+                            }`}
+                            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                          />
+                        ) : (
+                          <Icon
+                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#2e3192]/25"
+                            size={64}
+                            strokeWidth={1.4}
+                            aria-hidden="true"
+                          />
+                        )}
+                        <span className="absolute bottom-4 left-4 grid h-12 w-12 place-items-center rounded-2xl border border-white/70 bg-white/95 text-[#2e3192] shadow-lg backdrop-blur">
                           <Icon size={24} strokeWidth={1.9} aria-hidden="true" />
                         </span>
-                        <VerificationBadge status={facility.verificationStatus} />
                       </div>
-                      <h3 className="mt-5 text-xl font-black tracking-[-.02em] text-[#12123a]">
-                        {facility.name}
-                      </h3>
-                      <p className="mt-3 text-sm leading-7 text-slate-600">{facility.summary}</p>
-                      {facility.details && (
-                        <p className="mt-3 border-t border-slate-100 pt-3 text-sm leading-7 text-slate-500">
-                          {facility.details}
-                        </p>
-                      )}
-                      <FacilitySource facility={facility} />
+                      <div className="flex flex-1 flex-col p-5 sm:p-6">
+                        <h3 className="text-xl font-black tracking-[-.02em] text-[#12123a]">
+                          {facility.name}
+                        </h3>
+                        <p className="mt-3 text-sm leading-7 text-slate-600">{facility.summary}</p>
+                        {facility.details && (
+                          <p className="mt-3 border-t border-slate-100 pt-3 text-sm leading-7 text-slate-500">
+                            {facility.details}
+                          </p>
+                        )}
+                        <div className="mt-auto">
+                          <FacilitySource facility={facility} />
+                        </div>
+                      </div>
                     </article>
                   );
                 })}
@@ -216,58 +213,6 @@ export function FacilitiesPage({
             )}
           </div>
         </section>
-
-        {imageFacilities.length > 0 && (
-          <section className="px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-            <div className="mx-auto max-w-7xl">
-              <div className="max-w-3xl">
-                <p className="text-xs font-extrabold tracking-[.18em] text-[#2e3192] uppercase">
-                  Documentary images
-                </p>
-                <h2 className="mt-2 text-3xl font-black tracking-[-.03em] text-[#12123a]">
-                  A closer look at the school
-                </h2>
-                <p className="mt-4 text-sm leading-7 text-slate-600">
-                  These images are attached to facility records by authorised staff. Verification badges refer
-                  to the facility information, not a promise of unrestricted access or current availability.
-                </p>
-              </div>
-              <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {imageFacilities.map((facility, index) => (
-                  <figure
-                    key={`image-${facility.id}`}
-                    className={`group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${
-                      index === 0 && imageFacilities.length > 2 ? "md:col-span-2" : ""
-                    }`}
-                  >
-                    <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                      <PublicImage
-                        src={facility.imageUrl!}
-                        alt={facility.imageAlt ?? facility.name}
-                        fill
-                        className="object-cover transition duration-500 group-hover:scale-[1.02]"
-                        sizes={
-                          index === 0 && imageFacilities.length > 2
-                            ? "(max-width: 768px) 100vw, (max-width: 1280px) 66vw, 55vw"
-                            : "(max-width: 768px) 100vw, 33vw"
-                        }
-                      />
-                    </div>
-                    <figcaption className="flex items-start justify-between gap-4 p-4 sm:p-5">
-                      <div className="min-w-0">
-                        <p className="font-black text-[#12123a]">{facility.name}</p>
-                        {facility.sourceLabel && (
-                          <p className="mt-1 text-xs leading-5 text-slate-500">{facility.sourceLabel}</p>
-                        )}
-                      </div>
-                      <VerificationBadge status={facility.verificationStatus} />
-                    </figcaption>
-                  </figure>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
 
         <section className="bg-[#12123a] px-4 py-12 text-white sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-7xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">

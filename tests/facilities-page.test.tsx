@@ -58,23 +58,30 @@ const facilities: PublicFacility[] = [
 describe("FacilitiesPage", () => {
   afterEach(cleanup);
 
-  it("renders database records with transparent evidence and verification states", () => {
+  it("renders database records with their images and sources without public confirmation badges", () => {
     const { container } = render(<FacilitiesPage page={page} facilities={facilities} />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Our facilities" })).toBeVisible();
     expect(screen.getByText("2 facilities published")).toBeVisible();
-    expect(screen.getAllByText("School-confirmed").length).toBeGreaterThan(0);
-    expect(screen.getByText("Confirmation pending")).toBeVisible();
+    expect(screen.queryByText("School-confirmed")).not.toBeInTheDocument();
+    expect(screen.queryByText("Confirmation pending")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "How verification is shown" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /School publication/i })).toHaveAttribute(
       "href",
       "https://example.test/publication",
     );
-    expect(screen.getByRole("img", { name: "Bookshelves and reading tables" })).toBeVisible();
     expect(container.querySelector("main")).not.toBeInTheDocument();
+
+    const libraryCard = container.querySelector("#library");
+    expect(libraryCard).not.toBeNull();
+    expect(
+      within(libraryCard as HTMLElement).getByRole("img", { name: "Bookshelves and reading tables" }),
+    ).toBeVisible();
+    expect(screen.getAllByRole("img", { name: "Bookshelves and reading tables" })).toHaveLength(1);
 
     const pendingCard = container.querySelector("#auditorium");
     expect(pendingCard).not.toBeNull();
-    expect(within(pendingCard as HTMLElement).getByText("Confirmation pending")).toBeVisible();
+    expect(within(pendingCard as HTMLElement).queryByText("Confirmation pending")).not.toBeInTheDocument();
   });
 
   it("shows a safe empty state when no facility records are published", () => {

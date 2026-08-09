@@ -168,6 +168,7 @@ export default defineSchema({
     .index("by_favicon_url", ["faviconUrl"]),
 
   assistantContexts: defineTable({
+    seedKey: v.optional(v.string()),
     title: v.string(),
     category: v.string(),
     content: v.string(),
@@ -181,6 +182,7 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   })
+    .index("by_seed_key", ["seedKey"])
     .index("by_updated_at", ["updatedAt"])
     .index("by_status_and_priority_and_updated_at", ["status", "priority", "updatedAt"]),
 

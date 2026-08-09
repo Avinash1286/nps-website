@@ -35,6 +35,7 @@ describe("baseline seed", () => {
         .unique(),
       navigation: await ctx.db.query("navigationItems").collect(),
       pages: await ctx.db.query("pages").collect(),
+      assistantContexts: await ctx.db.query("assistantContexts").withIndex("by_updated_at").take(100),
       facilities: await ctx.db.query("facilities").collect(),
       programs: await ctx.db.query("programs").collect(),
       news: await ctx.db.query("news").collect(),
@@ -64,7 +65,37 @@ describe("baseline seed", () => {
     expect(seeded.pages.map((page) => page.slug)).toEqual(
       expect.arrayContaining(["about", "about/history", "about/mission-vision", "facilities"]),
     );
+    expect(seeded.assistantContexts).toHaveLength(4);
+    expect(seeded.assistantContexts.every((context) => context.status === "published")).toBe(true);
+    expect(seeded.assistantContexts.map((context) => context.seedKey)).toEqual(
+      expect.arrayContaining([
+        "school-profile",
+        "facilities-and-support",
+        "official-contact-guidance",
+        "leadership-verification",
+      ]),
+    );
+    expect(seeded.assistantContexts.map((context) => context.publicPath)).toEqual(
+      expect.arrayContaining(["/about", "/facilities", "/contact", "/about/leadership"]),
+    );
+    expect(
+      seeded.assistantContexts.find((context) => context.publicPath === "/facilities")?.content,
+    ).toContain("must not be presented as currently verified");
+    expect(seeded.assistantContexts.find((context) => context.publicPath === "/contact")?.content).toContain(
+      "9855021699",
+    );
+    expect(
+      seeded.assistantContexts.find((context) => context.publicPath === "/about/leadership"),
+    ).toMatchObject({
+      title: "Leadership information and verification",
+      priority: 5,
+    });
     expect(seeded.facilities).toHaveLength(12);
+    expect(seeded.facilities.every((facility) => Boolean(facility.imageId ?? facility.imageUrl))).toBe(true);
+    expect(seeded.facilities.find((facility) => facility.slug === "science-laboratory")).toMatchObject({
+      imageUrl: "/media/facility-science-lab.webp",
+      imageAlt: "Illustrative view of a secondary-school science laboratory",
+    });
     expect(
       seeded.facilities
         .filter((facility) => facility.verificationStatus === "school_confirmation_required")
@@ -160,7 +191,10 @@ describe("baseline seed", () => {
         .query("facilities")
         .withIndex("by_slug", (q) => q.eq("slug", "library"))
         .unique();
-      if (!about || !principal || !library) throw new Error("Expected seeded records.");
+      const visitorGuidance = (
+        await ctx.db.query("assistantContexts").withIndex("by_updated_at").take(100)
+      ).find((context) => context.publicPath === "/contact");
+      if (!about || !principal || !library || !visitorGuidance) throw new Error("Expected seeded records.");
       await ctx.db.patch("homeSections", about._id, {
         heading: "An administrator-authored heading",
         imageUrl: "/media/custom-campus.jpg",
@@ -170,6 +204,11 @@ describe("baseline seed", () => {
       });
       await ctx.db.patch("facilities", library._id, {
         summary: "Administrator-confirmed library information.",
+      });
+      await ctx.db.patch("assistantContexts", visitorGuidance._id, {
+        content: "Administrator-authored guidance that must survive future baseline seed runs.",
+        priority: 77,
+        status: "archived",
       });
     });
 
@@ -189,6 +228,9 @@ describe("baseline seed", () => {
         .query("facilities")
         .withIndex("by_slug", (q) => q.eq("slug", "library"))
         .unique(),
+      visitorGuidance: (await ctx.db.query("assistantContexts").withIndex("by_updated_at").take(100)).find(
+        (context) => context.publicPath === "/contact",
+      ),
     }));
     expect(preserved.about).toMatchObject({
       heading: "An administrator-authored heading",
@@ -196,7 +238,45 @@ describe("baseline seed", () => {
     });
     expect(preserved.principal?.name).toBe("Verified principal name");
     expect(preserved.library?.summary).toBe("Administrator-confirmed library information.");
+    expect(preserved.visitorGuidance).toMatchObject({
+      content: "Administrator-authored guidance that must survive future baseline seed runs.",
+      priority: 77,
+      status: "archived",
+    });
   });
+
+  it.each([97, 101])(
+    "refuses to overfill an assistant context catalog containing %i records",
+    async (count) => {
+      const t = convexTest(schema, modules);
+      const asAdmin = await insertAdmin(t);
+      await t.run(async (ctx) => {
+        const admin = await ctx.db
+          .query("users")
+          .withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", "seed-admin"))
+          .unique();
+        if (!admin) throw new Error("Expected seed administrator.");
+        const now = Date.now();
+        for (let index = 0; index < count; index += 1) {
+          await ctx.db.insert("assistantContexts", {
+            title: `Administrator context ${index}`,
+            category: "Existing catalog",
+            content: `Administrator-authored context record ${index}.`,
+            keywords: [`context-${index}`],
+            priority: 50,
+            status: "published",
+            publishedAt: now,
+            createdBy: admin._id,
+            updatedBy: admin._id,
+            createdAt: now + index,
+            updatedAt: now + index,
+          });
+        }
+      });
+
+      await expect(asAdmin.mutation(api.seed.baseline, {})).rejects.toThrow("Assistant context seed stopped");
+    },
+  );
 
   it("migrates legacy programme routes while retaining admin-authored programme copy", async () => {
     const t = convexTest(schema, modules);

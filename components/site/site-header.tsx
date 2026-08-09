@@ -17,6 +17,8 @@ type NavigationGroup = {
   items: readonly NavigationChild[];
 };
 
+const DESKTOP_MENU_CLOSE_DELAY_MS = 140;
+
 function NavigationLink({
   href,
   external,
@@ -24,7 +26,6 @@ function NavigationLink({
   className,
   children,
   onClick,
-  onMouseEnter,
   ariaCurrent,
   dataActive,
 }: {
@@ -34,7 +35,6 @@ function NavigationLink({
   className: string;
   children: React.ReactNode;
   onClick?: () => void;
-  onMouseEnter?: () => void;
   ariaCurrent?: "page";
   dataActive?: boolean;
 }) {
@@ -46,7 +46,6 @@ function NavigationLink({
       title={description}
       className={className}
       onClick={onClick}
-      onMouseEnter={onMouseEnter}
       aria-current={ariaCurrent}
       data-active={dataActive}
     >
@@ -58,7 +57,6 @@ function NavigationLink({
       title={description}
       className={className}
       onClick={onClick}
-      onMouseEnter={onMouseEnter}
       aria-current={ariaCurrent}
       data-active={dataActive}
     >
@@ -108,10 +106,34 @@ export function SiteHeader({
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const desktopNavRef = useRef<HTMLDivElement>(null);
   const desktopToggleRefs = useRef(new Map<string, HTMLButtonElement>());
+  const desktopCloseTimerRef = useRef<number | null>(null);
   const closeMobile = useCallback(() => {
     setMobileOpen(false);
     setExpanded(null);
   }, []);
+  const cancelDesktopClose = useCallback(() => {
+    if (desktopCloseTimerRef.current === null) return;
+    window.clearTimeout(desktopCloseTimerRef.current);
+    desktopCloseTimerRef.current = null;
+  }, []);
+  const closeDesktopMenu = useCallback(() => {
+    cancelDesktopClose();
+    setDesktopOpen(null);
+  }, [cancelDesktopClose]);
+  const openDesktopMenu = useCallback(
+    (href: string | null) => {
+      cancelDesktopClose();
+      setDesktopOpen(href);
+    },
+    [cancelDesktopClose],
+  );
+  const scheduleDesktopClose = useCallback(() => {
+    cancelDesktopClose();
+    desktopCloseTimerRef.current = window.setTimeout(() => {
+      desktopCloseTimerRef.current = null;
+      setDesktopOpen(null);
+    }, DESKTOP_MENU_CLOSE_DELAY_MS);
+  }, [cancelDesktopClose]);
   const configuredNavigation: NavigationGroup[] = navigationItems
     .filter((item) => !item.parentId)
     .map((item) => ({
@@ -152,18 +174,20 @@ export function SiteHeader({
     return () => window.removeEventListener("scroll", sync);
   }, []);
 
+  useEffect(() => () => cancelDesktopClose(), [cancelDesktopClose]);
+
   useEffect(() => {
     if (!desktopOpen) return;
     const openKey = desktopOpen;
 
     function handlePointerDown(event: PointerEvent) {
-      if (!desktopNavRef.current?.contains(event.target as Node)) setDesktopOpen(null);
+      if (!desktopNavRef.current?.contains(event.target as Node)) closeDesktopMenu();
     }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
       event.preventDefault();
-      setDesktopOpen(null);
+      closeDesktopMenu();
       window.requestAnimationFrame(() => desktopToggleRefs.current.get(openKey)?.focus());
     }
 
@@ -173,17 +197,17 @@ export function SiteHeader({
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [desktopOpen]);
+  }, [closeDesktopMenu, desktopOpen]);
 
   useEffect(() => {
     const desktopQuery = window.matchMedia("(min-width: 80rem)");
     function handleBreakpointChange(event: MediaQueryListEvent) {
       if (event.matches) closeMobile();
-      else setDesktopOpen(null);
+      else closeDesktopMenu();
     }
     desktopQuery.addEventListener("change", handleBreakpointChange);
     return () => desktopQuery.removeEventListener("change", handleBreakpointChange);
-  }, [closeMobile]);
+  }, [closeDesktopMenu, closeMobile]);
 
   const telephoneHref = phone ? `tel:${phone.replace(/\s/g, "")}` : undefined;
 
@@ -285,18 +309,23 @@ export function SiteHeader({
                 <div
                   key={item.href}
                   className="relative flex h-full items-center"
-                  onMouseLeave={(event) => {
+                  onPointerEnter={(event) => {
+                    if (event.pointerType === "touch") return;
+                    openDesktopMenu(item.items.length ? item.href : null);
+                  }}
+                  onPointerLeave={(event) => {
+                    if (event.pointerType === "touch") return;
                     if (!event.currentTarget.contains(document.activeElement)) {
-                      setDesktopOpen(null);
+                      scheduleDesktopClose();
                     }
                   }}
                   onFocusCapture={(event) => {
                     if ((event.target as HTMLElement).dataset.desktopMenuToggle !== undefined) return;
-                    setDesktopOpen(item.items.length ? item.href : null);
+                    openDesktopMenu(item.items.length ? item.href : null);
                   }}
                   onBlurCapture={(event) => {
                     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-                      setDesktopOpen(null);
+                      closeDesktopMenu();
                     }
                   }}
                 >
@@ -304,8 +333,7 @@ export function SiteHeader({
                     href={item.href}
                     external={item.external}
                     description={item.description}
-                    onMouseEnter={() => setDesktopOpen(item.items.length ? item.href : null)}
-                    onClick={() => setDesktopOpen(null)}
+                    onClick={closeDesktopMenu}
                     ariaCurrent={isNavigationCurrent(pathname, item.href) ? "page" : undefined}
                     dataActive={active}
                     className={`nav-underline relative flex h-full items-center px-2.5 text-[13px] font-bold whitespace-nowrap transition-colors duration-300 ${
@@ -323,10 +351,9 @@ export function SiteHeader({
                       id={triggerId}
                       data-desktop-menu-toggle
                       type="button"
-                      onClick={() => setDesktopOpen(open ? null : item.href)}
-                      className={`mr-1 grid h-8 w-6 place-items-center rounded-md transition hover:bg-white/10 focus:ring-2 focus:ring-[#f0bd3a] focus:outline-none ${open ? "text-[#f0bd3a]" : "text-white/80"}`}
+                      onClick={() => (open ? closeDesktopMenu() : openDesktopMenu(item.href))}
+                      className={`mr-0.5 grid h-11 w-8 place-items-center rounded-md transition hover:bg-white/10 focus:ring-2 focus:ring-[#f0bd3a] focus:outline-none ${open ? "text-[#f0bd3a]" : "text-white/80"}`}
                       aria-label={`${open ? "Close" : "Open"} ${item.label} submenu`}
-                      aria-haspopup="true"
                       aria-expanded={open}
                       aria-controls={submenuId}
                     >
@@ -342,32 +369,39 @@ export function SiteHeader({
                       id={submenuId}
                       role="group"
                       aria-label={`${item.label} submenu`}
-                      style={{ animationDuration: "260ms" }}
-                      className={`anim-fade-up absolute top-full z-[60] mt-1 max-h-[calc(100vh-8rem)] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_24px_60px_rgba(18,18,58,.18)] ${index >= navigation.length - 2 ? "right-0" : "left-0"}`}
+                      onPointerEnter={cancelDesktopClose}
+                      className={`absolute top-full z-[60] -mt-px w-72 max-w-[calc(100vw-2rem)] pt-2 ${index >= navigation.length - 2 ? "right-0" : "left-0"}`}
                     >
-                      <span
-                        aria-hidden="true"
-                        className={`absolute -top-1.5 h-3 w-3 rotate-45 border-t border-l border-slate-200 bg-white ${index >= navigation.length - 2 ? "right-8" : "left-8"}`}
-                      />
-                      {item.items.map(([label, href, external, description]) => (
-                        <NavigationLink
-                          key={href}
-                          href={href}
-                          external={external}
-                          description={description}
-                          onClick={() => setDesktopOpen(null)}
-                          ariaCurrent={
-                            href !== item.href && isNavigationCurrent(pathname, href) ? "page" : undefined
-                          }
-                          className="group relative block rounded-xl px-4 py-2.5 text-sm font-semibold break-words text-slate-700 transition duration-300 hover:bg-sky-50 hover:pl-6 hover:text-[#262873] focus:bg-sky-50 focus:text-[#262873] focus:outline-none"
-                        >
-                          <span
-                            aria-hidden="true"
-                            className="absolute top-1/2 left-2.5 h-4 w-0.5 -translate-y-1/2 scale-y-0 rounded-full bg-[#2e3192] transition-transform duration-300 group-hover:scale-y-100"
-                          />
-                          {label}
-                        </NavigationLink>
-                      ))}
+                      <div
+                        style={{ animationDuration: "260ms" }}
+                        className="anim-fade-up relative rounded-2xl border border-slate-200 bg-white shadow-[0_24px_60px_rgba(18,18,58,.18)]"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={`absolute -top-1.5 h-3 w-3 rotate-45 border-t border-l border-slate-200 bg-white ${index >= navigation.length - 2 ? "right-8" : "left-8"}`}
+                        />
+                        <div className="max-h-[calc(100vh-8rem)] overflow-y-auto p-2">
+                          {item.items.map(([label, href, external, description]) => (
+                            <NavigationLink
+                              key={href}
+                              href={href}
+                              external={external}
+                              description={description}
+                              onClick={closeDesktopMenu}
+                              ariaCurrent={
+                                href !== item.href && isNavigationCurrent(pathname, href) ? "page" : undefined
+                              }
+                              className="group relative block rounded-xl px-4 py-2.5 text-sm font-semibold break-words text-slate-700 transition duration-300 hover:bg-sky-50 hover:pl-6 hover:text-[#262873] focus:bg-sky-50 focus:text-[#262873] focus:outline-none"
+                            >
+                              <span
+                                aria-hidden="true"
+                                className="absolute top-1/2 left-2.5 h-4 w-0.5 -translate-y-1/2 scale-y-0 rounded-full bg-[#2e3192] transition-transform duration-300 group-hover:scale-y-100"
+                              />
+                              {label}
+                            </NavigationLink>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -395,7 +429,7 @@ export function SiteHeader({
               ref={menuButtonRef}
               type="button"
               onClick={() => {
-                setDesktopOpen(null);
+                closeDesktopMenu();
                 setMobileOpen(true);
               }}
               className="grid h-10 w-10 place-items-center rounded-full text-white transition hover:bg-white/10 xl:hidden"

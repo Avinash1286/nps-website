@@ -635,6 +635,200 @@ export const baseline = mutation({
       markCreated();
     }
 
+    // Focused knowledge records supplement the CMS content that is already
+    // included in the assistant grounding snapshot. Keeping each record well
+    // below the per-source prompt limit makes retrieval more reliable than one
+    // oversized school profile. Existing matching records are never republished
+    // or overwritten, so an administrator remains in control after seeding.
+    const assistantContexts = [
+      {
+        seedKey: "school-profile",
+        title: "School identity, history, and educational direction",
+        category: "School profile",
+        content:
+          "Nepal Police School, Garuda, Rautahat (Nepali: नेपाल पुलिस स्कुल, गरुडा, रौतहट) is located at Basbitti Jingadiya, Garuda Municipality-8, Rautahat District, Madhesh Province, Nepal. Government education records identify the school with IEMIS code 320120002.\n\nThe school was established in 2058 BS (25 March 2002 AD) under the Nepal Police welfare programme. Institutional publications describe it as a nonprofit residential and day school serving children of police personnel and civilian families. Current school and government records support education from Nursery through Grade 12.\n\nThe motto published in the SAMPADA 2082 annual magazine is “Better Schooling for Ideal Citizenship.” School publications describe an educational direction that combines academic learning with discipline, responsibility, moral values, creativity, co-curricular participation, confidence, and service.\n\nDo not state a current student-enrolment total because available figures are from different reporting periods and conflict. Do not infer current Grade 11–12 streams unless the school publishes them.\n\nResearch reviewed 9 August 2026. Main references: SAMPADA 2082 (https://anyflip.com/uhkfx/qzov/basic), Government of Nepal MoEST Grades 11–12 school list (https://cgs.moest.gov.np/Uploads/Resource/10plus2schools.pdf), and the historical school-contributed IASL profile (https://iasl-online.org/GiggleIT-ParticipantsNepal-Police-School-Nepal).",
+        keywords: [
+          "nepal police school garuda",
+          "नेपाल पुलिस स्कुल",
+          "school history",
+          "established",
+          "2058 bs",
+          "2002 ad",
+          "iemis 320120002",
+          "basbitti jingadiya",
+          "garuda municipality 8",
+          "madhesh province",
+          "nursery to grade 12",
+          "school motto",
+          "ideal citizenship",
+          "residential school",
+          "day school",
+          "nepal police welfare",
+        ],
+        publicPath: "/about",
+        priority: 95,
+        status: "published" as const,
+      },
+      {
+        seedKey: "facilities-and-support",
+        title: "Facilities and student support",
+        category: "Facilities",
+        content:
+          "School-published SAMPADA 2082 supports the presence of classrooms, a library, a computer laboratory, a hostel or residential arrangement, a canteen or meal service, a medical or first-aid room, school grounds, and organised outdoor sports and co-curricular activity at Nepal Police School, Garuda. Describe these facilities in neutral language and avoid unsupported claims such as ‘world-class,’ exact equipment inventories, capacity, opening hours, or guaranteed availability.\n\nThe following items are listed on the website for school confirmation and must not be presented as currently verified: a specific science-laboratory setup, dedicated indoor-sports facilities, current school transport routes or service availability, and an auditorium or multipurpose hall. A photograph or an older mention does not prove a service is currently operating.\n\nHostel places, meal arrangements, access rules, equipment, schedules, transport routes, charges, and availability can change. If a visitor needs to make a decision based on a facility, direct them to the current Facilities page, current official notices, or the school office.\n\nResearch reviewed 9 August 2026. Main reference: SAMPADA 2082, Nepal Police School Rautahat annual magazine (https://anyflip.com/uhkfx/qzov/basic).",
+        keywords: [
+          "school facilities",
+          "classrooms",
+          "library",
+          "computer laboratory",
+          "computer lab",
+          "hostel",
+          "residential facilities",
+          "canteen",
+          "meal service",
+          "medical hall",
+          "first aid",
+          "school grounds",
+          "sports",
+          "science laboratory",
+          "indoor sports",
+          "transportation",
+          "school bus",
+          "auditorium",
+          "multipurpose hall",
+          "facility availability",
+        ],
+        publicPath: "/facilities",
+        priority: 92,
+        status: "published" as const,
+      },
+      {
+        seedKey: "official-contact-guidance",
+        title: "Official contact and time-sensitive information",
+        category: "Visitor guidance",
+        content:
+          "The preferred general contact for Nepal Police School, Garuda, Rautahat is telephone 9855021699. The preferred official-domain email is mrpschool@nepalpolice.gov.np. The school is located at Basbitti Jingadiya, Garuda Municipality-8, Rautahat, Madhesh Province, Nepal.\n\nTreat admissions openings, application dates, entrance tests, fees, required documents, available seats, results, scholarships, vacancies, office hours, hostel places, transport routes, uniforms, and event schedules as time-sensitive. Answer these only from a current admin-published page, notice, document, or event. Never reuse an expired date, fee, or eligibility rule from an older notice and never guess. If current information is absent, say that it is not confirmed and direct the visitor to the Notices or Admissions pages or to the school office at 9855021699.\n\nDo not request, collect, repeat, or expose private student information in chat. The assistant provides general public information; official notices and direct school communication remain authoritative.\n\nContact details reviewed 9 August 2026 against the Madhesh Province Police contact directory (https://madhesh.nepalpolice.gov.np/about-us/contacts/) and Nepal Police school admissions material (https://www.nepalpolice.gov.np/notices/1320/).",
+        keywords: [
+          "contact school",
+          "phone number",
+          "9855021699",
+          "school email",
+          "mrpschool",
+          "school address",
+          "admissions",
+          "application date",
+          "entrance test",
+          "fees",
+          "required documents",
+          "available seats",
+          "results",
+          "scholarships",
+          "vacancies",
+          "office hours",
+          "hostel availability",
+          "transport routes",
+          "official notices",
+          "student privacy",
+        ],
+        publicPath: "/contact",
+        priority: 100,
+        status: "published" as const,
+      },
+      {
+        seedKey: "leadership-verification",
+        title: "Leadership information and verification",
+        category: "Leadership",
+        content:
+          "Use the currently published profiles on the school Leadership page as the primary source for leadership names and roles. Those admin-maintained records supersede historical publications whenever they differ.\n\nThe SAMPADA 2082 annual magazine, uploaded 23 March 2026, is a dated historical reference only. Do not present a name from that magazine as a guaranteed current appointment. If no current published profile answers the visitor’s question, say the current appointment is not confirmed and direct the visitor to the Leadership page or school office. Never invent a staff member, title, personal contact detail, biography, or availability.\n\nHistorical reference: SAMPADA 2082, Nepal Police School Rautahat annual magazine (https://anyflip.com/uhkfx/qzov/basic).",
+        keywords: [
+          "school leadership",
+          "principal",
+          "academic vice principal",
+          "commandant",
+          "pastoral vice principal",
+          "school administration",
+          "current leadership",
+          "leadership verification",
+          "march 2026",
+          "sampada 2082",
+        ],
+        publicPath: "/about/leadership",
+        priority: 5,
+        status: "published" as const,
+      },
+    ];
+    const existingAssistantContexts = await ctx.db
+      .query("assistantContexts")
+      .withIndex("by_updated_at")
+      .take(101);
+    if (existingAssistantContexts.length > 100) {
+      throw new Error("Assistant context seed stopped because the catalog already exceeds 100 records.");
+    }
+    const missingAssistantContextCount = assistantContexts.filter(
+      (context) =>
+        !existingAssistantContexts.some(
+          (existing) =>
+            existing.seedKey === context.seedKey ||
+            existing.title === context.title ||
+            (existing.category === context.category && existing.publicPath === context.publicPath),
+        ),
+    ).length;
+    if (existingAssistantContexts.length + missingAssistantContextCount > 100) {
+      throw new Error(
+        "Assistant context seed stopped because the 100-record catalog limit would be exceeded.",
+      );
+    }
+
+    for (const context of assistantContexts) {
+      const existing = existingAssistantContexts.find(
+        (item) =>
+          item.seedKey === context.seedKey ||
+          item.title === context.title ||
+          (item.category === context.category && item.publicPath === context.publicPath),
+      );
+      if (existing) {
+        const patch = missingFields<Doc<"assistantContexts">>(existing, {
+          seedKey: context.seedKey,
+          publicPath: context.publicPath,
+          ...(existing.status === "published" ? { publishedAt: now } : {}),
+        });
+        const untouchedDatedLeadershipSeed =
+          context.seedKey === "leadership-verification" &&
+          existing.seedKey === undefined &&
+          existing.title === "Leadership reference dated March 2026" &&
+          existing.priority === 84 &&
+          existing.content.startsWith(
+            "The school-published SAMPADA 2082 annual magazine, uploaded 23 March 2026, identifies the following leadership team",
+          );
+        if (untouchedDatedLeadershipSeed) {
+          patch.title = context.title;
+          patch.content = context.content;
+          patch.keywords = context.keywords;
+          patch.priority = context.priority;
+        }
+        if (hasFields(patch)) {
+          await ctx.db.patch("assistantContexts", existing._id, {
+            ...patch,
+            updatedBy: actor._id,
+            updatedAt: now,
+          });
+          markUpdated();
+        } else {
+          markSkipped();
+        }
+        continue;
+      }
+      await ctx.db.insert("assistantContexts", {
+        ...context,
+        publishedAt: now,
+        createdBy: actor._id,
+        updatedBy: actor._id,
+        createdAt: now,
+        updatedAt: now,
+      });
+      await recordCreated(ctx, "content:assistantContexts", "published");
+      markCreated();
+    }
+
     const facilitySource = {
       sourceLabel: "SAMPADA 2082, Nepal Police School Rautahat annual magazine",
       sourceUrl: "https://anyflip.com/uhkfx/qzov/basic",
@@ -649,6 +843,8 @@ export const baseline = mutation({
         iconKey: "classroom" as const,
         verificationStatus: "confirmed" as const,
         ...facilitySource,
+        imageUrl: "/media/facility-classrooms.webp",
+        imageAlt: "Illustrative view of an orderly secondary-school classroom",
         featured: true,
         order: 10,
       },
@@ -661,6 +857,8 @@ export const baseline = mutation({
           "Separate Physics, Chemistry, or Biology laboratories and their current equipment have not been confirmed by the reviewed sources.",
         iconKey: "science" as const,
         verificationStatus: "school_confirmation_required" as const,
+        imageUrl: "/media/facility-science-lab.webp",
+        imageAlt: "Illustrative view of a secondary-school science laboratory",
         featured: false,
         order: 20,
       },
@@ -674,6 +872,8 @@ export const baseline = mutation({
         verificationStatus: "confirmed" as const,
         sourceLabel: "Nepal Police School computer-lab inauguration, 31 July 2025",
         sourceUrl: "https://www.youtube.com/watch?v=16jUkpL8jtk",
+        imageUrl: "/media/facility-computer-lab.webp",
+        imageAlt: "Illustrative view of a secondary-school computer laboratory",
         featured: true,
         order: 30,
       },
@@ -686,6 +886,8 @@ export const baseline = mutation({
         iconKey: "library" as const,
         verificationStatus: "confirmed" as const,
         ...facilitySource,
+        imageUrl: "/media/facility-library.webp",
+        imageAlt: "Illustrative view of a school library and reading room",
         featured: true,
         order: 40,
       },
@@ -699,6 +901,8 @@ export const baseline = mutation({
         verificationStatus: "confirmed" as const,
         sourceLabel: "Nepal Police School Sports Week 2082",
         sourceUrl: "https://www.youtube.com/watch?v=F6VqOD_qYtc",
+        imageUrl: "/media/facility-outdoor-sports.webp",
+        imageAlt: "Illustrative view of students taking part in an outdoor school sports event",
         featured: true,
         order: 50,
       },
@@ -710,6 +914,8 @@ export const baseline = mutation({
           "Do not assume that a separate indoor-sports hall or particular indoor activities are currently available.",
         iconKey: "indoor-sports" as const,
         verificationStatus: "school_confirmation_required" as const,
+        imageUrl: "/media/facility-indoor-sports.webp",
+        imageAlt: "Illustrative view of a multipurpose indoor school sports room",
         featured: false,
         order: 60,
       },
@@ -723,6 +929,8 @@ export const baseline = mutation({
         verificationStatus: "confirmed" as const,
         sourceLabel: "SAMPADA 2082 and school inspection published 5 August 2026",
         sourceUrl: "https://www.youtube.com/watch?v=nFhl1qrErJw",
+        imageUrl: "/media/facility-hostel.webp",
+        imageAlt: "Illustrative view of a clean residential school hostel room",
         featured: true,
         order: 70,
       },
@@ -736,6 +944,8 @@ export const baseline = mutation({
         verificationStatus: "confirmed" as const,
         sourceLabel: "SAMPADA 2082 and school inspection published 5 August 2026",
         sourceUrl: "https://www.youtube.com/watch?v=nFhl1qrErJw",
+        imageUrl: "/media/facility-canteen.webp",
+        imageAlt: "Illustrative view of a school canteen and meal-service area",
         featured: true,
         order: 80,
       },
@@ -749,6 +959,8 @@ export const baseline = mutation({
         verificationStatus: "confirmed" as const,
         sourceLabel: "SAMPADA 2082 and school First Aid Awareness programme, 19 March 2026",
         sourceUrl: "https://www.youtube.com/watch?v=98fI9JyCWo0",
+        imageUrl: "/media/facility-medical-room.webp",
+        imageAlt: "Illustrative view of a clean school medical and first-aid room",
         featured: true,
         order: 90,
       },
@@ -773,6 +985,8 @@ export const baseline = mutation({
           "The reviewed sources do not establish a separate hall or its current capacity, equipment, or availability.",
         iconKey: "auditorium" as const,
         verificationStatus: "school_confirmation_required" as const,
+        imageUrl: "/media/facility-auditorium.webp",
+        imageAlt: "Illustrative view of a modest school multipurpose hall",
         featured: false,
         order: 110,
       },

@@ -12,6 +12,7 @@ const MAX_KEYWORDS = 20;
 const assistantContextValidator = v.object({
   _id: v.id("assistantContexts"),
   _creationTime: v.number(),
+  seedKey: v.optional(v.string()),
   title: v.string(),
   category: v.string(),
   content: v.string(),
