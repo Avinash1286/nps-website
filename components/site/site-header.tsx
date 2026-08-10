@@ -224,15 +224,15 @@ export function SiteHeader({
           scrolled ? "max-h-0 overflow-hidden opacity-0" : "max-h-16 overflow-visible opacity-100"
         }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6 lg:px-8">
-          <p className="truncate font-medium">
+        <div className="mx-auto flex min-h-10 max-w-7xl items-center gap-3 px-4 py-2 sm:px-6 lg:px-8">
+          <p className="min-w-0 flex-1 truncate font-medium whitespace-nowrap">
             {tagline ?? "Official school information"} <span aria-hidden="true">&middot;</span> {location}
           </p>
-          <div className="hidden items-center gap-5 sm:flex">
+          <div className="hidden shrink-0 items-center gap-3 whitespace-nowrap sm:flex lg:gap-4 2xl:gap-5">
             {telephoneHref && (
               <a
                 href={telephoneHref}
-                className="inline-flex items-center gap-1.5 font-semibold transition hover:text-white"
+                className="hidden shrink-0 items-center gap-1.5 font-semibold whitespace-nowrap transition hover:text-white lg:inline-flex"
               >
                 <Phone size={12} className="text-[#f0bd3a]" />
                 {phone}
@@ -241,7 +241,7 @@ export function SiteHeader({
             {email && (
               <a
                 href={`mailto:${email}`}
-                className="hidden items-center gap-1.5 font-semibold transition hover:text-white lg:inline-flex"
+                className="hidden shrink-0 items-center gap-1.5 font-semibold whitespace-nowrap transition hover:text-white 2xl:inline-flex"
               >
                 <Mail size={12} className="text-[#f0bd3a]" />
                 {email}
@@ -253,14 +253,17 @@ export function SiteHeader({
                 href={item.href}
                 external={item.external}
                 description={item.description}
-                className="font-semibold transition hover:text-white"
+                className="shrink-0 font-semibold whitespace-nowrap transition hover:text-white"
               >
                 {item.label}
               </NavigationLink>
             ))}
             <SiteStudentAccount variant="desktop" />
             {showStaffLink && (
-              <Link href="/sign-in" className="font-semibold text-[#f0bd3a] transition hover:text-white">
+              <Link
+                href="/sign-in"
+                className="shrink-0 font-semibold whitespace-nowrap text-[#f0bd3a] transition hover:text-white"
+              >
                 Staff login
               </Link>
             )}

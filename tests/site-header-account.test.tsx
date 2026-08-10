@@ -55,6 +55,8 @@ function renderHeader() {
     <SiteHeader
       schoolName="Nepal Police School, Garuda"
       location="Garuda, Rautahat"
+      phone="9855021659"
+      email="mrpschool@nepalpolice.gov.np"
       admissionsOpen={false}
       navigationItems={navigationItems}
       utilityNavigationItems={utilityNavigationItems}
@@ -98,6 +100,21 @@ describe("site header student account", () => {
     expect(screen.queryByRole("link", { name: "Student login" })).not.toBeInTheDocument();
   });
 
+  it("keeps utility text on one line and progressively reveals contact details", () => {
+    renderHeader();
+
+    const tagline = screen.getByText(/Official school information/i);
+    const phone = screen.getByRole("link", { name: "9855021659" });
+    const email = screen.getByRole("link", { name: "mrpschool@nepalpolice.gov.np" });
+    const contact = screen.getByRole("link", { name: "Contact" });
+
+    expect(tagline).toHaveClass("min-w-0", "flex-1", "truncate", "whitespace-nowrap");
+    expect(phone).toHaveClass("hidden", "shrink-0", "whitespace-nowrap", "lg:inline-flex");
+    expect(email).toHaveClass("hidden", "shrink-0", "whitespace-nowrap", "2xl:inline-flex");
+    expect(contact).toHaveClass("shrink-0", "whitespace-nowrap");
+    expect(contact.parentElement).toHaveClass("shrink-0", "whitespace-nowrap");
+  });
+
   it("replaces Student login with the student's name and exposes profile and article actions", () => {
     testState.useSession.mockReturnValue({
       isPending: false,
@@ -108,6 +125,7 @@ describe("site header student account", () => {
     expect(screen.queryByRole("link", { name: "Student login" })).not.toBeInTheDocument();
     const accountButton = screen.getByRole("button", { name: /Anita Rai/ });
     expect(accountButton).toHaveAttribute("aria-expanded", "false");
+    expect(accountButton.parentElement).toHaveClass("w-32", "shrink-0");
 
     fireEvent.click(accountButton);
 
