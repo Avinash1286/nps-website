@@ -6,6 +6,7 @@ import { ChevronDown, Mail, Menu, Phone, Search, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PublicNavigationItem } from "@/lib/data/public";
+import { SiteStudentAccount } from "@/components/site/site-student-account";
 import { useModalFocus } from "@/components/site/use-modal-focus";
 
 type NavigationChild = readonly [label: string, href: string, external?: boolean, description?: string];
@@ -155,11 +156,10 @@ export function SiteHeader({
         items: item.items.filter(([, href]) => href !== "/admissions/apply"),
       }));
   const utilityLinks = utilityNavigationItems;
-  // Student accounts use the dedicated student portal, independently from
-  // the Clerk-backed staff console. Keep this entry point available even
-  // before the optional utility-navigation seed has been reconciled.
-  const showStudentLink = !utilityLinks.some((item) =>
-    ["/student", "/student/login"].includes(item.href.split(/[?#]/, 1)[0]),
+  // Student authentication is session-aware, so an editor-provided static
+  // login link is replaced by the account control instead of being duplicated.
+  const publicUtilityLinks = utilityLinks.filter(
+    (item) => !["/student", "/student/login"].includes(item.href.split(/[?#]/, 1)[0]),
   );
   // The header always offers a staff entry point. Suppress it when an editor has
   // already published a utility link to the same route, so it never doubles up.
@@ -220,8 +220,8 @@ export function SiteHeader({
   return (
     <>
       <div
-        className={`overflow-hidden bg-[#12123a] text-[11px] text-slate-300 transition-all duration-500 ${
-          scrolled ? "max-h-0 opacity-0" : "max-h-16 opacity-100"
+        className={`relative z-[70] bg-[#12123a] text-[11px] text-slate-300 transition-all duration-500 ${
+          scrolled ? "max-h-0 overflow-hidden opacity-0" : "max-h-16 overflow-visible opacity-100"
         }`}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6 lg:px-8">
@@ -247,7 +247,7 @@ export function SiteHeader({
                 {email}
               </a>
             )}
-            {utilityLinks.map((item) => (
+            {publicUtilityLinks.map((item) => (
               <NavigationLink
                 key={item.id}
                 href={item.href}
@@ -258,11 +258,7 @@ export function SiteHeader({
                 {item.label}
               </NavigationLink>
             ))}
-            {showStudentLink && (
-              <Link href="/student/login" className="font-semibold transition hover:text-white">
-                Student login
-              </Link>
-            )}
+            <SiteStudentAccount variant="desktop" />
             {showStaffLink && (
               <Link href="/sign-in" className="font-semibold text-[#f0bd3a] transition hover:text-white">
                 Staff login
@@ -553,7 +549,7 @@ export function SiteHeader({
                 </div>
               ))}
               <div className="mt-3 border-t border-slate-100 pt-2">
-                {utilityLinks.map((item) => (
+                {publicUtilityLinks.map((item) => (
                   <NavigationLink
                     key={item.id}
                     href={item.href}
@@ -565,15 +561,7 @@ export function SiteHeader({
                     {item.label}
                   </NavigationLink>
                 ))}
-                {showStudentLink && (
-                  <Link
-                    href="/student/login"
-                    onClick={closeMobile}
-                    className="block rounded-xl px-3 py-3 text-sm font-extrabold text-[#2f3169]"
-                  >
-                    Student login
-                  </Link>
-                )}
+                <SiteStudentAccount variant="mobile" onNavigate={closeMobile} />
                 {showStaffLink && (
                   <Link
                     href="/sign-in"

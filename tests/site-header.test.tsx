@@ -5,8 +5,16 @@ import { SiteHeader } from "@/components/site/site-header";
 import type { PublicNavigationItem } from "@/lib/data/public";
 
 const navigation = vi.hoisted(() => ({ pathname: "/facilities" }));
+const studentAuth = vi.hoisted(() => ({
+  useSession: vi.fn(() => ({ data: null, isPending: false })),
+  signOut: vi.fn(),
+}));
 
-vi.mock("next/navigation", () => ({ usePathname: () => navigation.pathname }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => navigation.pathname,
+  useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
+}));
+vi.mock("@/lib/auth/student-client", () => ({ authClient: studentAuth }));
 vi.mock("next/link", () => ({
   default: ({
     href,

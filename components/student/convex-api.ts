@@ -24,3 +24,12 @@ export const studentArticlesApi = {
     "articles:deleteDraft",
   ),
 };
+
+export const studentProfileApi = {
+  getCurrent: makeFunctionReference<"query", Record<string, never>, Student | null>(
+    "studentProfiles:getCurrent",
+  ),
+  updateDisplayName: makeFunctionReference<"mutation", { name: string }, Student>(
+    "studentProfiles:updateDisplayName",
+  ),
+};

@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpenText, LogOut, PenLine } from "lucide-react";
+import { BookOpenText, LogOut, PenLine, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -62,6 +62,12 @@ export function StudentWorkspaceShell({
                 className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50"
               >
                 My articles
+              </Link>
+              <Link
+                href="/student/profile"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50"
+              >
+                <UserRound size={16} aria-hidden="true" /> Profile
               </Link>
               <Link
                 href="/student/articles/new"

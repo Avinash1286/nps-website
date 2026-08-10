@@ -37,6 +37,7 @@ import type * as lib_studentAuth from "../lib/studentAuth.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as media from "../media.js";
 import type * as seed from "../seed.js";
+import type * as studentProfiles from "../studentProfiles.js";
 import type * as users from "../users.js";
 
 import type {
@@ -75,6 +76,7 @@ declare const fullApi: ApiFromModules<{
   "lib/validators": typeof lib_validators;
   media: typeof media;
   seed: typeof seed;
+  studentProfiles: typeof studentProfiles;
   users: typeof users;
 }>;
 
