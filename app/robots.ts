@@ -9,7 +9,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   return {
     rules: site.noIndex
       ? [{ userAgent: "*", disallow: "/" }]
-      : [{ userAgent: "*", allow: "/", disallow: ["/admin", "/api/", "/sign-in"] }],
+      : [{ userAgent: "*", allow: "/", disallow: ["/admin", "/api/", "/sign-in", "/student"] }],
     sitemap: `${siteUrl}/sitemap.xml`,
     host: siteUrl,
   };

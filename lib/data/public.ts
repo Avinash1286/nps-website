@@ -149,6 +149,25 @@ export type PublicPost = {
   seo?: PublicSeo;
 };
 
+/** A student-written article that has completed staff review. */
+export type PublicStudentArticle = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  tags: string[];
+  authorName: string;
+  featuredImageUrl?: string;
+  featuredImageAlt?: string;
+  featured: boolean;
+  publishedAt?: string;
+  updatedAt?: string;
+  seo?: PublicSeo;
+};
+
+export type PublicStudentArticleDetail = PublicStudentArticle & { body: string };
+
 export type PublicFaq = {
   id: string;
   question: string;
@@ -513,6 +532,25 @@ function normalizePost(item: UnknownRecord, index: number): PublicPost {
   };
 }
 
+function normalizeStudentArticle(item: UnknownRecord, index: number): PublicStudentArticle {
+  const slug = text(item.slug, `student-article-${index + 1}`);
+  return {
+    id: slug,
+    slug,
+    title: text(item.title, "Student article"),
+    excerpt: text(item.excerpt ?? item.summary, "Open this article to read the student contribution."),
+    category: text(item.category, "Student writing"),
+    tags: stringList(item.tags),
+    authorName: text(item.authorName ?? item.byline, "Student contributor"),
+    featuredImageUrl: optionalText(item.featuredImageUrl ?? item.imageUrl),
+    featuredImageAlt: optionalText(item.featuredImageAlt ?? item.imageAlt),
+    featured: item.featured === true,
+    publishedAt: dateValue(item.publishedAt),
+    updatedAt: dateValue(item.updatedAt),
+    seo: normalizeSeo(item.seo),
+  };
+}
+
 function normalizeEvent(item: UnknownRecord, index: number): PublicEvent {
   const endsAt = dateValue(item.endsAt ?? item.ends_at ?? item.endDate ?? item.endAt);
   return {
@@ -705,6 +743,22 @@ export async function getNewsItem(slug: string): Promise<PublicPost | null> {
     now: Date.now(),
   });
   return result ? normalizePost(result, 0) : null;
+}
+
+export async function getStudentArticles(limit = 100): Promise<PublicStudentArticle[]> {
+  const result = await queryConvex<unknown>("articles:listPublished", {
+    paginationOpts: { numItems: limit, cursor: null },
+  });
+  const page =
+    result && typeof result === "object" && !Array.isArray(result) ? (result as UnknownRecord).page : result;
+  return asRecords(page).map(normalizeStudentArticle);
+}
+
+export async function getStudentArticle(slug: string): Promise<PublicStudentArticleDetail | null> {
+  const result = await queryConvex<UnknownRecord | null>("articles:getPublished", { slug });
+  if (!result) return null;
+  const body = optionalText(result.body);
+  return body ? { ...normalizeStudentArticle(result, 0), body } : null;
 }
 
 export async function getNotices(limit = 50): Promise<PublicPost[]> {

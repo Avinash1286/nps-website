@@ -7,6 +7,8 @@ Production-oriented website and content platform for Nepal Police School, Garuda
 - Public school website with dedicated routes for academics, leadership, faculty, school life, news, notices, events, downloads, admissions, search, and governance pages.
 - Validated contact, admissions, double-opt-in newsletter, campaign delivery, and event-registration workflows.
 - Invite-only staff administration with role-based publishing, media, submissions, users, jobs, and audit history.
+- Separate email/password student accounts for private article drafts, administrative review, and approved
+  public student writing. Student accounts never grant staff-console access.
 - Gemini information assistant grounded in published school content. The browser never receives the Gemini credential.
 - Convex database, storage, scheduled jobs, retention cleanup, notification queues, and publication scheduling.
 
@@ -28,7 +30,8 @@ This project deliberately does not implement attendance, grades, fees, examinati
    npm ci
    ```
 
-2. Copy `.env.example` to `.env.local` and configure the public Convex URL, Clerk keys, and the Clerk Frontend API origin used by the production CSP.
+2. Copy `.env.example` to `.env.local` and configure the public Convex URL, matching
+   `NEXT_PUBLIC_CONVEX_SITE_URL`, Clerk keys, and the Clerk Frontend API origin used by the production CSP.
 
 3. Start Convex once and follow its project setup prompt:
 
@@ -42,6 +45,8 @@ This project deliberately does not implement attendance, grades, fees, examinati
 
    ```bash
    npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-domain.clerk.accounts.dev
+   npx convex env set SITE_URL http://localhost:3000
+   npx convex env set BETTER_AUTH_SECRET your-random-32-byte-or-longer-secret
    npx convex env set INITIAL_ADMIN_CLERK_USER_ID user_replace_with_the_designated_admin_id
    npx convex env set SEED_SECRET another-long-random-secret
    npx convex env set GEMINI_API_KEY your-google-ai-authorization-key
@@ -52,6 +57,11 @@ This project deliberately does not implement attendance, grades, fees, examinati
    npx convex env set NOTIFICATION_WEBHOOK_SECRET a-long-random-webhook-secret
    npx convex env set NOTIFICATION_WEBHOOK_ALLOWED_HOSTS notifications.example.edu.np
    ```
+
+   Generate `BETTER_AUTH_SECRET` once per deployment with a cryptographically secure generator (for example,
+   `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`). Do not reuse the Clerk
+   secret or expose this value through a `NEXT_PUBLIC_*` variable. Set the production `SITE_URL` to the exact
+   public HTTPS origin.
 
    The notification webhook is optional during development. Without it, delivery jobs remain visible and retryable in the admin job workflow, but no email is sent.
 
@@ -101,6 +111,10 @@ Before launch:
 ## Security model
 
 - Clerk authenticates invited staff; Convex functions enforce authorization for every protected read and write.
+- Better Auth handles student passwords and sessions in an isolated Convex component. Staff authorization also
+  checks the Clerk issuer, so a student identity cannot resolve a staff role even if identifiers collide.
+- Students can edit only their own eligible drafts. Only an administrator can approve an article, and public
+  article queries return approved contributions without account email or private review notes.
 - Public queries return published content only.
 - Public forms use server-side validation, honeypots, request fingerprint limits, idempotency keys, and optional Turnstile verification.
 - Convex Storage IDs are stored instead of permanent media URLs; public media URLs should be treated as bearer links.

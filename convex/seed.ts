@@ -401,6 +401,7 @@ export const baseline = mutation({
         parentId: updatesNavigationId,
         items: [
           { label: "News", href: "/news", location: "header", order: 0 },
+          { label: "Articles", href: "/articles", location: "header", order: 5 },
           {
             label: "Notices",
             href: "/notices",
@@ -490,6 +491,7 @@ export const baseline = mutation({
             order: 10,
           },
           { label: "Notices", href: "/notices", location: "footer", order: 20 },
+          { label: "Articles", href: "/articles", location: "footer", order: 25 },
           { label: "Events", href: "/events", location: "footer", order: 30 },
           {
             label: "Downloads",
@@ -512,6 +514,7 @@ export const baseline = mutation({
       { label: "Accessibility", href: "/accessibility", location: "footer" as const, order: 60 },
       { label: "Accessibility", href: "/accessibility", location: "utility" as const, order: 10 },
       { label: "Contact", href: "/contact", location: "utility" as const, order: 20 },
+      { label: "Student login", href: "/student/login", location: "utility" as const, order: 25 },
       { label: "Staff sign in", href: "/sign-in", location: "utility" as const, order: 30 },
     ]) {
       await ensureNavigation(item);

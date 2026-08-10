@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query, type QueryCtx } from "./_generated/server";
-import { currentUser } from "./lib/auth";
+import { currentUser, isClerkStaffIdentity, requireClerkStaffIdentity } from "./lib/auth";
 import { normalizedEmail, plainText } from "./lib/input";
 import { writeAudit } from "./lib/audit";
 import { roleValidator, userStatusValidator } from "./schema";
@@ -51,10 +51,7 @@ export const syncCurrent = mutation({
   args: {},
   returns: v.id("users"),
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError({ code: "UNAUTHENTICATED", message: "Sign in is required." });
-    }
+    const identity = await requireClerkStaffIdentity(ctx);
     if (!identity.email) {
       throw new ConvexError({
         code: "EMAIL_REQUIRED",
@@ -118,7 +115,7 @@ export const bootstrapEligibility = query({
   }),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return { status: "approval_required" as const };
+    if (!identity || !isClerkStaffIdentity(identity)) return { status: "approval_required" as const };
 
     const user = await ctx.db
       .query("users")
@@ -152,10 +149,7 @@ export const bootstrapFirstAdmin = mutation({
   args: {},
   returns: v.object({ ok: v.boolean() }),
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError({ code: "UNAUTHENTICATED", message: "Sign in is required." });
-    }
+    const identity = await requireClerkStaffIdentity(ctx);
 
     const initialAdminClerkUserId = process.env.INITIAL_ADMIN_CLERK_USER_ID?.trim();
     if (!initialAdminClerkUserId) {

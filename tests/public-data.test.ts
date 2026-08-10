@@ -15,6 +15,8 @@ import {
   getNews,
   getNotice,
   getPrograms,
+  getStudentArticle,
+  getStudentArticles,
   getTeacher,
   getTestimonials,
   prioritizeFeatured,
@@ -253,6 +255,75 @@ describe("public Convex data normalization", () => {
     expect(fetchQueryMock).toHaveBeenLastCalledWith(
       "content:listNews",
       expect.objectContaining({ limit: 3, featured: true }),
+      expect.any(Object),
+    );
+  });
+
+  it("normalizes only the reviewed student-article fields returned by the public API", async () => {
+    fetchQueryMock
+      .mockResolvedValueOnce({
+        page: [
+          {
+            _id: "article-1",
+            slug: "learning-through-service",
+            title: "Learning through service",
+            excerpt: "A student reflection on helping the community.",
+            body: "Service taught me to listen and work with others.",
+            category: "Reflection",
+            tags: ["service", "community"],
+            authorName: "Student Writer",
+            featured: false,
+            publishedAt: 1_800_000_000_000,
+            updatedAt: 1_800_000_100_000,
+            reviewNote: "This must never reach the public DTO.",
+            authorEmail: "private@example.com",
+          },
+        ],
+        isDone: true,
+        continueCursor: "",
+      })
+      .mockResolvedValueOnce({
+        slug: "learning-through-service",
+        title: "Learning through service",
+        excerpt: "A student reflection on helping the community.",
+        body: "Service taught me to listen and work with others.",
+        category: "Reflection",
+        tags: ["service", "community"],
+        authorName: "Student Writer",
+        featured: false,
+        publishedAt: 1_800_000_000_000,
+        updatedAt: 1_800_000_100_000,
+      });
+
+    const list = await getStudentArticles(25);
+    expect(fetchQueryMock).toHaveBeenNthCalledWith(
+      1,
+      "articles:listPublished",
+      { paginationOpts: { numItems: 25, cursor: null } },
+      expect.any(Object),
+    );
+    expect(list).toEqual([
+      expect.objectContaining({
+        id: "learning-through-service",
+        slug: "learning-through-service",
+        authorName: "Student Writer",
+        tags: ["service", "community"],
+      }),
+    ]);
+    expect(list[0]).not.toHaveProperty("authorEmail");
+    expect(list[0]).not.toHaveProperty("reviewNote");
+    expect(list[0]).not.toHaveProperty("body");
+    expect(list[0]).not.toHaveProperty("_id");
+
+    await expect(getStudentArticle("learning-through-service")).resolves.toMatchObject({
+      id: "learning-through-service",
+      title: "Learning through service",
+      authorName: "Student Writer",
+    });
+    expect(fetchQueryMock).toHaveBeenNthCalledWith(
+      2,
+      "articles:getPublished",
+      { slug: "learning-through-service" },
       expect.any(Object),
     );
   });

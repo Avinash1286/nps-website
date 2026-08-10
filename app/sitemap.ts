@@ -9,6 +9,7 @@ import {
   getNotices,
   getPrograms,
   getSiteProfile,
+  getStudentArticles,
   getTeachers,
 } from "@/lib/data/public";
 
@@ -43,6 +44,7 @@ const routes = [
   "/admissions/faq",
   "/admissions/apply",
   "/news",
+  "/articles",
   "/notices",
   "/events",
   "/downloads",
@@ -58,7 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const site = await getSiteProfile();
   if (site.noIndex) return [];
   const now = new Date();
-  const [pages, programs, departments, teachers, leadership, news, notices, events, galleries] =
+  const [pages, programs, departments, teachers, leadership, news, articles, notices, events, galleries] =
     await Promise.all([
       getCmsPages(),
       getPrograms(),
@@ -66,6 +68,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       getTeachers(),
       getLeadership(),
       getNews(200),
+      getStudentArticles(100),
       getNotices(200),
       getEvents("all", 200),
       getGalleryAlbums(),
@@ -76,7 +79,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .map((route) => ({
       url: new URL(route || "/", siteUrl).toString(),
       lastModified: now,
-      changeFrequency: route === "" || route === "/notices" || route === "/news" ? "daily" : "monthly",
+      changeFrequency:
+        route === "" || route === "/notices" || route === "/news" || route === "/articles"
+          ? "daily"
+          : "monthly",
       priority: route === "" ? 1 : route.startsWith("/admissions") ? 0.8 : 0.7,
     }));
   const dynamicRoutes = [
@@ -89,6 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...teachers.filter((item) => !item.seo?.noIndex).map((item) => `/teachers/${item.slug}`),
       ...leadership.map((item) => `/about/leadership/${item.slug}`),
       ...news.filter((item) => !item.seo?.noIndex).map((item) => `/news/${item.slug}`),
+      ...articles.filter((item) => !item.seo?.noIndex).map((item) => `/articles/${item.slug}`),
       ...notices.filter((item) => !item.seo?.noIndex).map((item) => `/notices/${item.slug}`),
       ...events.filter((item) => !item.seo?.noIndex).map((item) => `/events/${item.slug}`),
       ...galleries.filter((item) => !item.seo?.noIndex).map((item) => `/campus-life/gallery/${item.slug}`),

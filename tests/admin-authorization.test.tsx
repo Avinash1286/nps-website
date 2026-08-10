@@ -24,6 +24,7 @@ vi.mock("@/components/admin/admin-gate", () => ({
 
 import { ADMIN_ACCESS_ROLES, hasAdminAccess, submissionRequiredRoles } from "@/lib/admin/authorization";
 import { AiManager } from "@/components/admin/ai-manager";
+import { ArticleReviewManager } from "@/components/admin/article-review-manager";
 import { AuditManager } from "@/components/admin/audit-manager";
 import { BootstrapAdmin } from "@/components/admin/bootstrap-admin";
 import { AdminCollectionScreen, getCollectionDefinition } from "@/components/admin/content-manager";
@@ -80,6 +81,7 @@ describe("admin UI authorization", () => {
     expectGate(<SettingsManager />, ADMIN_ACCESS_ROLES.adminOnly);
     expectGate(<JobsManager />, ADMIN_ACCESS_ROLES.adminOnly);
     expectGate(<AiManager />, ADMIN_ACCESS_ROLES.adminOnly);
+    expectGate(<ArticleReviewManager />, ADMIN_ACCESS_ROLES.adminOnly);
     expectGate(<NavigationManager />, ADMIN_ACCESS_ROLES.navigation);
     expectGate(<MediaManager />, ADMIN_ACCESS_ROLES.content);
     expectGate(<GalleryItemsManager />, ADMIN_ACCESS_ROLES.content);

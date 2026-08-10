@@ -2,14 +2,33 @@ import { ConvexError } from "convex/values";
 import { isConfiguredSecret } from "./secrets";
 import type { QueryCtx, MutationCtx } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
+import type { UserIdentity } from "convex/server";
 
 export type StaffRole = "admin" | "publisher" | "editor" | "admissions";
 
 type AuthContext = Pick<QueryCtx | MutationCtx, "auth" | "db">;
 
+function normalizedIssuer(value: string): string {
+  return value.trim().replace(/\/+$/, "");
+}
+
+export function isClerkStaffIdentity(identity: UserIdentity): boolean {
+  const configuredIssuer = process.env.CLERK_JWT_ISSUER_DOMAIN;
+  if (!configuredIssuer?.trim()) return false;
+  return normalizedIssuer(identity.issuer) === normalizedIssuer(configuredIssuer);
+}
+
+export async function requireClerkStaffIdentity(ctx: Pick<AuthContext, "auth">): Promise<UserIdentity> {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity || !isClerkStaffIdentity(identity)) {
+    throw new ConvexError({ code: "UNAUTHENTICATED", message: "Sign in is required." });
+  }
+  return identity;
+}
+
 export async function currentUser(ctx: AuthContext): Promise<Doc<"users"> | null> {
   const identity = await ctx.auth.getUserIdentity();
-  if (!identity) return null;
+  if (!identity || !isClerkStaffIdentity(identity)) return null;
   return await ctx.db
     .query("users")
     .withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", identity.subject))
@@ -17,10 +36,7 @@ export async function currentUser(ctx: AuthContext): Promise<Doc<"users"> | null
 }
 
 export async function requireUser(ctx: AuthContext): Promise<Doc<"users">> {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) {
-    throw new ConvexError({ code: "UNAUTHENTICATED", message: "Sign in is required." });
-  }
+  const identity = await requireClerkStaffIdentity(ctx);
   const user = await ctx.db
     .query("users")
     .withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", identity.subject))

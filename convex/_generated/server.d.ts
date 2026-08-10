@@ -26,8 +26,10 @@ import type { DataModel } from "./dataModel.js";
  */
 type Env = {
   readonly ASSISTANT_SERVICE_SECRET: string | undefined;
+  readonly BETTER_AUTH_SECRET: string;
   readonly GEMINI_API_KEY: string | undefined;
   readonly GEMINI_MODEL: string | undefined;
+  readonly SITE_URL: string;
 };
 
 /**

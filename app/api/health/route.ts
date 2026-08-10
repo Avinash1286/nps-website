@@ -21,6 +21,7 @@ export function GET() {
   const configuration = {
     siteUrl: isConfiguredUrl(process.env.NEXT_PUBLIC_SITE_URL, process.env.NODE_ENV !== "production"),
     convex: isConfiguredUrl(process.env.NEXT_PUBLIC_CONVEX_URL),
+    studentAuthProxy: isConfiguredUrl(process.env.NEXT_PUBLIC_CONVEX_SITE_URL),
     clerk: Boolean(
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.startsWith("pk_") &&
       !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes("replace") &&

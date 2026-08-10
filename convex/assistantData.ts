@@ -5,6 +5,7 @@ import { internalMutation, internalQuery } from "./_generated/server";
 import { enqueueJob } from "./lib/jobs";
 import { plainText, safeKey, shortHash } from "./lib/input";
 import { enforceRateLimit } from "./lib/rateLimit";
+import { currentUser } from "./lib/auth";
 
 const preparedRequestValidator = v.object({
   conversationId: v.id("aiConversations"),
@@ -70,13 +71,7 @@ export const prepare = internalMutation({
       .first();
 
     if (!conversation || conversation.status !== "active" || conversation.expiresAt <= now) {
-      const identity = await ctx.auth.getUserIdentity();
-      const user = identity
-        ? await ctx.db
-            .query("users")
-            .withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", identity.subject))
-            .unique()
-        : null;
+      const user = await currentUser(ctx);
       const agentThreadId = await createThread(ctx, components.agent, {
         userId: ownerKey,
         title: message.slice(0, 100),

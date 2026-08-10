@@ -12,6 +12,7 @@ import {
   getNews,
   getNotices,
   getPrograms,
+  getStudentArticles,
   getTeachers,
 } from "@/lib/data/public";
 export const metadata: Metadata = { title: "Search", robots: { index: false, follow: true } };
@@ -22,6 +23,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     news,
     notices,
     events,
+    articles,
     teachers,
     pages,
     programs,
@@ -36,6 +38,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         getNews(100),
         getNotices(100),
         getEvents("all", 100),
+        getStudentArticles(100),
         getTeachers(),
         getCmsPages(),
         getPrograms(),
@@ -46,7 +49,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         getNavigation("footer"),
         getNavigation("utility"),
       ])
-    : [[], [], [], [], [], [], [], [], [], [], [], []];
+    : [[], [], [], [], [], [], [], [], [], [], [], [], []];
   const navigationPages = [...headerNavigation, ...footerNavigation, ...utilityNavigation].filter(
     (item) => !item.external && item.href.startsWith("/"),
   );
@@ -100,6 +103,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           href: `/events/${item.slug}`,
           type: "Event",
         })),
+        ...articles.map((item) => ({
+          title: item.title,
+          description: item.excerpt,
+          href: `/articles/${item.slug}`,
+          type: "Student article",
+        })),
         ...teachers.map((item) => ({
           title: item.name,
           description: `${item.designation} · ${item.department}`,
@@ -120,7 +129,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <PageHero
         eyebrow="Website search"
         title="Find school information"
-        description="Search pages, facilities, faculty profiles, news, notices, and events."
+        description="Search pages, facilities, faculty profiles, news, student articles, notices, and events."
         crumbs={[{ label: "Search" }]}
       />
       <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">

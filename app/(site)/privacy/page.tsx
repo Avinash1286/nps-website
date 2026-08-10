@@ -11,7 +11,7 @@ export default function PrivacyPage() {
       eyebrow="Website policy"
       title="Privacy notice"
       description="How information is collected, used, protected, and managed when you use this website."
-      updated="6 August 2026"
+      updated="9 August 2026"
       sections={[
         {
           title: "Information we collect",
@@ -21,6 +21,11 @@ export default function PrivacyPage() {
                 We collect information you choose to provide through contact, admissions, newsletter, and
                 event forms. This may include names, contact details, student information, enquiry content,
                 and consent records.
+              </p>
+              <p>
+                The student publishing portal processes an account name, email address, secure session
+                information, and article drafts. Passwords are handled by the authentication service and are
+                not stored in the school website&apos;s application tables.
               </p>
               <p>
                 Basic technical and security information may be processed to operate the website, prevent
@@ -37,6 +42,7 @@ export default function PrivacyPage() {
               <li>Manage event interest and newsletter subscriptions</li>
               <li>Protect forms and systems from spam or misuse</li>
               <li>Maintain records required for school administration</li>
+              <li>Review student article submissions and publish only approved contributions</li>
             </ul>
           ),
         },
@@ -60,11 +66,18 @@ export default function PrivacyPage() {
         {
           title: "Retention and security",
           body: (
-            <p>
-              Information is retained only as long as reasonably needed for the stated purpose, legal
-              obligations, security, or school administration. Access is restricted according to staff roles,
-              but no online service can guarantee absolute security.
-            </p>
+            <>
+              <p>
+                Information is retained only as long as reasonably needed for the stated purpose, legal
+                obligations, security, or school administration. Access is restricted according to staff
+                roles, but no online service can guarantee absolute security.
+              </p>
+              <p>
+                Drafts and private moderation notes are not displayed publicly. When an article is approved,
+                its title, content, category, publication date, and author display name may appear on the
+                public website.
+              </p>
+            </>
           ),
         },
         {
@@ -87,7 +100,9 @@ export default function PrivacyPage() {
           body: (
             <p>
               A parent or authorised guardian should submit admissions information for a child where required.
-              The website does not ask children to send sensitive documents through public forms.
+              The website does not ask children to send sensitive documents through public forms. Student
+              publishing accounts should be used only with school authorisation and appropriate guardian
+              awareness where required.
             </p>
           ),
         },

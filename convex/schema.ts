@@ -10,6 +10,16 @@ export const roleValidator = v.union(
 
 export const userStatusValidator = v.union(v.literal("active"), v.literal("suspended"), v.literal("pending"));
 
+export const studentProfileStatusValidator = v.union(v.literal("active"), v.literal("suspended"));
+
+export const articleStatusValidator = v.union(
+  v.literal("draft"),
+  v.literal("submitted"),
+  v.literal("rejected"),
+  v.literal("published"),
+  v.literal("archived"),
+);
+
 export const contentStatusValidator = v.union(
   v.literal("draft"),
   v.literal("scheduled"),
@@ -124,6 +134,58 @@ export default defineSchema({
     .index("by_clerk_user_id", ["clerkUserId"])
     .index("by_email", ["email"])
     .index("by_status", ["status"]),
+
+  /**
+   * Public student accounts are authenticated by the isolated Better Auth
+   * component. Only the component user id is stored here; password hashes and
+   * sessions never enter the application schema.
+   */
+  studentProfiles: defineTable({
+    authUserId: v.string(),
+    email: v.string(),
+    name: v.string(),
+    status: studentProfileStatusValidator,
+    termsAcceptedAt: v.optional(v.number()),
+    lastLoginAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_auth_user_id", ["authUserId"])
+    .index("by_email", ["email"])
+    .index("by_status", ["status"]),
+
+  articles: defineTable({
+    authorId: v.id("studentProfiles"),
+    authorNameSnapshot: v.optional(v.string()),
+    slug: v.optional(v.string()),
+    title: v.string(),
+    excerpt: v.string(),
+    body: v.string(),
+    category: v.string(),
+    tags: v.array(v.string()),
+    status: articleStatusValidator,
+    featuredImageId: v.optional(v.id("_storage")),
+    featuredImageAlt: v.optional(v.string()),
+    featured: v.boolean(),
+    seo: seoValidator,
+    reviewNote: v.optional(v.string()),
+    submittedAt: v.optional(v.number()),
+    reviewedBy: v.optional(v.id("users")),
+    reviewedAt: v.optional(v.number()),
+    publishedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_author_id_and_updated_at", ["authorId", "updatedAt"])
+    .index("by_author_id_and_status_and_updated_at", ["authorId", "status", "updatedAt"])
+    .index("by_updated_at", ["updatedAt"])
+    .index("by_status_and_updated_at", ["status", "updatedAt"])
+    .index("by_status_and_submitted_at", ["status", "submittedAt"])
+    .index("by_status_and_published_at", ["status", "publishedAt"])
+    .index("by_featured_image_id", ["featuredImageId"])
+    .searchIndex("search_title", { searchField: "title", filterFields: ["status"] })
+    .searchIndex("search_body", { searchField: "body", filterFields: ["status"] }),
 
   siteSettings: defineTable({
     singletonKey: v.literal("main"),

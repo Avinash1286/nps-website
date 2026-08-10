@@ -11,7 +11,7 @@ export default function TermsPage() {
       eyebrow="Website policy"
       title="Terms of use"
       description="Conditions that apply when accessing school information, forms, downloads, and interactive services."
-      updated="6 August 2026"
+      updated="9 August 2026"
       sections={[
         {
           title: "General information",
@@ -42,6 +42,24 @@ export default function TermsPage() {
               <li>Do not impersonate another person or submit harmful or unlawful content</li>
               <li>Do not upload or share credentials, payment codes, or unnecessary sensitive records</li>
             </ul>
+          ),
+        },
+        {
+          title: "Student accounts and articles",
+          body: (
+            <>
+              <p>
+                Student accounts are personal. Keep login details confidential and notify the school if an
+                account may have been misused. Do not include private student records, contact details, or
+                third-party material without permission in an article.
+              </p>
+              <p>
+                Submitting an article sends it for administrative review; it does not guarantee publication.
+                The school may request changes, reject, archive, or remove a contribution. Published articles
+                remain student contributions and are identified as reviewed rather than official school
+                policy.
+              </p>
+            </>
           ),
         },
         {

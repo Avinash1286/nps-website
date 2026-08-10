@@ -8,6 +8,10 @@ This directory contains the production data model and server functions for the p
 2. In Clerk, create a JWT template named `convex`. Set `CLERK_JWT_ISSUER_DOMAIN` in both Convex development and production deployments to the corresponding Clerk issuer URL.
 3. Set deployment secrets with `npx convex env set NAME value`:
    - `INITIAL_ADMIN_CLERK_USER_ID`: immutable `user_...` ID of the single Clerk account allowed to claim the first administrator role. Configure it separately for each deployment and remove it immediately after activation.
+   - `SITE_URL`: exact Next.js origin used by the student authentication proxy, such as `http://localhost:3000`
+     for development or the canonical HTTPS origin in production.
+   - `BETTER_AUTH_SECRET`: an independent cryptographically random secret of at least 32 bytes for student
+     password/session authentication. Never expose it through browser environment variables.
    - `SEED_SECRET`: backend-only baseline seed secret.
    - `ASSISTANT_SERVICE_SECRET`: a random secret of at least 32 characters shared only by the Next.js assistant route and Convex action; never expose it to browsers. The route signs a canonical request payload with HMAC-SHA256 rather than sending this secret as a function argument.
    - `FORM_SERVICE_SECRET`: a separate, random secret of at least 32 characters shared only by the Next.js form routes and Convex form actions. Never expose it to browsers.
@@ -42,3 +46,7 @@ This directory contains the production data model and server functions for the p
 - Retention never removes active admissions or active newsletter subscribers. Terminal admissions (`enrolled`, `declined`, `withdrawn`) age from their last status update and default to seven years; unsubscribed/bounced newsletter addresses default to three years. Eligible rows are selected through status/time indexes, counters are decremented, and aggregate sensitive-record deletion audits contain counts only.
 - Cron jobs dispatch/recover work, publish/expire scheduled content, and enforce retention. Failed jobs use exponential retry and become `dead` after their attempt limit; admins can retry them. Succeeded, cancelled, and dead jobs expire after `JOB_RETENTION_DAYS`.
 - Clerk users synchronize as `pending` with no roles. Only an administrator can activate them and grant `admin`, `publisher`, `editor`, or `admissions` access.
+- Student accounts are isolated in the Better Auth component and cannot enter the Clerk-backed administration
+  console. Application rows contain only the student profile and article workflow data; passwords remain inside
+  the authentication component. Article ownership and moderation transitions are enforced in Convex, and only
+  `published` articles are returned by public queries.

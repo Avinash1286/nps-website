@@ -155,6 +155,12 @@ export function SiteHeader({
         items: item.items.filter(([, href]) => href !== "/admissions/apply"),
       }));
   const utilityLinks = utilityNavigationItems;
+  // Student accounts use the dedicated student portal, independently from
+  // the Clerk-backed staff console. Keep this entry point available even
+  // before the optional utility-navigation seed has been reconciled.
+  const showStudentLink = !utilityLinks.some((item) =>
+    ["/student", "/student/login"].includes(item.href.split(/[?#]/, 1)[0]),
+  );
   // The header always offers a staff entry point. Suppress it when an editor has
   // already published a utility link to the same route, so it never doubles up.
   const showStaffLink = !utilityLinks.some((item) => item.href.split(/[?#]/, 1)[0] === "/sign-in");
@@ -252,6 +258,11 @@ export function SiteHeader({
                 {item.label}
               </NavigationLink>
             ))}
+            {showStudentLink && (
+              <Link href="/student/login" className="font-semibold transition hover:text-white">
+                Student login
+              </Link>
+            )}
             {showStaffLink && (
               <Link href="/sign-in" className="font-semibold text-[#f0bd3a] transition hover:text-white">
                 Staff login
@@ -554,6 +565,15 @@ export function SiteHeader({
                     {item.label}
                   </NavigationLink>
                 ))}
+                {showStudentLink && (
+                  <Link
+                    href="/student/login"
+                    onClick={closeMobile}
+                    className="block rounded-xl px-3 py-3 text-sm font-extrabold text-[#2f3169]"
+                  >
+                    Student login
+                  </Link>
+                )}
                 {showStaffLink && (
                   <Link
                     href="/sign-in"

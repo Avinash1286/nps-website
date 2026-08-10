@@ -6,6 +6,7 @@ import {
   Activity,
   Bot,
   BookOpenCheck,
+  BookOpenText,
   Building2,
   CalendarDays,
   ChevronDown,
@@ -234,6 +235,14 @@ export const adminNavigation: NavigationGroup[] = [
         searchTerms: "articles stories announcements",
       },
       {
+        label: "Student articles",
+        href: "/admin/articles",
+        icon: BookOpenText,
+        roles: [...ADMIN_ACCESS_ROLES.adminOnly],
+        description: "Review student writing before publication",
+        searchTerms: "student articles submissions moderation approve reject publish",
+      },
+      {
         label: "Notices",
         href: "/admin/notices",
         icon: ClipboardList,
@@ -364,7 +373,13 @@ export const primaryAdminNavigation: NavigationGroup[] = [
   {
     label: "Publish",
     description: "Share updates and resources",
-    items: navigationItems("/admin/news", "/admin/notices", "/admin/events", "/admin/documents"),
+    items: navigationItems(
+      "/admin/news",
+      "/admin/articles",
+      "/admin/notices",
+      "/admin/events",
+      "/admin/documents",
+    ),
   },
   {
     label: "Requests",

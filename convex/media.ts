@@ -169,6 +169,7 @@ async function findStorageReference(
     ["homeSections", "by_image_id", "imageId", storageId],
     ["homeSections", "by_secondary_image_id", "secondaryImageId", storageId],
     ["homeHighlights", "by_image_id", "imageId", storageId],
+    ["articles", "by_featured_image_id", "featuredImageId", storageId],
   ];
   const urlChecks: Array<[string, string, string, unknown]> = mediaUrl
     ? [

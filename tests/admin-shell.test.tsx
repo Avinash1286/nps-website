@@ -91,6 +91,7 @@ describe("administration sidebar", () => {
         "/admin/gallery",
         "/admin/admissions",
         "/admin/news",
+        "/admin/articles",
         "/admin/contacts",
         "/admin/ai",
         "/admin/settings",
@@ -112,7 +113,13 @@ describe("administration sidebar", () => {
       "Facilities",
     ]);
     expect(primaryAdminNavigation.flatMap((group) => group.items).map((item) => item.href)).toEqual(
-      expect.arrayContaining(["/admin/news", "/admin/admissions", "/admin/media", "/admin/settings"]),
+      expect.arrayContaining([
+        "/admin/news",
+        "/admin/articles",
+        "/admin/admissions",
+        "/admin/media",
+        "/admin/settings",
+      ]),
     );
   });
 

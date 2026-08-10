@@ -94,6 +94,34 @@ export type AssistantContext = AssistantContextInput & {
   updatedAt: number;
 };
 
+export type StudentArticleStatus = "draft" | "submitted" | "rejected" | "published" | "archived";
+export type ModeratedStudentArticleStatus = Exclude<StudentArticleStatus, "draft">;
+
+export type AdminStudentArticle = {
+  _id: string;
+  _creationTime: number;
+  title: string;
+  excerpt: string;
+  body: string;
+  category: string;
+  tags: string[];
+  status: StudentArticleStatus;
+  author: { id: string; name: string; email: string; status: string };
+  slug?: string;
+  reviewNote?: string;
+  featuredImageUrl?: string;
+  featuredImageAlt?: string;
+  featured?: boolean;
+  seo: { title?: string; description?: string; imageUrl?: string; noIndex?: boolean };
+  submittedAt?: number;
+  reviewedAt?: number;
+  publishedAt?: number;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type AdminStudentArticleSummary = Omit<AdminStudentArticle, "body" | "tags" | "reviewNote" | "seo">;
+
 export type AssistantConfiguration = {
   assistantEnabled: boolean;
   geminiConfigured: boolean;
@@ -256,6 +284,28 @@ export const assistantAdminApi = {
   ),
   removeContext: makeFunctionReference<"mutation", { id: string }, { ok: boolean }>(
     "assistantAdmin:removeContext",
+  ),
+};
+
+export const articleAdminApi = {
+  listArticles: makeFunctionReference<
+    "query",
+    { paginationOpts: PaginationOpts; status: ModeratedStudentArticleStatus },
+    PageResult<AdminStudentArticleSummary>
+  >("articleAdmin:listArticles"),
+  getArticle: makeFunctionReference<"query", { id: string }, AdminStudentArticle | null>(
+    "articleAdmin:getArticle",
+  ),
+  approve: makeFunctionReference<
+    "mutation",
+    { id: string },
+    { ok: true; status: "published"; publishedAt: number }
+  >("articleAdmin:approve"),
+  reject: makeFunctionReference<"mutation", { id: string; note: string }, { ok: true; status: "rejected" }>(
+    "articleAdmin:reject",
+  ),
+  archive: makeFunctionReference<"mutation", { id: string; note?: string }, { ok: true; status: "archived" }>(
+    "articleAdmin:archive",
   ),
 };
 

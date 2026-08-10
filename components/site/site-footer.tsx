@@ -172,6 +172,12 @@ export function SiteFooter({
             <Link href="/accessibility" className="transition hover:text-white">
               Accessibility
             </Link>
+            <Link
+              href="/student/login"
+              className="inline-flex items-center gap-1 transition hover:text-white"
+            >
+              Student portal <ArrowUpRight size={12} />
+            </Link>
             <Link href="/admin" className="inline-flex items-center gap-1 transition hover:text-white">
               Staff portal <ArrowUpRight size={12} />
             </Link>

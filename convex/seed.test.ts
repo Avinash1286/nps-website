@@ -165,7 +165,7 @@ describe("baseline seed", () => {
     ).toHaveLength(0);
     expect(
       seeded.navigation.filter((item) => item.parentId === updates?._id).map((item) => item.label),
-    ).toEqual(["News", "Notices", "Events", "Downloads"]);
+    ).toEqual(["News", "Articles", "Notices", "Events", "Downloads"]);
     expect(
       seeded.navigation.find((item) => item.parentId === academics?._id && item.href === "/teachers"),
     ).toMatchObject({ label: "Teachers" });
@@ -174,8 +174,11 @@ describe("baseline seed", () => {
         .filter((item) => item.location === "footer" && item.parentId === undefined)
         .map((item) => item.label),
     ).toEqual(expect.arrayContaining(["School", "Learning", "Information"]));
+    expect(
+      seeded.navigation.filter((item) => item.location === "footer" && item.href === "/articles"),
+    ).toHaveLength(1);
     expect(seeded.navigation.filter((item) => item.location === "utility").map((item) => item.label)).toEqual(
-      ["Accessibility", "Contact", "Staff sign in"],
+      ["Accessibility", "Contact", "Student login", "Staff sign in"],
     );
 
     await t.run(async (ctx) => {
