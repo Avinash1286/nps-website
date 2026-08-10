@@ -1,16 +1,20 @@
 import { createClient, type AuthFunctions, type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { APIError, createAuthMiddleware } from "better-auth/api";
-import { betterAuth } from "better-auth/minimal";
+import { betterAuth, type BetterAuthOptions } from "better-auth/minimal";
 import { components, internal } from "./_generated/api";
 import type { DataModel } from "./_generated/dataModel";
+import betterAuthSchema from "./betterAuth/schema";
 import { normalizedEmail, plainText } from "./lib/input";
 import { betterAuthConfig } from "./auth.config";
 
 const authFunctions: AuthFunctions = internal.auth;
 
-export const authComponent = createClient<DataModel>(components.betterAuth, {
+export const authComponent = createClient<DataModel, typeof betterAuthSchema>(components.betterAuth, {
   authFunctions,
+  local: {
+    schema: betterAuthSchema,
+  },
   triggers: {
     user: {
       onCreate: async (ctx, authUser) => {
@@ -52,17 +56,54 @@ export const authComponent = createClient<DataModel>(components.betterAuth, {
   },
 });
 
+function exactStudentOrigin(raw: string, variableName: string): string {
+  if (/[*?]/.test(raw)) {
+    throw new Error(`${variableName} must not contain wildcard origins.`);
+  }
+  const url = new URL(raw);
+  if (url.pathname !== "/" || url.search || url.hash || url.username || url.password) {
+    throw new Error(
+      `${variableName} must contain exact application origins without a path, query, or credentials.`,
+    );
+  }
+  if (url.protocol !== "https:" && !(url.protocol === "http:" && url.hostname === "localhost")) {
+    throw new Error(`${variableName} must use HTTPS, except for http://localhost during development.`);
+  }
+  return url.origin;
+}
+
 export function studentSiteOrigin(): string {
   const raw = process.env.SITE_URL?.trim();
   if (!raw) throw new Error("SITE_URL is required for student authentication.");
-  const url = new URL(raw);
-  if (url.pathname !== "/" || url.search || url.hash || url.username || url.password) {
-    throw new Error("SITE_URL must be an exact application origin without a path, query, or credentials.");
+  return exactStudentOrigin(raw, "SITE_URL");
+}
+
+export function studentTrustedOrigins(siteUrl = studentSiteOrigin()): string[] {
+  const canonicalOrigin = exactStudentOrigin(siteUrl, "SITE_URL");
+  const configured = process.env.STUDENT_AUTH_TRUSTED_ORIGINS?.split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const additional = (configured ?? []).map((origin) =>
+    exactStudentOrigin(origin, "STUDENT_AUTH_TRUSTED_ORIGINS"),
+  );
+  if (
+    new URL(canonicalOrigin).protocol === "https:" &&
+    additional.some((origin) => new URL(origin).protocol === "http:")
+  ) {
+    throw new Error(
+      "STUDENT_AUTH_TRUSTED_ORIGINS must not add localhost to an HTTPS production auth deployment.",
+    );
   }
-  if (url.protocol !== "https:" && !(url.protocol === "http:" && url.hostname === "localhost")) {
-    throw new Error("SITE_URL must use HTTPS, except for http://localhost during development.");
-  }
-  return url.origin;
+  return [...new Set([canonicalOrigin, ...additional])];
+}
+
+function studentAuthBaseUrl(siteUrl: string, trustedOrigins: string[]): BetterAuthOptions["baseURL"] {
+  if (trustedOrigins.length === 1) return siteUrl;
+  return {
+    allowedHosts: trustedOrigins,
+    protocol: "auto",
+    fallback: siteUrl,
+  };
 }
 
 function authSecret(): string {
@@ -82,13 +123,22 @@ export function hasAcceptedStudentTerms(body: unknown): boolean {
   );
 }
 
-export const createAuth = (ctx: GenericCtx<DataModel>) => {
-  const siteUrl = studentSiteOrigin();
-  return betterAuth({
+type AuthSchemaGenerationOverrides = {
+  siteUrl: string;
+  secret: string;
+};
+
+export const createAuthOptions = (
+  ctx: GenericCtx<DataModel>,
+  schemaGeneration?: AuthSchemaGenerationOverrides,
+) => {
+  const siteUrl = schemaGeneration?.siteUrl ?? studentSiteOrigin();
+  const trustedOrigins = schemaGeneration ? [siteUrl] : studentTrustedOrigins(siteUrl);
+  return {
     appName: "Nepal Police School Student Publishing",
-    baseURL: siteUrl,
-    secret: authSecret(),
-    trustedOrigins: [siteUrl],
+    baseURL: studentAuthBaseUrl(siteUrl, trustedOrigins),
+    secret: schemaGeneration?.secret ?? authSecret(),
+    trustedOrigins,
     database: authComponent.adapter(ctx),
     emailAndPassword: {
       enabled: true,
@@ -119,7 +169,10 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
       }),
     },
     plugins: [convex({ authConfig: betterAuthConfig })],
-  });
+  } satisfies BetterAuthOptions;
 };
+
+export const createAuth = (ctx: GenericCtx<DataModel>, schemaGeneration?: AuthSchemaGenerationOverrides) =>
+  betterAuth(createAuthOptions(ctx, schemaGeneration));
 
 export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi();

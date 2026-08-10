@@ -10,6 +10,9 @@ This directory contains the production data model and server functions for the p
    - `INITIAL_ADMIN_CLERK_USER_ID`: immutable `user_...` ID of the single Clerk account allowed to claim the first administrator role. Configure it separately for each deployment and remove it immediately after activation.
    - `SITE_URL`: exact Next.js origin used by the student authentication proxy, such as `http://localhost:3000`
      for development or the canonical HTTPS origin in production.
+   - Optional `STUDENT_AUTH_TRUSTED_ORIGINS`: comma-separated additional exact HTTPS origins for named
+     previews that intentionally share a non-production deployment. Wildcards are rejected. Do not include
+     localhost on the production auth deployment; use separate Convex deployments for development and production.
    - `BETTER_AUTH_SECRET`: an independent cryptographically random secret of at least 32 bytes for student
      password/session authentication. Never expose it through browser environment variables.
    - `SEED_SECRET`: backend-only baseline seed secret.

@@ -30,6 +30,7 @@ type Env = {
   readonly GEMINI_API_KEY: string | undefined;
   readonly GEMINI_MODEL: string | undefined;
   readonly SITE_URL: string;
+  readonly STUDENT_AUTH_TRUSTED_ORIGINS: string | undefined;
 };
 
 /**

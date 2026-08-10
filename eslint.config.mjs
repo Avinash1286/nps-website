@@ -11,5 +11,6 @@ export default defineConfig([
     "coverage/**",
     "design-references/**",
     "convex/_generated/**",
+    "convex/**/_generated/**",
   ]),
 ]);

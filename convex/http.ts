@@ -1,12 +1,12 @@
 import { httpRouter } from "convex/server";
-import { authComponent, createAuth, studentSiteOrigin } from "./auth";
+import { authComponent, createAuth, studentTrustedOrigins } from "./auth";
 
 const http = httpRouter();
 
 authComponent.registerRoutesLazy(http, createAuth, {
   basePath: "/api/auth",
   cors: true,
-  trustedOrigins: [studentSiteOrigin()],
+  trustedOrigins: studentTrustedOrigins(),
 });
 
 export default http;

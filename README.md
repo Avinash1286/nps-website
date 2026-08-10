@@ -58,6 +58,10 @@ This project deliberately does not implement attendance, grades, fees, examinati
    npx convex env set NOTIFICATION_WEBHOOK_ALLOWED_HOSTS notifications.example.edu.np
    ```
 
+   If one non-production Convex deployment must temporarily serve localhost and one named preview, add only
+   that exact HTTPS origin with `STUDENT_AUTH_TRUSTED_ORIGINS`. Do not use a wildcard or share the production
+   auth deployment with localhost. Separate Convex deployments remain the production setup.
+
    Generate `BETTER_AUTH_SECRET` once per deployment with a cryptographically secure generator (for example,
    `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`). Do not reuse the Clerk
    secret or expose this value through a `NEXT_PUBLIC_*` variable. Set the production `SITE_URL` to the exact
