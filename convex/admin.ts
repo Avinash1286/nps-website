@@ -988,6 +988,88 @@ function validatePublication(values: any, actor: Doc<"users">, existing?: any) {
   }
 }
 
+function requiresPublishedRelationship(status: Doc<"teachers">["status"]): boolean {
+  return status === "published" || status === "scheduled";
+}
+
+async function validateTeacherDepartmentRelationship(
+  ctx: MutationCtx,
+  departmentId: Id<"departments"> | undefined,
+  status: Doc<"teachers">["status"],
+) {
+  if (!departmentId) {
+    if (requiresPublishedRelationship(status)) {
+      throw new ConvexError({
+        code: "PUBLISHED_DEPARTMENT_REQUIRED",
+        message: "Assign this teacher to a published department before publishing or scheduling it.",
+      });
+    }
+    return;
+  }
+  const department = await ctx.db.get("departments", departmentId);
+  if (!department) {
+    throw new ConvexError({
+      code: "INVALID_DEPARTMENT",
+      message: "The selected department does not exist.",
+    });
+  }
+  if (requiresPublishedRelationship(status) && department.status !== "published") {
+    throw new ConvexError({
+      code: "PUBLISHED_DEPARTMENT_REQUIRED",
+      message: "Publish the selected department before publishing or scheduling this teacher.",
+    });
+  }
+}
+
+async function validateDepartmentHeadRelationship(
+  ctx: MutationCtx,
+  departmentId: Id<"departments"> | undefined,
+  headTeacherId: Id<"teachers"> | undefined,
+  status: Doc<"departments">["status"],
+) {
+  if (!headTeacherId) return;
+  const teacher = await ctx.db.get("teachers", headTeacherId);
+  if (!teacher) {
+    throw new ConvexError({
+      code: "INVALID_TEACHER",
+      message: "The selected department head does not exist.",
+    });
+  }
+  if (!departmentId || teacher.departmentId !== departmentId) {
+    throw new ConvexError({
+      code: "INVALID_DEPARTMENT_HEAD",
+      message: "Choose a teacher assigned to this department as department head.",
+    });
+  }
+  if (requiresPublishedRelationship(status) && teacher.status !== "published") {
+    throw new ConvexError({
+      code: "PUBLISHED_DEPARTMENT_HEAD_REQUIRED",
+      message: "Publish the selected department head before publishing or scheduling this department.",
+    });
+  }
+}
+
+async function preventCurrentHeadRelationshipChange(
+  ctx: MutationCtx,
+  teacher: Doc<"teachers">,
+  nextDepartmentId: Id<"departments"> | undefined,
+  nextStatus: Doc<"teachers">["status"],
+) {
+  const assignmentChanged = teacher.departmentId !== nextDepartmentId;
+  const changedToUnpublished = teacher.status !== nextStatus && nextStatus !== "published";
+  if (!assignmentChanged && !changedToUnpublished) return;
+  const headedDepartment = await ctx.db
+    .query("departments")
+    .withIndex("by_head_teacher_id", (q) => q.eq("headTeacherId", teacher._id))
+    .first();
+  if (headedDepartment) {
+    throw new ConvexError({
+      code: "TEACHER_IS_DEPARTMENT_HEAD",
+      message: "Choose another department head before moving, unassigning, or unpublishing this teacher.",
+    });
+  }
+}
+
 async function ensureUniqueSlug(
   ctx: MutationCtx,
   type: ContentType,
@@ -1122,25 +1204,6 @@ export const upsertContent = mutation({
     const id = args.id ? normalizeId(ctx, args.type, args.id) : undefined;
     const existing = id ? await (ctx.db as any).get(args.type, id) : null;
     if (id && !existing) throw new ConvexError({ code: "NOT_FOUND", message: "Content was not found." });
-    const raw = args.data as any;
-    if (args.type === "teachers" && raw.departmentId) {
-      const department = await ctx.db.get("departments", raw.departmentId);
-      if (!department) {
-        throw new ConvexError({
-          code: "INVALID_DEPARTMENT",
-          message: "The selected department does not exist.",
-        });
-      }
-    }
-    if (args.type === "departments" && raw.headTeacherId) {
-      const teacher = await ctx.db.get("teachers", raw.headTeacherId);
-      if (!teacher) {
-        throw new ConvexError({
-          code: "INVALID_TEACHER",
-          message: "The selected department head does not exist.",
-        });
-      }
-    }
     const cleaned = cleanContent(args.type, args.data);
     if (
       args.type === "events" &&
@@ -1154,6 +1217,41 @@ export const upsertContent = mutation({
       });
     }
     if (existing && args.data.status === undefined) cleaned.status = existing.status;
+    if (args.type === "teachers") {
+      const nextDepartmentId = cleaned.departmentId as Id<"departments"> | undefined;
+      const nextStatus = cleaned.status as Doc<"teachers">["status"];
+      if (existing) {
+        await preventCurrentHeadRelationshipChange(
+          ctx,
+          existing as Doc<"teachers">,
+          nextDepartmentId,
+          nextStatus,
+        );
+      }
+      const relationshipChanged =
+        !existing ||
+        existing.departmentId !== nextDepartmentId ||
+        (existing.status !== nextStatus && requiresPublishedRelationship(nextStatus));
+      if (relationshipChanged) {
+        await validateTeacherDepartmentRelationship(ctx, nextDepartmentId, nextStatus);
+      }
+    }
+    if (args.type === "departments") {
+      const nextHeadTeacherId = cleaned.headTeacherId as Id<"teachers"> | undefined;
+      const nextStatus = cleaned.status as Doc<"departments">["status"];
+      const relationshipChanged =
+        !existing ||
+        existing.headTeacherId !== nextHeadTeacherId ||
+        (existing.status !== nextStatus && requiresPublishedRelationship(nextStatus));
+      if (relationshipChanged) {
+        await validateDepartmentHeadRelationship(
+          ctx,
+          existing?._id as Id<"departments"> | undefined,
+          nextHeadTeacherId,
+          nextStatus,
+        );
+      }
+    }
     validatePublication(cleaned, actor, existing);
     await ensureUniqueSlug(ctx, args.type, cleaned.slug, existing?._id);
     const now = Date.now();
@@ -1227,6 +1325,17 @@ export const changeContentStatus = mutation({
       // configured expiry unless an explicit replacement is supplied.
       expireAt: args.expireAt ?? existing.expireAt,
     };
+    if (args.type === "teachers") {
+      const teacher = existing as Doc<"teachers">;
+      await preventCurrentHeadRelationshipChange(ctx, teacher, teacher.departmentId, args.status);
+      if (requiresPublishedRelationship(args.status)) {
+        await validateTeacherDepartmentRelationship(ctx, teacher.departmentId, args.status);
+      }
+    }
+    if (args.type === "departments" && requiresPublishedRelationship(args.status)) {
+      const department = existing as Doc<"departments">;
+      await validateDepartmentHeadRelationship(ctx, department._id, department.headTeacherId, args.status);
+    }
     validatePublication(values, actor, existing);
     const now = Date.now();
     await (ctx.db as any).patch(args.type, id, {

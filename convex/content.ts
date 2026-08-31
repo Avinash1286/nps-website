@@ -945,7 +945,13 @@ export const listDepartments = query({
 
 export const getDepartment = query({
   args: { slug: v.string(), now: v.optional(v.number()) },
-  returns: v.union(v.null(), publicDepartmentValidator.extend({ teachers: v.array(publicTeacherValidator) })),
+  returns: v.union(
+    v.null(),
+    publicDepartmentValidator.extend({
+      teachers: v.array(publicTeacherValidator),
+      headTeacher: v.union(v.null(), publicTeacherValidator),
+    }),
+  ),
   handler: async (ctx, args) => {
     const department = await ctx.db
       .query("departments")
@@ -958,11 +964,19 @@ export const getDepartment = query({
         q.eq("departmentId", department._id).eq("status", "published"),
       )
       .take(250);
+    const publicTeachers = await Promise.all(
+      teachers
+        .filter((teacher) => isPublished(teacher))
+        .sort((left, right) => left.order - right.order)
+        .map((teacher) => publicTeacher(ctx, teacher)),
+    );
+    const headTeacher = department.headTeacherId
+      ? (publicTeachers.find((teacher) => teacher._id === department.headTeacherId) ?? null)
+      : null;
     return {
       ...publicDepartment(department),
-      teachers: await Promise.all(
-        teachers.filter((teacher) => isPublished(teacher)).map((teacher) => publicTeacher(ctx, teacher)),
-      ),
+      teachers: publicTeachers,
+      headTeacher,
     };
   },
 });

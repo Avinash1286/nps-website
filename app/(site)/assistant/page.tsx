@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
 import { BotOff } from "lucide-react";
 import { AssistantPanel } from "@/components/assistant/assistant-panel";
+import { contentMetadata } from "@/lib/content/public-metadata";
 import { getSiteProfile } from "@/lib/data/public";
 
-export const metadata: Metadata = {
+export const metadata = contentMetadata({
   title: "Information Assistant",
   description: "Ask questions using verified information published by Nepal Police School Garuda.",
-};
+  path: "/assistant",
+});
 
 export default async function AssistantPage() {
   const site = await getSiteProfile();

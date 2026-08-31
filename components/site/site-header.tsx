@@ -6,7 +6,7 @@ import { ChevronDown, Mail, Menu, Phone, Search, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PublicNavigationItem } from "@/lib/data/public";
-import { SiteStudentAccount } from "@/components/site/site-student-account";
+import { SiteStudentAccount, useStudentAccountSession } from "@/components/site/site-student-account";
 import { useModalFocus } from "@/components/site/use-modal-focus";
 
 type NavigationChild = readonly [label: string, href: string, external?: boolean, description?: string];
@@ -99,6 +99,7 @@ export function SiteHeader({
   utilityNavigationItems?: PublicNavigationItem[];
 }) {
   const pathname = usePathname();
+  const studentAccount = useStudentAccountSession(pathname);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [desktopOpen, setDesktopOpen] = useState<string | null>(null);
@@ -258,7 +259,7 @@ export function SiteHeader({
                 {item.label}
               </NavigationLink>
             ))}
-            <SiteStudentAccount variant="desktop" />
+            <SiteStudentAccount variant="desktop" {...studentAccount} />
             {showStaffLink && (
               <Link
                 href="/sign-in"
@@ -282,7 +283,7 @@ export function SiteHeader({
             scrolled ? "h-[68px]" : "h-[86px]"
           }`}
         >
-          <Link href="/" className="group flex min-w-0 items-center gap-3" aria-label={`${schoolName} home`}>
+          <Link href="/" className="group flex min-w-0 items-center gap-3">
             <span className="relative shrink-0">
               <span
                 aria-hidden="true"
@@ -293,7 +294,6 @@ export function SiteHeader({
                 alt=""
                 width={52}
                 height={52}
-                priority
                 className={`relative rounded-full object-contain transition-all duration-500 ${
                   scrolled ? "h-10 w-10" : "h-12 w-12"
                 }`}
@@ -564,7 +564,7 @@ export function SiteHeader({
                     {item.label}
                   </NavigationLink>
                 ))}
-                <SiteStudentAccount variant="mobile" onNavigate={closeMobile} />
+                <SiteStudentAccount variant="mobile" onNavigate={closeMobile} {...studentAccount} />
                 {showStaffLink && (
                   <Link
                     href="/sign-in"

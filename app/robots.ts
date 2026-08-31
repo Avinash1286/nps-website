@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 import { getSiteProfile } from "@/lib/data/public";
+import { getSiteUrl } from "@/lib/server/site-url";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   const site = await getSiteProfile();
   return {
     rules: site.noIndex

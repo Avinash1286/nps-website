@@ -1,7 +1,7 @@
 "use client";
 
 import PublicImage from "@/components/site/public-image";
-import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, Play, Quote } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type { PublicTestimonial } from "@/lib/data/public";
 
@@ -9,17 +9,18 @@ const INTERVAL_MS = 8000;
 
 export function AlumniCarousel({ items }: { items: readonly PublicTestimonial[] }) {
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [interactionPaused, setInteractionPaused] = useState(false);
+  const [autoPlayPaused, setAutoPlayPaused] = useState(false);
   const count = items.length;
 
   const go = useCallback((next: number) => setIndex(((next % count) + count) % count), [count]);
 
   useEffect(() => {
-    if (paused || count < 2) return;
+    if (interactionPaused || autoPlayPaused || count < 2) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setTimeout(() => setIndex((current) => (current + 1) % count), INTERVAL_MS);
     return () => window.clearTimeout(timer);
-  }, [index, paused, count]);
+  }, [autoPlayPaused, count, index, interactionPaused]);
 
   const active = items[index];
   if (!active) return null;
@@ -29,11 +30,11 @@ export function AlumniCarousel({ items }: { items: readonly PublicTestimonial[] 
       role="region"
       aria-roledescription="carousel"
       aria-label="Alumni voices"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
+      onMouseEnter={() => setInteractionPaused(true)}
+      onMouseLeave={() => setInteractionPaused(false)}
+      onFocusCapture={() => setInteractionPaused(true)}
       onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setPaused(false);
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setInteractionPaused(false);
       }}
       onKeyDown={(event) => {
         if (event.key === "ArrowRight") {
@@ -96,6 +97,15 @@ export function AlumniCarousel({ items }: { items: readonly PublicTestimonial[] 
             ))}
           </div>
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setAutoPlayPaused((current) => !current)}
+              aria-label={autoPlayPaused ? "Resume alumni testimonials" : "Pause alumni testimonials"}
+              aria-pressed={autoPlayPaused}
+              className="grid h-11 w-11 place-items-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
+            >
+              {autoPlayPaused ? <Play size={17} /> : <Pause size={17} />}
+            </button>
             <button
               type="button"
               onClick={() => go(index - 1)}

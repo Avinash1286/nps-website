@@ -1,7 +1,6 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 
-const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const clerkConfigured = Boolean(
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
   !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes("replace") &&
@@ -9,22 +8,16 @@ const clerkConfigured = Boolean(
   !process.env.CLERK_SECRET_KEY.includes("replace"),
 );
 
-const protectedProxy = clerkConfigured
-  ? clerkMiddleware(async (auth, request) => {
-      if (isAdminRoute(request)) await auth.protect();
-    })
-  : null;
+// Authentication/authorization is enforced by the protected resource itself
+// (app/admin/layout.tsx and Convex role checks). Clerk middleware remains here
+// to attach verified session state to matching requests.
+const clerkProxy = clerkConfigured ? clerkMiddleware() : null;
 
 export function proxy(request: NextRequest, event: NextFetchEvent) {
-  // Keeping the project buildable before secrets are provisioned makes the
-  // setup screen reachable without weakening configured production routes.
-  if (!protectedProxy) return NextResponse.next();
-  return protectedProxy(request, event);
+  if (!clerkProxy) return NextResponse.next();
+  return clerkProxy(request, event);
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api|trpc)(.*)",
-  ],
+  matcher: ["/admin/:path*", "/sign-in/:path*"],
 };

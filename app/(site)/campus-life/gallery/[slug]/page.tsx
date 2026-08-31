@@ -16,6 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         title: detail.album.title,
         description: detail.album.description ?? `Approved media from ${detail.album.title}.`,
         seo: detail.album.seo,
+        path: `/campus-life/gallery/${slug}`,
       })
     : {};
 }

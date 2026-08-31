@@ -97,12 +97,24 @@ export async function HomePage() {
         </div>
       </HeroCarousel>
 
-      <AboutSection site={site} section={sections.about} pillars={aboutPillars} />
-      <ManagementMessage leaders={leaders} section={sections.management} />
-      <NewsEvents news={news} events={events} notices={notices} section={sections.news} />
-      <EcaActivities section={sections.eca} cards={ecaCards} />
-      <GalleryPreview albums={albums} section={sections.gallery} />
-      <AlumniSection testimonials={testimonials} section={sections.alumni} />
+      <div className="home-deferred-section">
+        <AboutSection site={site} section={sections.about} pillars={aboutPillars} />
+      </div>
+      <div className="home-deferred-section">
+        <ManagementMessage leaders={leaders} section={sections.management} />
+      </div>
+      <div className="home-deferred-section">
+        <NewsEvents news={news} events={events} notices={notices} section={sections.news} />
+      </div>
+      <div className="home-deferred-section">
+        <EcaActivities section={sections.eca} cards={ecaCards} />
+      </div>
+      <div className="home-deferred-section">
+        <GalleryPreview albums={albums} section={sections.gallery} />
+      </div>
+      <div className="home-deferred-section">
+        <AlumniSection testimonials={testimonials} section={sections.alumni} />
+      </div>
     </>
   );
 }

@@ -14,6 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         title: teacher.name,
         description: `${teacher.name}, ${teacher.designation} at Nepal Police School, Garuda.`,
         seo: teacher.seo,
+        path: `/teachers/${slug}`,
       })
     : {};
 }
@@ -28,7 +29,11 @@ export default async function TeacherPage({ params }: { params: Promise<{ slug: 
         title={teacher.name}
         description={`${teacher.designation} · Nepal Police School, Garuda`}
         image="/media/nps-staff-group.jpg"
-        crumbs={[{ label: "Teachers", href: "/teachers" }, { label: teacher.name }]}
+        crumbs={[
+          { label: "Departments", href: "/departments" },
+          { label: teacher.department, href: `/departments/${teacher.departmentSlug}` },
+          { label: teacher.name },
+        ]}
       />
       <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[320px_1fr]">
@@ -124,17 +129,17 @@ export default async function TeacherPage({ params }: { params: Promise<{ slug: 
             )}
             <div className="mt-10 flex flex-wrap gap-4 border-t border-slate-200 pt-6">
               <Link
-                href={`/teachers?department=${teacher.departmentSlug}`}
+                href={`/departments/${teacher.departmentSlug}`}
                 className="max-w-full rounded-xl bg-[#2e3192] px-4 py-2.5 text-sm font-bold text-white"
               >
-                View department faculty
+                View {teacher.department}
               </Link>
               <Link
-                href="/teachers"
+                href="/departments"
                 className="inline-flex items-center gap-2 text-sm font-bold text-[#2e3192]"
               >
                 <ArrowLeft size={15} />
-                All teachers
+                All departments
               </Link>
             </div>
           </article>

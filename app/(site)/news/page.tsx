@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
 import { ContentCard } from "@/components/site/content-card";
 import { EmptyState } from "@/components/site/empty-state";
 import { PageHero } from "@/components/site/page-hero";
+import { contentMetadata } from "@/lib/content/public-metadata";
 import { getNews } from "@/lib/data/public";
-export const metadata: Metadata = {
+export const metadata = contentMetadata({
   title: "School news",
   description: "Published news and stories from Nepal Police School, Garuda.",
-};
+  path: "/news",
+});
 export default async function NewsPage() {
   const news = await getNews(100);
   return (

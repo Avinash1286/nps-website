@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { StandardPage } from "@/components/site/standard-page";
 import { cmsPageToStandard } from "@/lib/content/cms-page";
 import { schoolLifePages } from "@/lib/content/site-pages";
@@ -18,6 +18,9 @@ export async function generateMetadata({
 
 export default async function SchoolLifeSectionPage({ params }: { params: Promise<{ section: string }> }) {
   const { section } = await params;
+  if (section === "facilities") permanentRedirect("/facilities");
+  if (section === "virtual-tour") permanentRedirect("/facilities");
+  if (section === "transport") permanentRedirect("/facilities#transportation");
   const configured = await getCmsPage(`campus-life/${section}`);
   const content = configured ? cmsPageToStandard(configured, "School life") : schoolLifePages[section];
   if (!content) notFound();

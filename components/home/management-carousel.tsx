@@ -32,9 +32,11 @@ function initials(name: string) {
 
 export function ManagementCarousel({ leaders }: { leaders: readonly PublicLeader[] }) {
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [interactionPaused, setInteractionPaused] = useState(false);
+  const [autoPlayPaused, setAutoPlayPaused] = useState(false);
   const [reduced, setReduced] = useState(false);
   const count = leaders.length;
+  const paused = interactionPaused || autoPlayPaused;
 
   const go = useCallback((next: number) => setIndex(((next % count) + count) % count), [count]);
 
@@ -60,11 +62,13 @@ export function ManagementCarousel({ leaders }: { leaders: readonly PublicLeader
       role="region"
       aria-roledescription="carousel"
       aria-label="Messages from the school leadership"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
+      onMouseEnter={() => setInteractionPaused(true)}
+      onMouseLeave={() => setInteractionPaused(false)}
+      onFocusCapture={() => setInteractionPaused(true)}
       onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setPaused(false);
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setInteractionPaused(false);
+        }
       }}
       onKeyDown={(event) => {
         if (event.key === "ArrowRight") {
@@ -133,11 +137,12 @@ export function ManagementCarousel({ leaders }: { leaders: readonly PublicLeader
               </span>
               <button
                 type="button"
-                onClick={() => setPaused((value) => !value)}
-                aria-label={paused ? "Resume messages" : "Pause messages"}
+                onClick={() => setAutoPlayPaused((value) => !value)}
+                aria-label={autoPlayPaused ? "Resume messages" : "Pause messages"}
+                aria-pressed={autoPlayPaused}
                 className="grid h-9 w-9 place-items-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
               >
-                {paused ? <Play size={14} /> : <Pause size={14} />}
+                {autoPlayPaused ? <Play size={14} /> : <Pause size={14} />}
               </button>
               <button
                 type="button"
@@ -159,7 +164,7 @@ export function ManagementCarousel({ leaders }: { leaders: readonly PublicLeader
           )}
         </div>
 
-        <div aria-live="polite" aria-atomic="true">
+        <div aria-live={paused ? "polite" : "off"} aria-atomic="true">
           <div key={active.id} className="anim-fade-up">
             <blockquote className="mt-6 line-clamp-6 min-h-[11rem] text-lg leading-9 font-medium whitespace-pre-line text-slate-100 sm:min-h-[13rem] sm:text-xl sm:leading-10">
               {messageOf(active)}
@@ -225,7 +230,10 @@ export function ManagementCarousel({ leaders }: { leaders: readonly PublicLeader
                         className="block h-full w-full bg-[#f0bd3a]"
                         style={{
                           transformOrigin: "left center",
-                          animation: `nps-sweep ${INTERVAL_MS}ms linear both`,
+                          animationName: "nps-sweep",
+                          animationDuration: `${INTERVAL_MS}ms`,
+                          animationTimingFunction: "linear",
+                          animationFillMode: "both",
                           animationPlayState: paused ? "paused" : "running",
                         }}
                       />

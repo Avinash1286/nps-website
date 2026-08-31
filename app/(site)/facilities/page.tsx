@@ -11,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
       page?.summary ??
       "Explore school-confirmed learning, residential, wellbeing, and activity facilities at Nepal Police School, Garuda.",
     seo: page?.seo,
+    path: "/facilities",
   });
 }
 

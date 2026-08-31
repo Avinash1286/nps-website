@@ -95,6 +95,14 @@ img {
   max-width: 100%;
 }
 
+/* Let the browser postpone layout and paint for home-page sections that are
+   far below the viewport while keeping their complete server-rendered markup
+   available to search engines, assistive technology, and in-page search. */
+.home-deferred-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 52rem;
+}
+
 ::selection {
   background: #c4c9ef;
   color: var(--brand-950);
@@ -204,15 +212,6 @@ img {
   }
 }
 
-@keyframes nps-ken-burns {
-  from {
-    transform: scale(1.02);
-  }
-  to {
-    transform: scale(1.14);
-  }
-}
-
 @keyframes nps-ring-spin {
   to {
     transform: rotate(360deg);
@@ -259,14 +258,6 @@ img {
 
 .anim-fade-in {
   animation: nps-fade-in 900ms ease both;
-}
-
-.anim-ken-burns {
-  animation: nps-ken-burns 9000ms ease-out both;
-}
-
-.anim-ken-burns-loop {
-  animation: nps-ken-burns 16000ms ease-in-out infinite alternate;
 }
 
 .anim-logo-in {

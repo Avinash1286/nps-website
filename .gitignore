@@ -3,6 +3,7 @@ node_modules/
 coverage/
 playwright-report/
 test-results/
+.lighthouse/
 *.tsbuildinfo
 
 # Never commit environment files. Keep only the documented template.

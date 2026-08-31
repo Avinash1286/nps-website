@@ -1,5 +1,9 @@
+import "server-only";
+
 import { fetchQuery } from "convex/nextjs";
 import { makeFunctionReference } from "convex/server";
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
 
 export type SiteProfile = {
   schoolName: string;
@@ -283,6 +287,31 @@ export const baselineSite: SiteProfile = {
 
 type UnknownRecord = Record<string, unknown>;
 
+const PUBLIC_CONTENT_REVALIDATE_SECONDS = 60;
+const PUBLIC_TIME_BUCKET_MS = PUBLIC_CONTENT_REVALIDATE_SECONDS * 1_000;
+
+const loadCachedConvexQuery = unstable_cache(
+  async (url: string, name: string, serializedArgs: string): Promise<unknown> => {
+    const reference = makeFunctionReference<"query", UnknownRecord, unknown>(name);
+    const args = JSON.parse(serializedArgs) as UnknownRecord;
+    return fetchQuery(reference, args, { url });
+  },
+  ["public-convex-query-v1"],
+  { revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS, tags: ["public-content"] },
+);
+
+// React cache deduplicates metadata/layout/page reads during one render. The
+// Next data cache above then reuses the result across requests for one minute.
+const loadPublicQuery = cache(loadCachedConvexQuery);
+
+function serializedPublicArgs(args: UnknownRecord) {
+  const stableArgs =
+    typeof args.now === "number"
+      ? { ...args, now: Math.floor(args.now / PUBLIC_TIME_BUCKET_MS) * PUBLIC_TIME_BUCKET_MS }
+      : args;
+  return JSON.stringify(stableArgs);
+}
+
 function text(value: unknown, fallback = "") {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
@@ -347,8 +376,7 @@ async function queryConvex<T>(name: string, args: UnknownRecord = {}): Promise<T
   if (!url) return undefined;
 
   try {
-    const reference = makeFunctionReference<"query", UnknownRecord, T>(name);
-    return await fetchQuery(reference, args, { url });
+    return (await loadPublicQuery(url, name, serializedPublicArgs(args))) as T;
   } catch (error) {
     console.error(`[public-data] Convex query ${name} failed`, error);
     return undefined;

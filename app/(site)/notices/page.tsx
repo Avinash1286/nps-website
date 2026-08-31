@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, Download, FileText, UsersRound } from "lucide-react";
 import { EmptyState } from "@/components/site/empty-state";
 import { PageHero } from "@/components/site/page-hero";
+import { contentMetadata } from "@/lib/content/public-metadata";
 import { formatPublicDate, getNotices } from "@/lib/data/public";
-export const metadata: Metadata = {
+export const metadata = contentMetadata({
   title: "Official notices",
   description: "Official notices and announcements from Nepal Police School, Garuda.",
-};
+  path: "/notices",
+});
 export default async function NoticesPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams;
   const notices = await getNotices(200);

@@ -1,15 +1,16 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, MapPin } from "lucide-react";
 import { EmptyState } from "@/components/site/empty-state";
 import { PageHero } from "@/components/site/page-hero";
 import { FeaturedBadge } from "@/components/site/featured-badge";
+import { contentMetadata } from "@/lib/content/public-metadata";
 import { formatEventDateTimeRange, getEvents } from "@/lib/data/public";
 import type { PublicEvent } from "@/lib/data/public";
-export const metadata: Metadata = {
+export const metadata = contentMetadata({
   title: "Events",
   description: "Upcoming and published school events at Nepal Police School, Garuda.",
-};
+  path: "/events",
+});
 export default async function EventsPage() {
   const [upcoming, past] = await Promise.all([getEvents("upcoming", 60), getEvents("past", 40)]);
   return (

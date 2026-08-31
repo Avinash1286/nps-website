@@ -6,7 +6,14 @@ import { getNewsItem } from "@/lib/data/public";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const item = await getNewsItem(slug);
-  return item ? contentMetadata({ title: item.title, description: item.summary, seo: item.seo }) : {};
+  return item
+    ? contentMetadata({
+        title: item.title,
+        description: item.summary,
+        seo: item.seo,
+        path: `/news/${slug}`,
+      })
+    : {};
 }
 export default async function NewsDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

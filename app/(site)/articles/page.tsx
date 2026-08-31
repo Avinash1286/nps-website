@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
 import { ShieldCheck } from "lucide-react";
 import { EmptyState } from "@/components/site/empty-state";
 import { PageHero } from "@/components/site/page-hero";
 import { StudentArticleCard } from "@/components/site/student-article-card";
+import { contentMetadata } from "@/lib/content/public-metadata";
 import { getStudentArticles } from "@/lib/data/public";
 
-export const metadata: Metadata = {
+export const metadata = contentMetadata({
   title: "Student articles",
   description: "Student writing reviewed before publication on the Nepal Police School, Garuda website.",
-};
+  path: "/articles",
+});
 
 export default async function ArticlesPage() {
   const articles = await getStudentArticles(100);

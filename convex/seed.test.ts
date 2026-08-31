@@ -37,6 +37,8 @@ describe("baseline seed", () => {
       pages: await ctx.db.query("pages").collect(),
       assistantContexts: await ctx.db.query("assistantContexts").withIndex("by_updated_at").take(100),
       facilities: await ctx.db.query("facilities").collect(),
+      departments: await ctx.db.query("departments").collect(),
+      teachers: await ctx.db.query("teachers").collect(),
       programs: await ctx.db.query("programs").collect(),
       news: await ctx.db.query("news").collect(),
       notices: await ctx.db.query("notices").collect(),
@@ -63,8 +65,20 @@ describe("baseline seed", () => {
       },
     });
     expect(seeded.pages.map((page) => page.slug)).toEqual(
-      expect.arrayContaining(["about", "about/history", "about/mission-vision", "facilities"]),
+      expect.arrayContaining([
+        "about",
+        "about/history",
+        "about/mission-vision",
+        "academics",
+        "academics/curriculum",
+        "facilities",
+      ]),
     );
+    expect(seeded.pages.find((page) => page.slug === "academics/curriculum")).toMatchObject({
+      title: "Curriculum and assessment",
+      status: "published",
+      template: "information",
+    });
     expect(seeded.assistantContexts).toHaveLength(4);
     expect(seeded.assistantContexts.every((context) => context.status === "published")).toBe(true);
     expect(seeded.assistantContexts.map((context) => context.seedKey)).toEqual(
@@ -115,6 +129,8 @@ describe("baseline seed", () => {
     expect(seeded.programs.map((program) => program.slug)).toEqual(
       expect.arrayContaining(["primary", "secondary", "plus-2"]),
     );
+    expect(seeded.departments).toHaveLength(0);
+    expect(seeded.teachers).toHaveLength(0);
     expect(seeded.leadership.map((member) => member.slug)).toEqual([
       "principal",
       "vice-principal",
@@ -125,10 +141,7 @@ describe("baseline seed", () => {
       name: "Ramsharan Rijal",
       role: "Principal",
     });
-    expect(seeded.testimonials.map((testimonial) => testimonial.name)).toEqual([
-      "Alumni voices",
-      "Share your story",
-    ]);
+    expect(seeded.testimonials).toHaveLength(0);
     expect(seeded.albums).toHaveLength(6);
     expect(seeded.galleryItems).toHaveLength(8);
     expect(seeded.sections.find((section) => section.slug === "about")).toMatchObject({
@@ -142,21 +155,20 @@ describe("baseline seed", () => {
     ).toBe(true);
 
     const headerRoots = seeded.navigation.filter(
-      (item) => item.location === "header" && item.parentId === undefined,
+      (item) => item.location === "header" && item.parentId === undefined && item.visible,
     );
     const updates = headerRoots.find((item) => item.label === "Updates");
+    const about = headerRoots.find((item) => item.label === "About");
     const academics = headerRoots.find((item) => item.label === "Academics");
-    expect(headerRoots.map((item) => item.label)).toEqual(
-      expect.arrayContaining([
-        "Home",
-        "About",
-        "Academics",
-        "School life",
-        "Facilities",
-        "Admissions",
-        "Updates",
-      ]),
-    );
+    expect(headerRoots.map((item) => item.label)).toEqual([
+      "Home",
+      "About",
+      "Academics",
+      "Departments",
+      "Facilities",
+      "Admissions",
+      "Updates",
+    ]);
     expect(headerRoots.filter((item) => item.href === "/facilities")).toHaveLength(1);
     expect(
       seeded.navigation.filter(
@@ -165,10 +177,31 @@ describe("baseline seed", () => {
     ).toHaveLength(0);
     expect(
       seeded.navigation.filter((item) => item.parentId === updates?._id).map((item) => item.label),
-    ).toEqual(["News", "Articles", "Notices", "Events", "Downloads"]);
+    ).toEqual(["Articles", "Notices", "Events", "Downloads"]);
     expect(
-      seeded.navigation.find((item) => item.parentId === academics?._id && item.href === "/teachers"),
-    ).toMatchObject({ label: "Teachers" });
+      seeded.navigation
+        .filter((item) => item.parentId === about?._id && item.visible)
+        .map(({ label, href }) => ({ label, href })),
+    ).toEqual([
+      { label: "History", href: "/about#history" },
+      { label: "Mission & vision", href: "/about#mission" },
+      { label: "Leadership", href: "/about/leadership" },
+    ]);
+    expect(
+      seeded.navigation
+        .filter((item) => item.parentId === academics?._id && item.visible)
+        .map(({ label, href }) => ({ label, href })),
+    ).toEqual([
+      { label: "Primary", href: "/academics#primary" },
+      { label: "Secondary", href: "/academics#secondary" },
+      { label: "+2 programmes", href: "/academics#plus-2" },
+      { label: "Curriculum", href: "/academics#curriculum" },
+    ]);
+    expect(
+      seeded.navigation.filter(
+        (item) => item.location === "header" && item.href === "/teachers" && item.visible,
+      ),
+    ).toHaveLength(0);
     expect(
       seeded.navigation
         .filter((item) => item.location === "footer" && item.parentId === undefined)
@@ -177,6 +210,31 @@ describe("baseline seed", () => {
     expect(
       seeded.navigation.filter((item) => item.location === "footer" && item.href === "/articles"),
     ).toHaveLength(1);
+    expect(
+      seeded.navigation.filter((item) => item.location === "footer" && item.visible).map((item) => item.href),
+    ).toEqual(
+      expect.arrayContaining([
+        "/academics#curriculum",
+        "/departments",
+        "/campus-life",
+        "/campus-life/activities",
+        "/campus-life/gallery",
+      ]),
+    );
+    expect(
+      seeded.navigation.filter(
+        (item) =>
+          item.location === "footer" &&
+          item.visible &&
+          [
+            "/about/testimonials",
+            "/teachers",
+            "/academics/curriculum",
+            "/academics/departments",
+            "/academics/library",
+          ].includes(item.href),
+      ),
+    ).toHaveLength(0);
     expect(seeded.navigation.filter((item) => item.location === "utility").map((item) => item.label)).toEqual(
       ["Accessibility", "Contact", "Student login", "Staff sign in"],
     );
@@ -320,7 +378,143 @@ describe("baseline seed", () => {
     expect(programs.some((program) => program.slug === "primary-education")).toBe(false);
   });
 
-  it("promotes the legacy Facilities child to one visible top-level link", async () => {
+  it("hides exact legacy navigation while preserving administrator-customized links", async () => {
+    const t = convexTest(schema, modules);
+    const asAdmin = await insertAdmin(t);
+    const ids = await t.run(async (ctx) => {
+      const admin = await ctx.db
+        .query("users")
+        .withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", "seed-admin"))
+        .unique();
+      if (!admin) throw new Error("Expected seed administrator.");
+      const now = Date.now();
+      const common = {
+        external: false,
+        visible: true,
+        createdBy: admin._id,
+        updatedBy: admin._id,
+        createdAt: now,
+        updatedAt: now,
+      };
+      const aboutId = await ctx.db.insert("navigationItems", {
+        label: "About",
+        href: "/about",
+        location: "header",
+        order: 10,
+        ...common,
+      });
+      const learningId = await ctx.db.insert("navigationItems", {
+        label: "Learning",
+        href: "/academics",
+        location: "footer",
+        order: 20,
+        ...common,
+      });
+      const legacyHistoryId = await ctx.db.insert("navigationItems", {
+        label: "History",
+        href: "/about/history",
+        location: "header",
+        parentId: aboutId,
+        order: 10,
+        ...common,
+      });
+      const customizedHistoryId = await ctx.db.insert("navigationItems", {
+        label: "Historical archive",
+        href: "/about/history",
+        location: "header",
+        parentId: aboutId,
+        order: 11,
+        ...common,
+      });
+      const legacyLibraryId = await ctx.db.insert("navigationItems", {
+        label: "Library",
+        href: "/academics/library",
+        location: "footer",
+        parentId: learningId,
+        order: 30,
+        ...common,
+      });
+      const customizedSchoolLifeId = await ctx.db.insert("navigationItems", {
+        label: "Student experience",
+        href: "/campus-life",
+        location: "header",
+        order: 31,
+        ...common,
+      });
+      return {
+        legacyHistoryId,
+        customizedHistoryId,
+        legacyLibraryId,
+        customizedSchoolLifeId,
+      };
+    });
+
+    await asAdmin.mutation(api.seed.baseline, {});
+    const migrated = await t.run(async (ctx) => ({
+      legacyHistory: await ctx.db.get("navigationItems", ids.legacyHistoryId),
+      customizedHistory: await ctx.db.get("navigationItems", ids.customizedHistoryId),
+      legacyLibrary: await ctx.db.get("navigationItems", ids.legacyLibraryId),
+      customizedSchoolLife: await ctx.db.get("navigationItems", ids.customizedSchoolLifeId),
+    }));
+    expect(migrated.legacyHistory?.visible).toBe(false);
+    expect(migrated.legacyLibrary?.visible).toBe(false);
+    expect(migrated.customizedHistory?.visible).toBe(true);
+    expect(migrated.customizedSchoolLife?.visible).toBe(true);
+
+    const rerun = await asAdmin.mutation(api.seed.baseline, {});
+    expect(rerun).toMatchObject({ created: 0, updated: 0 });
+  });
+
+  it("archives exact placeholder testimonials without changing administrator-authored testimonials", async () => {
+    const t = convexTest(schema, modules);
+    const asAdmin = await insertAdmin(t);
+    const ids = await t.run(async (ctx) => {
+      const admin = await ctx.db
+        .query("users")
+        .withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", "seed-admin"))
+        .unique();
+      if (!admin) throw new Error("Expected seed administrator.");
+      const now = Date.now();
+      const publication = {
+        status: "published" as const,
+        publishAt: now,
+        publishedAt: now,
+        createdBy: admin._id,
+        updatedBy: admin._id,
+        createdAt: now,
+        updatedAt: now,
+      };
+      const placeholderId = await ctx.db.insert("testimonials", {
+        name: "Alumni voices",
+        role: "Former students",
+        quote:
+          "Verified reflections from former students of Nepal Police School, Garuda will be published here by the school administration.",
+        order: 10,
+        ...publication,
+      });
+      const authoredId = await ctx.db.insert("testimonials", {
+        name: "Alumni voices",
+        role: "Former students",
+        quote: "An administrator-authored and verified reflection.",
+        order: 10,
+        ...publication,
+      });
+      return { placeholderId, authoredId };
+    });
+
+    await asAdmin.mutation(api.seed.baseline, {});
+    const migrated = await t.run(async (ctx) => ({
+      placeholder: await ctx.db.get("testimonials", ids.placeholderId),
+      authored: await ctx.db.get("testimonials", ids.authoredId),
+    }));
+    expect(migrated.placeholder?.status).toBe("archived");
+    expect(migrated.authored?.status).toBe("published");
+
+    const rerun = await asAdmin.mutation(api.seed.baseline, {});
+    expect(rerun).toMatchObject({ created: 0, updated: 0 });
+  });
+
+  it("retires the legacy School-life Facilities child in favor of one top-level link", async () => {
     const t = convexTest(schema, modules);
     const asAdmin = await insertAdmin(t);
     await t.run(async (ctx) => {
@@ -365,7 +559,7 @@ describe("baseline seed", () => {
     );
     expect(facilitiesLinks.filter((item) => item.parentId === undefined && item.visible)).toHaveLength(1);
     expect(facilitiesLinks.filter((item) => item.parentId !== undefined)).toEqual([
-      expect.objectContaining({ href: "/facilities", visible: false }),
+      expect.objectContaining({ href: "/campus-life/facilities", visible: false }),
     ]);
 
     await asAdmin.mutation(api.seed.baseline, {});
@@ -377,7 +571,7 @@ describe("baseline seed", () => {
     expect(rerunFacilitiesLinks).toHaveLength(2);
   });
 
-  it("adopts legacy School-life records without creating duplicate navigation or hero cards", async () => {
+  it("retires the legacy School-life header without duplicating footer navigation or hero cards", async () => {
     const t = convexTest(schema, modules);
     const asAdmin = await insertAdmin(t);
     await t.run(async (ctx) => {
@@ -442,8 +636,17 @@ describe("baseline seed", () => {
         (item) => item.section === "hero" && item.imageUrl === "/media/campus-hero.png",
       ),
     }));
-    expect(migrated.navigation).toHaveLength(3);
-    expect(migrated.navigation.filter((item) => item.label === "School life")).toHaveLength(2);
+    expect(migrated.navigation).toHaveLength(2);
+    expect(
+      migrated.navigation.filter(
+        (item) => item.location === "header" && item.label === "Campus life" && !item.visible,
+      ),
+    ).toHaveLength(1);
+    expect(
+      migrated.navigation.filter(
+        (item) => item.location === "footer" && item.label === "School life" && item.visible,
+      ),
+    ).toHaveLength(1);
     expect(migrated.highlights).toHaveLength(1);
     expect(migrated.highlights[0]).toMatchObject({
       title: "School life",
@@ -460,7 +663,7 @@ describe("baseline seed", () => {
         (item) => item.section === "hero" && item.imageUrl === "/media/campus-hero.png",
       ),
     }));
-    expect(rerun.navigation).toHaveLength(3);
+    expect(rerun.navigation).toHaveLength(2);
     expect(rerun.highlights).toHaveLength(1);
   });
 });

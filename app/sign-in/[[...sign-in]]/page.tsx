@@ -3,8 +3,9 @@ import Link from "next/link";
 import { KeyRound, ShieldCheck } from "lucide-react";
 
 export const metadata = {
-  title: "Staff sign in | NPS Digital School",
+  title: "Staff sign in",
   description: "Secure staff access to the Nepal Police School administration workspace.",
+  robots: { index: false, follow: false },
 };
 
 export default function SignInPage() {

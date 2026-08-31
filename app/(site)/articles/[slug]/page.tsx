@@ -4,6 +4,7 @@ import { StudentArticleDetail } from "@/components/site/student-article-detail";
 import { contentMetadata } from "@/lib/content/public-metadata";
 import { getSiteProfile, getStudentArticle } from "@/lib/data/public";
 import { serializeJsonLd } from "@/lib/security/json-ld";
+import { getSiteUrl } from "@/lib/server/site-url";
 
 type ArticleRouteProps = { params: Promise<{ slug: string }> };
 
@@ -11,7 +12,12 @@ export async function generateMetadata({ params }: ArticleRouteProps): Promise<M
   const { slug } = await params;
   const article = await getStudentArticle(slug);
   return article
-    ? contentMetadata({ title: article.title, description: article.excerpt, seo: article.seo })
+    ? contentMetadata({
+        title: article.title,
+        description: article.excerpt,
+        seo: article.seo,
+        path: `/articles/${slug}`,
+      })
     : {};
 }
 
@@ -19,7 +25,7 @@ export default async function StudentArticlePage({ params }: ArticleRouteProps) 
   const { slug } = await params;
   const [article, site] = await Promise.all([getStudentArticle(slug), getSiteProfile()]);
   if (!article) notFound();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",

@@ -19,7 +19,16 @@ export function PageHero({
 }) {
   return (
     <section className="relative isolate overflow-hidden bg-[#1e1f5c] px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-      <Image src={image} alt="" fill priority className="-z-20 object-cover" sizes="100vw" />
+      <Image
+        src={image}
+        alt=""
+        fill
+        preload
+        decoding="sync"
+        quality={65}
+        className="-z-20 object-cover"
+        sizes="100vw"
+      />
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(4,26,48,.97)_0%,rgba(5,38,69,.9)_52%,rgba(5,41,72,.54)_100%)]" />
       <div className="absolute inset-y-0 right-[12%] -z-10 hidden w-px bg-white/15 lg:block" />
       <div className="mx-auto max-w-7xl">

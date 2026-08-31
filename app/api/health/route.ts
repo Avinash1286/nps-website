@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isConfiguredSecret } from "@/lib/security/configuration";
+import { getSiteUrl } from "@/lib/server/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -19,13 +20,15 @@ export function GET() {
     process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || process.env.TURNSTILE_SECRET_KEY,
   );
   const configuration = {
-    siteUrl: isConfiguredUrl(process.env.NEXT_PUBLIC_SITE_URL, process.env.NODE_ENV !== "production"),
+    siteUrl: isConfiguredUrl(getSiteUrl(), process.env.NODE_ENV !== "production"),
     convex: isConfiguredUrl(process.env.NEXT_PUBLIC_CONVEX_URL),
     studentAuthProxy: isConfiguredUrl(process.env.NEXT_PUBLIC_CONVEX_SITE_URL),
     clerk: Boolean(
-      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.startsWith("pk_") &&
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.startsWith(
+        process.env.NODE_ENV === "production" ? "pk_live_" : "pk_",
+      ) &&
       !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes("replace") &&
-      process.env.CLERK_SECRET_KEY?.startsWith("sk_") &&
+      process.env.CLERK_SECRET_KEY?.startsWith(process.env.NODE_ENV === "production" ? "sk_live_" : "sk_") &&
       !process.env.CLERK_SECRET_KEY.includes("replace"),
     ),
     ...(process.env.NEXT_PUBLIC_CLERK_FAPI

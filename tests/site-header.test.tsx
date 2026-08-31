@@ -6,15 +6,19 @@ import type { PublicNavigationItem } from "@/lib/data/public";
 
 const navigation = vi.hoisted(() => ({ pathname: "/facilities" }));
 const studentAuth = vi.hoisted(() => ({
-  useSession: vi.fn(() => ({ data: null, isPending: false })),
-  signOut: vi.fn(),
+  useSession: vi.fn(() => ({ session: null, isPending: false })),
 }));
 
 vi.mock("next/navigation", () => ({
   usePathname: () => navigation.pathname,
   useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
 }));
-vi.mock("@/lib/auth/student-client", () => ({ authClient: studentAuth }));
+vi.mock("@/components/site/site-student-account", async () => {
+  const actual = await vi.importActual<typeof import("@/components/site/site-student-account")>(
+    "@/components/site/site-student-account",
+  );
+  return { ...actual, useStudentAccountSession: studentAuth.useSession };
+});
 vi.mock("next/link", () => ({
   default: ({
     href,

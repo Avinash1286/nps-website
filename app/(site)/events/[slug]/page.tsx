@@ -7,7 +7,14 @@ import { getEvent } from "@/lib/data/public";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const item = await getEvent(slug);
-  return item ? contentMetadata({ title: item.title, description: item.summary, seo: item.seo }) : {};
+  return item
+    ? contentMetadata({
+        title: item.title,
+        description: item.summary,
+        seo: item.seo,
+        path: `/events/${slug}`,
+      })
+    : {};
 }
 export default async function EventDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

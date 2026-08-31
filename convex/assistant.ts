@@ -116,6 +116,41 @@ function groundingSearchQuery(text: string): string {
   return [...new Set(terms)].slice(0, 16).join(" ");
 }
 
+const legacyPublicPaths: Record<string, string> = {
+  "/about/overview": "/about",
+  "/about/history": "/about#history",
+  "/about/mission-vision": "/about#mission",
+  "/academics/overview": "/academics",
+  "/academics/primary": "/academics#primary",
+  "/academics/secondary": "/academics#secondary",
+  "/academics/plus-2": "/academics#plus-2",
+  "/academics/curriculum": "/academics#curriculum",
+  "/academics/departments": "/departments",
+  "/academics/library": "/facilities#library",
+  "/academics/sports": "/campus-life/activities",
+  "/teachers": "/departments",
+  "/campus-life/facilities": "/facilities",
+  "/campus-life/virtual-tour": "/facilities",
+  "/campus-life/transport": "/facilities#transportation",
+};
+
+function canonicalPublicHref(href: string): string {
+  if (!href.startsWith("/") || href.startsWith("//")) return href;
+
+  const suffixIndex = [href.indexOf("?"), href.indexOf("#")]
+    .filter((index) => index >= 0)
+    .reduce((lowest, index) => Math.min(lowest, index), href.length);
+  const rawPathname = href.slice(0, suffixIndex);
+  const suffix = href.slice(suffixIndex);
+  const pathname = rawPathname.length > 1 ? rawPathname.replace(/\/$/, "") : rawPathname;
+  const legacyDepartment = pathname.match(/^\/academics\/departments\/([^/]+)$/);
+  if (legacyDepartment) return `/departments/${legacyDepartment[1]}`;
+
+  const replacement = legacyPublicPaths[pathname];
+  if (replacement) return replacement;
+  return `${pathname}${suffix}`;
+}
+
 function flattenSources(
   snapshot: GroundingSnapshot,
   assistantContexts: AssistantContextGrounding[],
@@ -124,7 +159,7 @@ function flattenSources(
     ...assistantContexts.map((item) => ({
       type: "assistant_context",
       title: item.title,
-      href: item.publicPath,
+      href: item.publicPath ? canonicalPublicHref(item.publicPath) : undefined,
       excerpt: item.content.slice(0, 240),
       text: `${item.title} ${item.category} ${item.keywords.join(" ")} ${item.content}`,
       priority: item.priority,
@@ -133,7 +168,7 @@ function flattenSources(
       type: "page",
       title: item.title,
       slug: item.slug,
-      href: `/${item.slug}`,
+      href: canonicalPublicHref(`/${item.slug}`),
       excerpt: item.summary,
       text: `${item.title} ${item.summary ?? ""} ${item.body}`,
     })),
@@ -149,7 +184,7 @@ function flattenSources(
       type: "program",
       title: item.name,
       slug: item.slug,
-      href: `/academics/${item.slug}`,
+      href: `/academics#${item.slug}`,
       excerpt: item.description.slice(0, 240),
       text: `${item.name} ${item.description}`,
     })),
@@ -157,7 +192,7 @@ function flattenSources(
       type: "department",
       title: item.name,
       slug: item.slug,
-      href: `/academics/departments/${item.slug}`,
+      href: `/departments/${item.slug}`,
       excerpt: item.description.slice(0, 240),
       text: `${item.name} ${item.description}`,
     })),

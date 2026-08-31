@@ -83,8 +83,10 @@ export function TurnstileField({
   onTokenChange: (token: string) => void;
 }) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const field = useRef<HTMLDivElement>(null);
   const container = useRef<HTMLDivElement>(null);
   const callback = useRef(onTokenChange);
+  const [shouldLoad, setShouldLoad] = useState(false);
   const [scriptReady, setScriptReady] = useState(false);
   const [widgetSize, setWidgetSize] = useState<"flexible" | "compact">("compact");
 
@@ -93,8 +95,27 @@ export function TurnstileField({
   }, [onTokenChange]);
 
   useEffect(() => {
+    const target = field.current;
+    if (!siteKey || !target || shouldLoad) return;
+    if (typeof IntersectionObserver === "undefined") {
+      const timer = window.setTimeout(() => setShouldLoad(true), 0);
+      return () => window.clearTimeout(timer);
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setShouldLoad(true);
+        observer.disconnect();
+      },
+      { rootMargin: "320px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [shouldLoad, siteKey]);
+
+  useEffect(() => {
     const target = container.current;
-    if (!siteKey || !target) return;
+    if (!siteKey || !shouldLoad || !target) return;
     const updateSize = () => {
       const nextSize = target.getBoundingClientRect().width >= 300 ? "flexible" : "compact";
       setWidgetSize((current) => (current === nextSize ? current : nextSize));
@@ -104,11 +125,11 @@ export function TurnstileField({
     const observer = new ResizeObserver(updateSize);
     observer.observe(target);
     return () => observer.disconnect();
-  }, [siteKey]);
+  }, [shouldLoad, siteKey]);
 
   useEffect(() => {
     const turnstile = window.turnstile;
-    if (!siteKey || !scriptReady || !turnstile || !container.current) return;
+    if (!siteKey || !shouldLoad || !scriptReady || !turnstile || !container.current) return;
     const widgetId = turnstile.render(container.current, {
       sitekey: siteKey,
       action,
@@ -119,19 +140,21 @@ export function TurnstileField({
       "error-callback": () => callback.current(""),
     });
     return () => turnstile.remove(widgetId);
-  }, [action, scriptReady, siteKey, widgetSize]);
+  }, [action, scriptReady, shouldLoad, siteKey, widgetSize]);
 
   if (!siteKey) return null;
 
   return (
-    <div className="space-y-2">
-      <Script
-        id="cloudflare-turnstile"
-        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
-        strategy="afterInteractive"
-        onReady={() => setScriptReady(true)}
-      />
-      <div ref={container} className="max-w-full" />
+    <div ref={field} className="space-y-2">
+      {shouldLoad && (
+        <Script
+          id="cloudflare-turnstile"
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+          strategy="afterInteractive"
+          onReady={() => setScriptReady(true)}
+        />
+      )}
+      <div ref={container} className="min-h-[65px] max-w-full" />
       <p className="text-xs leading-5 text-slate-500">Bot protection must complete before submission.</p>
     </div>
   );

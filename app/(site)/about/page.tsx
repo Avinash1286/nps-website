@@ -1,8 +1,24 @@
 import type { Metadata } from "next";
+import { AboutConsolidatedPage } from "@/components/content/about-consolidated-page";
+import { plainParagraphs, structuredPageSections } from "@/lib/content/merged-pages";
 import { contentMetadata } from "@/lib/content/public-metadata";
-import { OverviewPage } from "@/components/content/overview-page";
-import { pageParagraphs } from "@/lib/content/cms-page";
 import { getCmsPage } from "@/lib/data/public";
+
+const fallbackOverview = [
+  "Nepal Police School, Garuda serves students and families in Rautahat through residential and day education from Nursery through Grade 12.",
+];
+
+const fallbackHistory = [
+  "The school was established in 2058 BS (2002 AD) under the welfare programme of the Nepal Police Organization. School publications record its continued development in Garuda, Rautahat.",
+];
+
+const fallbackMission = [
+  "The school's published educational direction combines academic learning with discipline, responsibility, creativity, participation, and service.",
+];
+
+const fallbackVision = [
+  "The motto ‘Better Schooling for Ideal Citizenship’ expresses an aspiration to help learners grow into capable, responsible, and respectful citizens.",
+];
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getCmsPage("about");
@@ -10,86 +26,52 @@ export async function generateMetadata(): Promise<Metadata> {
     title: page?.title ?? "About",
     description:
       page?.summary ??
-      "Learn about Nepal Police School, Garuda, its purpose, leadership, and school community.",
+      "Read the history, mission, and vision of Nepal Police School, Garuda in one clear overview.",
     seo: page?.seo,
+    path: "/about",
   });
 }
 
 export default async function AboutPage() {
-  const page = await getCmsPage("about");
-  const paragraphs = page ? pageParagraphs(page) : [];
+  const [page, legacyHistory, legacyMissionVision] = await Promise.all([
+    getCmsPage("about"),
+    getCmsPage("about/history"),
+    getCmsPage("about/mission-vision"),
+  ]);
+  const sections = structuredPageSections(page?.body ?? "");
+  const legacyHistoryParagraphs = plainParagraphs(legacyHistory?.body);
+  const legacyMissionParagraphs = plainParagraphs(legacyMissionVision?.body);
+  const combinedMissionVision = sections["mission-and-vision"] ?? [];
+
   return (
-    <OverviewPage
-      eyebrow="About the school"
-      title={page?.title ?? "A purposeful school community"}
+    <AboutConsolidatedPage
+      title={page?.title ?? "About Nepal Police School, Garuda"}
       description={
         page?.summary ??
-        "Learn about the values, leadership, and shared responsibilities that shape Nepal Police School, Garuda."
+        "Our history, educational purpose, and vision brought together in one clear introduction to the school."
       }
-      image={page?.heroImageUrl ?? "/media/campus-hero.png"}
-      introEyebrow="Who we are"
-      introTitle="A school committed to learning and responsible growth."
-      intro={
-        paragraphs[0] ??
-        "Nepal Police School, Garuda serves students and families in Rautahat. This website provides a reliable public home for verified school information while giving the administration direct control over profiles, notices, documents, and updates."
-      }
-      additionalCopy={paragraphs.slice(1)}
-      featureImage="/media/nps-staff-group.jpg"
-      cardHeading="Understand our school"
-      cards={[
-        {
-          title: "Our history",
-          description: "The verified institutional record and important milestones.",
-          href: "/about/history",
-          meta: "Our story",
-        },
-        {
-          title: "Mission and vision",
-          description: "The educational direction and values behind daily school life.",
-          href: "/about/mission-vision",
-          meta: "Our purpose",
-        },
-        {
-          title: "School leadership",
-          description: "Profiles and messages maintained by the administration.",
-          href: "/about/leadership",
-          meta: "Our people",
-        },
-        {
-          title: "Community voices",
-          description: "Approved reflections from people connected with our school community.",
-          href: "/about/testimonials",
-          meta: "Shared experience",
-        },
-      ]}
-      principles={[
-        {
-          title: "Accurate information",
-          description: "Names, dates, policies, and announcements are published through authorised channels.",
-        },
-        {
-          title: "Respectful community",
-          description:
-            "Students, families, staff, and visitors share responsibility for a safe and dignified environment.",
-        },
-        {
-          title: "Purposeful learning",
-          description:
-            "Teaching, feedback, activities, and student support work toward clear educational goals.",
-        },
-        {
-          title: "Responsible service",
-          description: "Integrity and contribution are treated as practical habits, not only ideals.",
-        },
-      ]}
-      cta={{
-        title: "Find the right school information",
-        description:
-          "Explore academics, meet the teaching team, or contact the school with a specific question.",
-        label: "Explore academics",
-        href: "/academics",
-        secondaryLabel: "Contact us",
-        secondaryHref: "/contact",
+      image={page?.heroImageUrl ?? "/media/nps-campus-building.png"}
+      copy={{
+        overview: sections.overview?.length ? sections.overview : fallbackOverview,
+        history: sections.history?.length
+          ? sections.history
+          : legacyHistoryParagraphs.length
+            ? legacyHistoryParagraphs
+            : fallbackHistory,
+        mission: sections.mission?.length
+          ? sections.mission
+          : combinedMissionVision[0]
+            ? [combinedMissionVision[0]]
+            : legacyMissionParagraphs[0]
+              ? [legacyMissionParagraphs[0]]
+              : fallbackMission,
+        vision: sections.vision?.length
+          ? sections.vision
+          : combinedMissionVision.length > 1
+            ? combinedMissionVision.slice(1)
+            : legacyMissionParagraphs.length > 1
+              ? legacyMissionParagraphs.slice(1)
+              : fallbackVision,
       }}
     />
   );

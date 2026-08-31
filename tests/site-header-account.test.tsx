@@ -9,7 +9,7 @@ const testState = vi.hoisted(() => ({
   replace: vi.fn(),
   refresh: vi.fn(),
   useSession: vi.fn(),
-  signOut: vi.fn(),
+  fetch: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -35,9 +35,12 @@ vi.mock("next/link", () => ({
     </a>
   ),
 }));
-vi.mock("@/lib/auth/student-client", () => ({
-  authClient: { useSession: testState.useSession, signOut: testState.signOut },
-}));
+vi.mock("@/components/site/site-student-account", async () => {
+  const actual = await vi.importActual<typeof import("@/components/site/site-student-account")>(
+    "@/components/site/site-student-account",
+  );
+  return { ...actual, useStudentAccountSession: testState.useSession };
+});
 vi.mock("@/components/site/use-modal-focus", () => ({ useModalFocus: vi.fn() }));
 
 const navigationItems: PublicNavigationItem[] = [
@@ -69,9 +72,11 @@ describe("site header student account", () => {
     testState.pathname = "/articles";
     testState.replace.mockReset();
     testState.refresh.mockReset();
-    testState.signOut.mockReset();
+    testState.fetch.mockReset();
+    testState.fetch.mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+    vi.stubGlobal("fetch", testState.fetch);
     testState.useSession.mockReset();
-    testState.useSession.mockReturnValue({ data: null, isPending: false });
+    testState.useSession.mockReturnValue({ session: null, isPending: false });
     window.matchMedia = vi.fn().mockReturnValue({
       matches: true,
       addEventListener: vi.fn(),
@@ -82,6 +87,7 @@ describe("site header student account", () => {
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("shows one session-aware student login entry and keeps published Articles navigation visible", () => {
@@ -93,7 +99,7 @@ describe("site header student account", () => {
   });
 
   it("reserves the desktop account space while the session is loading", () => {
-    testState.useSession.mockReturnValue({ data: null, isPending: true });
+    testState.useSession.mockReturnValue({ session: null, isPending: true });
     renderHeader();
 
     expect(screen.getByRole("status", { name: "Checking student session" })).toHaveClass("w-24");
@@ -118,7 +124,7 @@ describe("site header student account", () => {
   it("replaces Student login with the student's name and exposes profile and article actions", () => {
     testState.useSession.mockReturnValue({
       isPending: false,
-      data: { user: { name: "Anita Rai", email: "anita@example.com" } },
+      session: { user: { name: "Anita Rai", email: "anita@example.com" } },
     });
     renderHeader();
 
@@ -138,7 +144,7 @@ describe("site header student account", () => {
   it("closes the account disclosure with Escape and restores focus to its trigger", async () => {
     testState.useSession.mockReturnValue({
       isPending: false,
-      data: { user: { name: "Anita Rai", email: "anita@example.com" } },
+      session: { user: { name: "Anita Rai", email: "anita@example.com" } },
     });
     renderHeader();
 
@@ -154,15 +160,19 @@ describe("site header student account", () => {
   it("signs out once, redirects to student login, and refreshes the session shell", async () => {
     testState.useSession.mockReturnValue({
       isPending: false,
-      data: { user: { name: "Anita Rai", email: "anita@example.com" } },
+      session: { user: { name: "Anita Rai", email: "anita@example.com" } },
     });
-    testState.signOut.mockResolvedValue({ error: null });
     renderHeader();
 
     fireEvent.click(screen.getByRole("button", { name: /Anita Rai/ }));
     fireEvent.click(screen.getByRole("button", { name: "Logout" }));
 
-    await waitFor(() => expect(testState.signOut).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(testState.fetch).toHaveBeenCalledWith(
+        "/api/auth/sign-out",
+        expect.objectContaining({ method: "POST", credentials: "include" }),
+      ),
+    );
     expect(testState.replace).toHaveBeenCalledWith("/student/login");
     expect(testState.refresh).toHaveBeenCalledTimes(1);
   });
@@ -170,7 +180,7 @@ describe("site header student account", () => {
   it("provides the same profile, articles, and logout controls in the mobile dialog", () => {
     testState.useSession.mockReturnValue({
       isPending: false,
-      data: { user: { name: "Anita Rai", email: "anita@example.com" } },
+      session: { user: { name: "Anita Rai", email: "anita@example.com" } },
     });
     renderHeader();
 

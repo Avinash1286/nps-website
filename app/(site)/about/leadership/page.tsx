@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
 import Image from "@/components/site/public-image";
 import Link from "next/link";
 import { ArrowRight, UserRound } from "lucide-react";
 import { EmptyState } from "@/components/site/empty-state";
 import { PageHero } from "@/components/site/page-hero";
+import { contentMetadata } from "@/lib/content/public-metadata";
 import { getLeadership } from "@/lib/data/public";
-export const metadata: Metadata = {
+export const metadata = contentMetadata({
   title: "School leadership",
   description: "Verified leadership profiles and office messages from Nepal Police School, Garuda.",
-};
+  path: "/about/leadership",
+});
 export default async function LeadershipPage() {
   const leaders = await getLeadership();
   return (

@@ -12,6 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
       page?.summary ??
       "Admissions process, eligibility, fees, scholarships, frequently asked questions, and secure enquiries for Nepal Police School, Garuda.",
     seo: page?.seo,
+    path: "/admissions",
   });
 }
 

@@ -10,22 +10,39 @@ export type HeroSlide = {
   caption: string;
 };
 
-const INTERVAL_MS = 3500;
+// Give visitors enough time to read each institutional message. A longer
+// interval also prevents an automatic full-viewport repaint during the page's
+// initial Core Web Vitals measurement window.
+const INTERVAL_MS = 7000;
 const CROSSFADE_MS = 700;
 
 export function HeroCarousel({ slides, children }: { slides: readonly HeroSlide[]; children: ReactNode }) {
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [previousIndex, setPreviousIndex] = useState<number | null>(null);
+  const [interactionPaused, setInteractionPaused] = useState(false);
+  const [autoPlayPaused, setAutoPlayPaused] = useState(false);
+  const [canPrefetchNext, setCanPrefetchNext] = useState(false);
   const [reduced, setReduced] = useState(false);
   const count = slides.length;
+  const paused = interactionPaused || autoPlayPaused;
+  const nextIndex = count > 1 ? (index + 1) % count : null;
 
   const go = useCallback(
     (next: number) => {
       if (!count) return;
-      setIndex(((next % count) + count) % count);
+      const normalized = ((next % count) + count) % count;
+      if (normalized === index) return;
+      setPreviousIndex(index);
+      setIndex(normalized);
     },
-    [count],
+    [count, index],
   );
+
+  useEffect(() => {
+    if (previousIndex === null) return;
+    const timer = window.setTimeout(() => setPreviousIndex(null), CROSSFADE_MS);
+    return () => window.clearTimeout(timer);
+  }, [index, previousIndex]);
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -37,9 +54,9 @@ export function HeroCarousel({ slides, children }: { slides: readonly HeroSlide[
 
   useEffect(() => {
     if (paused || reduced || count < 2) return;
-    const timer = window.setTimeout(() => setIndex((current) => (current + 1) % count), INTERVAL_MS);
+    const timer = window.setTimeout(() => go(index + 1), INTERVAL_MS);
     return () => window.clearTimeout(timer);
-  }, [index, paused, reduced, count]);
+  }, [count, go, index, paused, reduced]);
 
   function handleKeyDown(event: React.KeyboardEvent) {
     if (event.key === "ArrowRight") {
@@ -60,34 +77,44 @@ export function HeroCarousel({ slides, children }: { slides: readonly HeroSlide[
       aria-roledescription="carousel"
       aria-label="School highlights"
       onKeyDown={handleKeyDown}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
+      onMouseEnter={() => setInteractionPaused(true)}
+      onMouseLeave={() => setInteractionPaused(false)}
+      onFocusCapture={() => setInteractionPaused(true)}
       onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setPaused(false);
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setInteractionPaused(false);
+        }
       }}
       className="relative isolate min-h-[600px] overflow-hidden bg-[#12123a] text-white sm:min-h-[680px] lg:max-h-[860px] lg:min-h-[calc(100vh-116px)]"
     >
-      {slides.map((slide, slideIndex) => (
-        <div
-          key={slide.src}
-          aria-hidden={slideIndex !== index}
-          className="absolute inset-0 -z-30 ease-[cubic-bezier(.16,1,.3,1)]"
-          style={{
-            opacity: slideIndex === index ? 1 : 0,
-            transition: `opacity ${CROSSFADE_MS}ms cubic-bezier(.16,1,.3,1)`,
-          }}
-        >
-          <Image
-            src={slide.src}
-            alt={slideIndex === index ? slide.alt : ""}
-            fill
-            priority={slideIndex === 0}
-            sizes="100vw"
-            className={`object-cover object-center ${reduced ? "" : "anim-ken-burns-loop"}`}
-          />
-        </div>
-      ))}
+      {slides.map((slide, slideIndex) =>
+        slideIndex === index ||
+        slideIndex === previousIndex ||
+        (canPrefetchNext && slideIndex === nextIndex) ? (
+          <div
+            key={slide.src}
+            aria-hidden={slideIndex !== index}
+            className="absolute inset-0 -z-30 ease-[cubic-bezier(.16,1,.3,1)]"
+            style={{
+              opacity: slideIndex === index ? 1 : 0,
+              transition: `opacity ${CROSSFADE_MS}ms cubic-bezier(.16,1,.3,1)`,
+            }}
+          >
+            <Image
+              src={slide.src}
+              alt={slideIndex === index ? slide.alt : ""}
+              fill
+              preload={slideIndex === 0}
+              loading={slideIndex === 0 ? undefined : "lazy"}
+              decoding={slideIndex === 0 ? "sync" : "async"}
+              quality={slideIndex === 0 ? 65 : 75}
+              sizes="100vw"
+              className="object-cover object-center"
+              onLoad={slideIndex === index ? () => setCanPrefetchNext(true) : undefined}
+            />
+          </div>
+        ) : null,
+      )}
 
       {/* Left-weighted scrim: dark enough to keep the headline readable, light
           enough that the photograph itself stays the subject of the section. */}
@@ -104,7 +131,7 @@ export function HeroCarousel({ slides, children }: { slides: readonly HeroSlide[
             <p
               key={active.caption}
               className="anim-fade-up max-w-md text-sm leading-6 font-semibold text-slate-200"
-              aria-live="polite"
+              aria-live={paused ? "polite" : "off"}
             >
               <span className="mr-3 inline-block text-[#f0bd3a]">
                 {String(index + 1).padStart(2, "0")}
@@ -116,15 +143,14 @@ export function HeroCarousel({ slides, children }: { slides: readonly HeroSlide[
 
           {count > 0 && (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2" role="tablist" aria-label="Choose a slide">
+              <div className="flex items-center gap-2" role="group" aria-label="Choose a slide">
                 {slides.map((slide, slideIndex) => {
                   const isActive = slideIndex === index;
                   return (
                     <button
                       key={slide.src}
                       type="button"
-                      role="tab"
-                      aria-selected={isActive}
+                      aria-pressed={isActive}
                       aria-label={`Show slide ${slideIndex + 1}: ${slide.caption}`}
                       onClick={() => go(slideIndex)}
                       className={`h-1.5 overflow-hidden rounded-full transition-all duration-500 ${
@@ -140,7 +166,10 @@ export function HeroCarousel({ slides, children }: { slides: readonly HeroSlide[
                               ? { transform: "scaleX(1)" }
                               : {
                                   transformOrigin: "left center",
-                                  animation: `nps-sweep ${INTERVAL_MS}ms linear both`,
+                                  animationName: "nps-sweep",
+                                  animationDuration: `${INTERVAL_MS}ms`,
+                                  animationTimingFunction: "linear",
+                                  animationFillMode: "both",
                                   animationPlayState: paused ? "paused" : "running",
                                 }
                           }
@@ -154,11 +183,12 @@ export function HeroCarousel({ slides, children }: { slides: readonly HeroSlide[
               <div className="ml-1 flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setPaused((value) => !value)}
-                  aria-label={paused ? "Resume slideshow" : "Pause slideshow"}
+                  onClick={() => setAutoPlayPaused((value) => !value)}
+                  aria-label={autoPlayPaused ? "Resume slideshow" : "Pause slideshow"}
+                  aria-pressed={autoPlayPaused}
                   className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur transition hover:bg-white/20"
                 >
-                  {paused ? <Play size={15} /> : <Pause size={15} />}
+                  {autoPlayPaused ? <Play size={15} /> : <Pause size={15} />}
                 </button>
                 <button
                   type="button"

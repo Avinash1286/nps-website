@@ -14,7 +14,8 @@ describe("website editor section map", () => {
       "Home",
       "About",
       "Academics",
-      "School life",
+      "Departments",
+      "Facilities & school life",
       "Admissions",
       "Updates",
       "Sitewide",
@@ -50,12 +51,13 @@ describe("website editor section map", () => {
 
   it("finds deep editing destinations using visitor-friendly words", () => {
     const sections = websiteEditorSectionsForRoles(["admin"]);
-    expect(filterWebsiteEditorSections(sections, "teacher")).toMatchObject([
-      {
-        title: "Academics",
-        destinations: [{ label: "Manage teacher profiles", href: "/admin/teachers" }],
-      },
-    ]);
+    const teacherResults = filterWebsiteEditorSections(sections, "teacher");
+    expect(teacherResults).toMatchObject([{ title: "Departments" }]);
+    expect(teacherResults[0]?.destinations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ label: "Manage teacher profiles", href: "/admin/teachers" }),
+      ]),
+    );
     expect(filterWebsiteEditorSections(sections, "priority")).toMatchObject([
       {
         title: "Updates",

@@ -1,15 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Providers } from "@/app/providers";
 import { getSiteProfile } from "@/lib/data/public";
 import { serializeJsonLd } from "@/lib/security/json-ld";
+import { getSiteUrl } from "@/lib/server/site-url";
 import "./globals.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = getSiteUrl();
 
-// Site metadata and organization details are managed in Convex. Opt the root
-// layout out of static prerendering so framework-generated routes (including
-// the 404 page) do not attempt a network-backed settings read at build time.
-export const dynamic = "force-dynamic";
+// Public CMS data is cached for a short interval in lib/data/public.ts. This
+// keeps institutional content fresh without forcing every anonymous request
+// through a full server render. Authenticated route groups opt back into
+// dynamic rendering in their own layouts.
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteProfile();
@@ -77,7 +78,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   };
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body>
         {/* Scroll reveals are progressive enhancement: without scripting the
             content must render in its final state rather than stay hidden. */}
@@ -87,7 +88,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <a className="skip-link" href="#main-content">
           Skip to main content
         </a>
-        <Providers>{children}</Providers>
+        {children}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationJsonLd) }}

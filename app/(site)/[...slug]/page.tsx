@@ -16,7 +16,12 @@ export async function generateMetadata({
   const { slug } = await params;
   const page = await getCmsPage(routeSlug(slug));
   if (!page) return {};
-  return contentMetadata({ title: page.title, description: page.summary, seo: page.seo });
+  return contentMetadata({
+    title: page.title,
+    description: page.summary,
+    seo: page.seo,
+    path: `/${routeSlug(slug)}`,
+  });
 }
 
 export default async function CmsPage({ params }: { params: Promise<{ slug: string[] }> }) {

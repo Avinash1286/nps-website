@@ -1,15 +1,16 @@
-import type { Metadata } from "next";
 import Image from "@/components/site/public-image";
 import Link from "next/link";
 import { ArrowLeft, MessageSquareQuote } from "lucide-react";
 import { EmptyState } from "@/components/site/empty-state";
 import { PageHero } from "@/components/site/page-hero";
+import { contentMetadata } from "@/lib/content/public-metadata";
 import { getTestimonials } from "@/lib/data/public";
 
-export const metadata: Metadata = {
+export const metadata = contentMetadata({
   title: "Community voices",
   description: "Approved reflections from the Nepal Police School, Garuda community.",
-};
+  path: "/about/testimonials",
+});
 
 export default async function TestimonialsPage() {
   const testimonials = await getTestimonials(100);

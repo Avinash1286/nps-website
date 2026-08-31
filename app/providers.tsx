@@ -1,7 +1,7 @@
 "use client";
 
 import { ClerkProvider, useAuth } from "@clerk/nextjs";
-import { ConvexReactClient, ConvexProvider } from "convex/react";
+import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import type { ReactNode } from "react";
 
@@ -11,11 +11,10 @@ const clerkPublishableKey = clerkKeyValue && !clerkKeyValue.includes("replace") 
 const convexUrl = convexUrlValue && !convexUrlValue.includes("your-deployment") ? convexUrlValue : undefined;
 const convexClient = convexUrl ? new ConvexReactClient(convexUrl) : null;
 
-/**
- * Application services are intentionally optional at build time. Production
- * features display their own setup state until both public keys are present.
- */
-export function Providers({ children }: { children: ReactNode }) {
+/** Staff-only providers. Keeping Clerk below the public route tree prevents
+ * anonymous visitors from paying for the admin authentication runtime and its
+ * cross-origin handshake. */
+export function StaffProviders({ children }: { children: ReactNode }) {
   if (clerkPublishableKey && convexClient) {
     return (
       <ClerkProvider
@@ -41,10 +40,19 @@ export function Providers({ children }: { children: ReactNode }) {
       </ClerkProvider>
     );
   }
-
-  if (convexClient) {
-    return <ConvexProvider client={convexClient}>{children}</ConvexProvider>;
-  }
-
   return children;
+}
+
+/** Clerk UI is required on the staff sign-in route, but Convex is not. */
+export function StaffSignInProvider({ children }: { children: ReactNode }) {
+  if (!clerkPublishableKey) return children;
+  return (
+    <ClerkProvider
+      publishableKey={clerkPublishableKey}
+      signInUrl="/sign-in"
+      signInFallbackRedirectUrl="/admin"
+    >
+      {children}
+    </ClerkProvider>
+  );
 }

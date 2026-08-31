@@ -1,10 +1,12 @@
-import type { Metadata } from "next";
 import { OverviewPage } from "@/components/content/overview-page";
-export const metadata: Metadata = {
+import { contentMetadata } from "@/lib/content/public-metadata";
+
+export const metadata = contentMetadata({
   title: "School life",
   description:
-    "Explore facilities, activities, gallery, transport, and the digital tour of Nepal Police School, Garuda.",
-};
+    "Explore facilities, activities, events, and approved school photographs from Nepal Police School, Garuda.",
+  path: "/campus-life",
+});
 export default function SchoolLifePage() {
   return (
     <OverviewPage
@@ -14,7 +16,7 @@ export default function SchoolLifePage() {
       image="/media/sports-day.png"
       introEyebrow="Beyond lessons"
       introTitle="A school where learning, participation, and wellbeing meet."
-      intro="School life information helps families understand facilities, activities, transport, events, and visitor arrangements. Confirmed schedules and participation details are published through notices and direct school communication."
+      intro="School life information helps families understand facilities, activities, events, and visitor arrangements. Confirmed schedules and participation details are published through notices and direct school communication."
       featureImage="/media/sports-day.png"
       cardHeading="Explore life at NPS Garuda"
       cards={[
@@ -36,18 +38,6 @@ export default function SchoolLifePage() {
           description: "Approved photographs and albums from school life.",
           href: "/campus-life/gallery",
           meta: "School moments",
-        },
-        {
-          title: "Virtual tour",
-          description: "A digital introduction to key areas of the school.",
-          href: "/campus-life/virtual-tour",
-          meta: "Explore online",
-        },
-        {
-          title: "Transport",
-          description: "Route, safety, capacity, and communication guidance.",
-          href: "/campus-life/transport",
-          meta: "Student services",
         },
         {
           title: "Events",
@@ -79,9 +69,9 @@ export default function SchoolLifePage() {
       cta={{
         title: "Take a closer look at the school",
         description:
-          "Start with the digital tour, then contact the school in advance if you need to plan an in-person visit.",
-        label: "Open virtual tour",
-        href: "/campus-life/virtual-tour",
+          "Explore the facilities directory, then contact the school in advance if you need to plan an in-person visit.",
+        label: "Explore facilities",
+        href: "/facilities",
         secondaryLabel: "Contact the school",
         secondaryHref: "/contact",
       }}

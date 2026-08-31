@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { AssistantAvailability } from "@/components/assistant/assistant-availability";
 import { MaintenanceGate } from "@/components/site/maintenance-gate";
-import { PageLoader } from "@/components/site/page-loader";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { getNavigation, getSiteProfile } from "@/lib/data/public";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteProfile();
@@ -74,7 +73,6 @@ export default async function PublicLayout({ children }: Readonly<{ children: Re
       }
     >
       <div className="min-h-screen min-w-0 bg-white [overflow-wrap:anywhere] text-[#2f3169]">
-        <PageLoader logoUrl={site.logoUrl} schoolName={site.schoolName} />
         <SiteHeader
           schoolName={site.schoolName}
           location={site.location}

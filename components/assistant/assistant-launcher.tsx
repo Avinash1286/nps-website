@@ -2,9 +2,25 @@
 
 import { useCallback, useRef, useState } from "react";
 import { Bot, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { AssistantPanel } from "./assistant-panel";
 import { useModalFocus } from "@/components/site/use-modal-focus";
+
+const AssistantPanel = dynamic(() => import("./assistant-panel").then((module) => module.AssistantPanel), {
+  loading: () => (
+    <div
+      role="status"
+      className="grid h-dvh w-full place-items-center bg-white px-6 text-sm font-semibold text-slate-600 sm:h-[36rem] sm:w-[27rem] sm:rounded-3xl"
+    >
+      <span>
+        <span id="nps-assistant-dialog-title" className="sr-only">
+          NPS Information Assistant
+        </span>
+        Opening the NPS assistant…
+      </span>
+    </div>
+  ),
+});
 
 export function AssistantLauncher() {
   const pathname = usePathname();

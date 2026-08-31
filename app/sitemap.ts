@@ -7,36 +7,25 @@ import {
   getLeadership,
   getNews,
   getNotices,
-  getPrograms,
   getSiteProfile,
   getStudentArticles,
   getTeachers,
 } from "@/lib/data/public";
+import { getSiteUrl } from "@/lib/server/site-url";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const routes = [
   "",
   "/about",
-  "/about/history",
-  "/about/mission-vision",
   "/about/leadership",
   "/about/testimonials",
   "/academics",
-  "/academics/primary",
-  "/academics/secondary",
-  "/academics/plus-2",
-  "/academics/curriculum",
-  "/academics/departments",
-  "/academics/library",
-  "/academics/sports",
-  "/teachers",
+  "/departments",
   "/facilities",
   "/campus-life",
   "/campus-life/activities",
   "/campus-life/gallery",
-  "/campus-life/virtual-tour",
-  "/campus-life/transport",
   "/admissions",
   "/admissions/process",
   "/admissions/eligibility",
@@ -55,15 +44,31 @@ const routes = [
   "/accessibility",
 ];
 
+const redirectedPageSlugs = new Set([
+  "about/overview",
+  "about/history",
+  "about/mission-vision",
+  "academics/overview",
+  "academics/primary",
+  "academics/secondary",
+  "academics/plus-2",
+  "academics/curriculum",
+  "academics/departments",
+  "academics/library",
+  "academics/sports",
+  "teachers",
+  "campus-life/facilities",
+  "campus-life/virtual-tour",
+  "campus-life/transport",
+]);
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   const site = await getSiteProfile();
   if (site.noIndex) return [];
-  const now = new Date();
-  const [pages, programs, departments, teachers, leadership, news, articles, notices, events, galleries] =
+  const [pages, departments, teachers, leadership, news, articles, notices, events, galleries] =
     await Promise.all([
       getCmsPages(),
-      getPrograms(),
       getDepartments(),
       getTeachers(),
       getLeadership(),
@@ -78,35 +83,53 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((route) => !noIndexPages.has(route))
     .map((route) => ({
       url: new URL(route || "/", siteUrl).toString(),
-      lastModified: now,
       changeFrequency:
         route === "" || route === "/notices" || route === "/news" || route === "/articles"
           ? "daily"
           : "monthly",
       priority: route === "" ? 1 : route.startsWith("/admissions") ? 0.8 : 0.7,
     }));
+  const dynamicRouteCandidates: Array<{ route: string; lastModified?: string }> = [
+    ...pages
+      .filter((item) => !item.seo?.noIndex && !redirectedPageSlugs.has(item.slug))
+      .map((item) => ({ route: `/${item.slug}` })),
+    ...departments
+      .filter((item) => !item.seo?.noIndex)
+      .map((item) => ({ route: `/departments/${item.slug}` })),
+    ...teachers.filter((item) => !item.seo?.noIndex).map((item) => ({ route: `/teachers/${item.slug}` })),
+    ...leadership.map((item) => ({ route: `/about/leadership/${item.slug}` })),
+    ...news
+      .filter((item) => !item.seo?.noIndex)
+      .map((item) => ({ route: `/news/${item.slug}`, lastModified: item.publishedAt })),
+    ...articles
+      .filter((item) => !item.seo?.noIndex)
+      .map((item) => ({
+        route: `/articles/${item.slug}`,
+        lastModified: item.updatedAt ?? item.publishedAt,
+      })),
+    ...notices
+      .filter((item) => !item.seo?.noIndex)
+      .map((item) => ({ route: `/notices/${item.slug}`, lastModified: item.publishedAt })),
+    ...events
+      .filter((item) => !item.seo?.noIndex)
+      .map((item) => ({ route: `/events/${item.slug}`, lastModified: item.publishedAt })),
+    ...galleries
+      .filter((item) => !item.seo?.noIndex)
+      .map((item) => ({ route: `/campus-life/gallery/${item.slug}` })),
+  ];
   const dynamicRoutes = [
-    ...new Set([
-      ...pages.filter((item) => !item.seo?.noIndex).map((item) => `/${item.slug}`),
-      ...programs.filter((item) => !item.seo?.noIndex).map((item) => `/academics/${item.slug}`),
-      ...departments
-        .filter((item) => !item.seo?.noIndex)
-        .map((item) => `/academics/departments/${item.slug}`),
-      ...teachers.filter((item) => !item.seo?.noIndex).map((item) => `/teachers/${item.slug}`),
-      ...leadership.map((item) => `/about/leadership/${item.slug}`),
-      ...news.filter((item) => !item.seo?.noIndex).map((item) => `/news/${item.slug}`),
-      ...articles.filter((item) => !item.seo?.noIndex).map((item) => `/articles/${item.slug}`),
-      ...notices.filter((item) => !item.seo?.noIndex).map((item) => `/notices/${item.slug}`),
-      ...events.filter((item) => !item.seo?.noIndex).map((item) => `/events/${item.slug}`),
-      ...galleries.filter((item) => !item.seo?.noIndex).map((item) => `/campus-life/gallery/${item.slug}`),
-    ]),
-  ].filter((route) => !routes.includes(route));
+    ...new Map(
+      dynamicRouteCandidates
+        .filter(({ route }) => !routes.includes(route))
+        .map((entry) => [entry.route, entry]),
+    ).values(),
+  ];
 
   return [
     ...staticEntries,
-    ...dynamicRoutes.map((route) => ({
+    ...dynamicRoutes.map(({ route, lastModified }) => ({
       url: new URL(route, siteUrl).toString(),
-      lastModified: now,
+      ...(lastModified ? { lastModified } : {}),
       changeFrequency: "weekly" as const,
       priority: 0.65,
     })),

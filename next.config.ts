@@ -48,6 +48,7 @@ const nextConfig: NextConfig = {
   compress: true,
   images: {
     formats: ["image/avif", "image/webp"],
+    qualities: [65, 75],
     remotePatterns: [
       { protocol: "https", hostname: "**.convex.cloud" },
       { protocol: "https", hostname: "img.clerk.com" },
@@ -61,7 +62,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/login", destination: "/sign-in", permanent: true },
       { source: "/forgot-password", destination: "/sign-in", permanent: true },
-      { source: "/academics/faculty", destination: "/teachers", permanent: true },
+      { source: "/academics/faculty", destination: "/departments", permanent: true },
       { source: "/academics/downloads", destination: "/downloads", permanent: true },
       { source: "/admin/announcements", destination: "/admin/notices", permanent: true },
     ];

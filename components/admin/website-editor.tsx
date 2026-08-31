@@ -43,7 +43,7 @@ type WebsiteEditorDestination = {
 };
 
 export type WebsiteEditorSection = {
-  key: "home" | "about" | "academics" | "school" | "admissions" | "updates" | "sitewide";
+  key: "home" | "about" | "academics" | "departments" | "school" | "admissions" | "updates" | "sitewide";
   title: string;
   description: string;
   publicHref: string;
@@ -86,8 +86,8 @@ export const websiteEditorSections: readonly WebsiteEditorSection[] = [
     icon: School,
     destinations: [
       {
-        label: "Edit About pages",
-        description: "Edit the About overview, history, mission, and other routed pages.",
+        label: "Edit About sections",
+        description: "Edit the overview, history, mission, and vision shown together on one public page.",
         href: "/admin/pages?section=about",
         icon: FileText,
         roles: contentRoles,
@@ -111,13 +111,14 @@ export const websiteEditorSections: readonly WebsiteEditorSection[] = [
   {
     key: "academics",
     title: "Academics",
-    description: "Programme pathways, teaching departments, and the public faculty directory.",
+    description: "Primary, secondary, +2, curriculum, and other published programme information.",
     publicHref: "/academics",
     icon: GraduationCap,
     destinations: [
       {
-        label: "Edit academic pages",
-        description: "Edit overview, curriculum, primary, secondary, and +2 routed pages.",
+        label: "Edit Academics introduction and curriculum",
+        description:
+          "Edit the shared introduction and curriculum section on the consolidated Academics page.",
         href: "/admin/pages?section=academics",
         icon: FileText,
         roles: contentRoles,
@@ -129,16 +130,25 @@ export const websiteEditorSections: readonly WebsiteEditorSection[] = [
         icon: BookOpenCheck,
         roles: contentRoles,
       },
+    ],
+  },
+  {
+    key: "departments",
+    title: "Departments",
+    description: "Subject departments, their responsibilities, department heads, and assigned teachers.",
+    publicHref: "/departments",
+    icon: Building2,
+    destinations: [
       {
         label: "Manage departments",
-        description: "Maintain subject areas, responsibilities, and department heads.",
+        description: "Maintain subject areas, responsibilities, public details, and department heads.",
         href: "/admin/departments",
         icon: Building2,
         roles: contentRoles,
       },
       {
         label: "Manage teacher profiles",
-        description: "Manage faculty profiles, qualifications, subjects, and contact visibility.",
+        description: "Assign faculty to departments and manage their profiles, subjects, and visibility.",
         href: "/admin/teachers",
         icon: UsersRound,
         roles: contentRoles,
@@ -147,9 +157,9 @@ export const websiteEditorSections: readonly WebsiteEditorSection[] = [
   },
   {
     key: "school",
-    title: "School life",
-    description: "Facilities, activities, transport information, virtual tour copy, and school photographs.",
-    publicHref: "/campus-life",
+    title: "Facilities & school life",
+    description: "Verified facilities, student activities, and approved school photographs.",
+    publicHref: "/facilities",
     icon: Building2,
     destinations: [
       {
@@ -160,8 +170,8 @@ export const websiteEditorSections: readonly WebsiteEditorSection[] = [
         roles: contentRoles,
       },
       {
-        label: "Edit School life pages",
-        description: "Edit activities, transport, the virtual tour, and other routed School life pages.",
+        label: "Edit activities",
+        description: "Edit the published student activities page when schedules and opportunities change.",
         href: "/admin/pages?section=campus-life",
         icon: FileText,
         roles: contentRoles,

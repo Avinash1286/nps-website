@@ -1,24 +1,33 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { StandardPage } from "@/components/site/standard-page";
-import { aboutPages } from "@/lib/content/site-pages";
 import { cmsPageToStandard } from "@/lib/content/cms-page";
 import { getCmsPage } from "@/lib/data/public";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ section: string }>;
-}): Promise<Metadata> {
+const mergedSections: Record<string, string> = {
+  history: "/about#history",
+  "mission-vision": "/about#mission",
+};
+
+export async function generateMetadata({ params }: PageProps<"/about/[section]">): Promise<Metadata> {
   const { section } = await params;
+  if (mergedSections[section]) return { robots: { index: false, follow: true } };
   const configured = await getCmsPage(`about/${section}`);
-  const page = configured ? cmsPageToStandard(configured, "About the school") : aboutPages[section];
-  return page ? { title: page.title, description: page.description } : {};
+  return configured ? { title: configured.title, description: configured.summary } : {};
 }
-export default async function AboutSectionPage({ params }: { params: Promise<{ section: string }> }) {
+
+export default async function AboutSectionPage({ params }: PageProps<"/about/[section]">) {
   const { section } = await params;
+  const mergedDestination = mergedSections[section];
+  if (mergedDestination) permanentRedirect(mergedDestination);
+
   const configured = await getCmsPage(`about/${section}`);
-  const content = configured ? cmsPageToStandard(configured, "About the school") : aboutPages[section];
-  if (!content) notFound();
-  return <StandardPage content={content} parentLabel="About" parentHref="/about" />;
+  if (!configured) notFound();
+  return (
+    <StandardPage
+      content={cmsPageToStandard(configured, "About the school")}
+      parentLabel="About"
+      parentHref="/about"
+    />
+  );
 }

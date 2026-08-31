@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { Download, FileText } from "lucide-react";
 import { EmptyState } from "@/components/site/empty-state";
 import { PageHero } from "@/components/site/page-hero";
 import { FeaturedBadge } from "@/components/site/featured-badge";
+import { contentMetadata } from "@/lib/content/public-metadata";
 import { formatPublicDate, getDocuments } from "@/lib/data/public";
-export const metadata: Metadata = {
+export const metadata = contentMetadata({
   title: "Downloads",
   description: "Approved forms, schedules, guides, and school documents from Nepal Police School, Garuda.",
-};
+  path: "/downloads",
+});
 export default async function DownloadsPage({
   searchParams,
 }: {

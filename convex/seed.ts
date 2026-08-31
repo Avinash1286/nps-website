@@ -258,6 +258,33 @@ export const baseline = mutation({
       return id;
     };
 
+    const retireExactNavigation = async (
+      items: Array<SeedNavigation & { parentId?: Id<"navigationItems"> }>,
+    ) => {
+      for (const item of items) {
+        const matches = currentNavigation.filter(
+          (candidate) =>
+            candidate.label === item.label &&
+            candidate.href === item.href &&
+            candidate.location === item.location &&
+            candidate.parentId === item.parentId &&
+            candidate.order === item.order,
+        );
+        for (const match of matches) {
+          if (!match.visible) {
+            markSkipped();
+            continue;
+          }
+          await ctx.db.patch("navigationItems", match._id, {
+            visible: false,
+            updatedBy: actor._id,
+            updatedAt: now,
+          });
+          markUpdated();
+        }
+      }
+    };
+
     await ensureNavigation({ label: "Home", href: "/", location: "header", order: 0 });
     const aboutNavigationId = await ensureNavigation({
       label: "About",
@@ -271,16 +298,12 @@ export const baseline = mutation({
       location: "header",
       order: 20,
     });
-    const schoolLifeNavigationId = await ensureNavigation(
-      {
-        label: "School life",
-        href: "/campus-life",
-        location: "header",
-        order: 30,
-      },
-      undefined,
-      { renameRootLabel: "Campus life" },
-    );
+    await ensureNavigation({
+      label: "Departments",
+      href: "/departments",
+      location: "header",
+      order: 30,
+    });
     await ensureNavigation({
       label: "Facilities",
       href: "/facilities",
@@ -300,28 +323,161 @@ export const baseline = mutation({
       { renameRootLabel: "News" },
     );
 
-    // Facilities is now a first-level navigation item. Retire only the exact
-    // legacy child so an existing deployment does not show the same link both
-    // at the top level and inside School life. Administrator-created links are
-    // left untouched.
-    const legacyFacilitiesNavigation = currentNavigation.find(
+    const legacySchoolLifeRoots = currentNavigation.filter(
       (item) =>
         item.location === "header" &&
-        item.parentId === schoolLifeNavigationId &&
-        item.label === "Facilities" &&
-        (item.href === "/campus-life/facilities" || item.href === "/facilities"),
+        item.parentId === undefined &&
+        item.href === "/campus-life" &&
+        item.order === 30 &&
+        (item.label === "School life" || item.label === "Campus life"),
     );
-    if (
-      legacyFacilitiesNavigation &&
-      (legacyFacilitiesNavigation.href !== "/facilities" || legacyFacilitiesNavigation.visible)
-    ) {
-      await ctx.db.patch("navigationItems", legacyFacilitiesNavigation._id, {
-        href: "/facilities",
-        visible: false,
-        updatedBy: actor._id,
-        updatedAt: now,
-      });
-      markUpdated();
+
+    // Retire only records whose complete seed tuple still matches. An
+    // administrator-modified label, destination, position, or parent is left
+    // untouched.
+    await retireExactNavigation([
+      { label: "School life", href: "/campus-life", location: "header", order: 30 },
+      { label: "Campus life", href: "/campus-life", location: "header", order: 30 },
+      { label: "Teachers", href: "/teachers", location: "header", order: 30 },
+      { label: "Overview", href: "/about", location: "header", order: 0, parentId: aboutNavigationId },
+      {
+        label: "History",
+        href: "/about/history",
+        location: "header",
+        order: 10,
+        parentId: aboutNavigationId,
+      },
+      {
+        label: "Mission & vision",
+        href: "/about/mission-vision",
+        location: "header",
+        order: 20,
+        parentId: aboutNavigationId,
+      },
+      {
+        label: "Community voices",
+        href: "/about/testimonials",
+        location: "header",
+        order: 40,
+        parentId: aboutNavigationId,
+      },
+      {
+        label: "Overview",
+        href: "/academics",
+        location: "header",
+        order: 0,
+        parentId: academicsNavigationId,
+      },
+      {
+        label: "Primary",
+        href: "/academics/primary",
+        location: "header",
+        order: 10,
+        parentId: academicsNavigationId,
+      },
+      {
+        label: "Secondary",
+        href: "/academics/secondary",
+        location: "header",
+        order: 20,
+        parentId: academicsNavigationId,
+      },
+      {
+        label: "+2 programmes",
+        href: "/academics/plus-2",
+        location: "header",
+        order: 30,
+        parentId: academicsNavigationId,
+      },
+      {
+        label: "Curriculum",
+        href: "/academics/curriculum",
+        location: "header",
+        order: 40,
+        parentId: academicsNavigationId,
+      },
+      {
+        label: "Departments",
+        href: "/academics/departments",
+        location: "header",
+        order: 50,
+        parentId: academicsNavigationId,
+      },
+      {
+        label: "Teachers",
+        href: "/teachers",
+        location: "header",
+        order: 60,
+        parentId: academicsNavigationId,
+      },
+      {
+        label: "Overview",
+        href: "/admissions",
+        location: "header",
+        order: 0,
+        parentId: admissionsNavigationId,
+      },
+      {
+        label: "News",
+        href: "/news",
+        location: "header",
+        order: 0,
+        parentId: updatesNavigationId,
+      },
+    ]);
+
+    for (const schoolLifeRoot of legacySchoolLifeRoots) {
+      await retireExactNavigation([
+        {
+          label: "Overview",
+          href: "/campus-life",
+          location: "header",
+          order: 0,
+          parentId: schoolLifeRoot._id,
+        },
+        {
+          label: "Facilities",
+          href: "/campus-life/facilities",
+          location: "header",
+          order: 10,
+          parentId: schoolLifeRoot._id,
+        },
+        {
+          label: "Facilities",
+          href: "/facilities",
+          location: "header",
+          order: 10,
+          parentId: schoolLifeRoot._id,
+        },
+        {
+          label: "Activities",
+          href: "/campus-life/activities",
+          location: "header",
+          order: 20,
+          parentId: schoolLifeRoot._id,
+        },
+        {
+          label: "Gallery",
+          href: "/campus-life/gallery",
+          location: "header",
+          order: 30,
+          parentId: schoolLifeRoot._id,
+        },
+        {
+          label: "Virtual tour",
+          href: "/campus-life/virtual-tour",
+          location: "header",
+          order: 40,
+          parentId: schoolLifeRoot._id,
+        },
+        {
+          label: "Transport",
+          href: "/campus-life/transport",
+          location: "header",
+          order: 50,
+          parentId: schoolLifeRoot._id,
+        },
+      ]);
     }
 
     const headerGroups: Array<{
@@ -331,60 +487,28 @@ export const baseline = mutation({
       {
         parentId: aboutNavigationId,
         items: [
-          { label: "Overview", href: "/about", location: "header", order: 0 },
-          { label: "History", href: "/about/history", location: "header", order: 10 },
+          { label: "History", href: "/about#history", location: "header", order: 10 },
           {
             label: "Mission & vision",
-            href: "/about/mission-vision",
+            href: "/about#mission",
             location: "header",
             order: 20,
           },
           { label: "Leadership", href: "/about/leadership", location: "header", order: 30 },
-          {
-            label: "Community voices",
-            href: "/about/testimonials",
-            location: "header",
-            order: 40,
-          },
         ],
       },
       {
         parentId: academicsNavigationId,
         items: [
-          { label: "Overview", href: "/academics", location: "header", order: 0 },
-          { label: "Primary", href: "/academics/primary", location: "header", order: 10 },
-          { label: "Secondary", href: "/academics/secondary", location: "header", order: 20 },
-          { label: "+2 programmes", href: "/academics/plus-2", location: "header", order: 30 },
-          { label: "Curriculum", href: "/academics/curriculum", location: "header", order: 40 },
-          { label: "Departments", href: "/academics/departments", location: "header", order: 50 },
-          {
-            label: "Teachers",
-            href: "/teachers",
-            location: "header",
-            order: 60,
-            adoptRootLabel: "Teachers",
-          },
-        ],
-      },
-      {
-        parentId: schoolLifeNavigationId,
-        items: [
-          { label: "Overview", href: "/campus-life", location: "header", order: 0 },
-          { label: "Activities", href: "/campus-life/activities", location: "header", order: 20 },
-          { label: "Gallery", href: "/campus-life/gallery", location: "header", order: 30 },
-          {
-            label: "Virtual tour",
-            href: "/campus-life/virtual-tour",
-            location: "header",
-            order: 40,
-          },
-          { label: "Transport", href: "/campus-life/transport", location: "header", order: 50 },
+          { label: "Primary", href: "/academics#primary", location: "header", order: 10 },
+          { label: "Secondary", href: "/academics#secondary", location: "header", order: 20 },
+          { label: "+2 programmes", href: "/academics#plus-2", location: "header", order: 30 },
+          { label: "Curriculum", href: "/academics#curriculum", location: "header", order: 40 },
         ],
       },
       {
         parentId: admissionsNavigationId,
         items: [
-          { label: "Overview", href: "/admissions", location: "header", order: 0 },
           { label: "Process", href: "/admissions/process", location: "header", order: 10 },
           { label: "Eligibility", href: "/admissions/eligibility", location: "header", order: 20 },
           {
@@ -400,7 +524,6 @@ export const baseline = mutation({
       {
         parentId: updatesNavigationId,
         items: [
-          { label: "News", href: "/news", location: "header", order: 0 },
           { label: "Articles", href: "/articles", location: "header", order: 5 },
           {
             label: "Notices",
@@ -453,13 +576,6 @@ export const baseline = mutation({
         items: [
           { label: "About", href: "/about", location: "footer", order: 0 },
           { label: "Leadership", href: "/about/leadership", location: "footer", order: 10 },
-          {
-            label: "Community voices",
-            href: "/about/testimonials",
-            location: "footer",
-            order: 20,
-          },
-          { label: "Teachers", href: "/teachers", location: "footer", order: 30 },
           { label: "Facilities", href: "/facilities", location: "footer", order: 35 },
           {
             label: "School life",
@@ -469,15 +585,16 @@ export const baseline = mutation({
             adoptRootLabel: "School life",
             renameRootLabel: "Campus life",
           },
+          { label: "Activities", href: "/campus-life/activities", location: "footer", order: 50 },
+          { label: "Gallery", href: "/campus-life/gallery", location: "footer", order: 60 },
         ],
       },
       {
         parentId: learningFooterId,
         items: [
           { label: "Academics", href: "/academics", location: "footer", order: 0 },
-          { label: "Curriculum", href: "/academics/curriculum", location: "footer", order: 10 },
-          { label: "Departments", href: "/academics/departments", location: "footer", order: 20 },
-          { label: "Library", href: "/academics/library", location: "footer", order: 30 },
+          { label: "Curriculum", href: "/academics#curriculum", location: "footer", order: 10 },
+          { label: "Departments", href: "/departments", location: "footer", order: 20 },
         ],
       },
       {
@@ -508,6 +625,43 @@ export const baseline = mutation({
         await ensureNavigation(item, group.parentId, { adoptRootLabel, renameRootLabel });
       }
     }
+    await retireExactNavigation([
+      {
+        label: "Community voices",
+        href: "/about/testimonials",
+        location: "footer",
+        order: 20,
+        parentId: schoolFooterId,
+      },
+      {
+        label: "Teachers",
+        href: "/teachers",
+        location: "footer",
+        order: 30,
+        parentId: schoolFooterId,
+      },
+      {
+        label: "Curriculum",
+        href: "/academics/curriculum",
+        location: "footer",
+        order: 10,
+        parentId: learningFooterId,
+      },
+      {
+        label: "Departments",
+        href: "/academics/departments",
+        location: "footer",
+        order: 20,
+        parentId: learningFooterId,
+      },
+      {
+        label: "Library",
+        href: "/academics/library",
+        location: "footer",
+        order: 30,
+        parentId: learningFooterId,
+      },
+    ]);
     for (const item of [
       { label: "Contact", href: "/contact", location: "footer" as const, order: 40 },
       { label: "Privacy", href: "/privacy", location: "footer" as const, order: 50 },
@@ -569,6 +723,15 @@ export const baseline = mutation({
         summary: "Academic pathways, curriculum, departments, and student support.",
         body: "Explore the school’s published academic programmes and department information. Families should use current notices and direct school communication for schedules and requirements.",
         order: 20,
+      },
+      {
+        slug: "academics/curriculum",
+        title: "Curriculum and assessment",
+        summary:
+          "An editable overview of teaching, learning, assessment, and official academic guidance across programme levels.",
+        body: "Curriculum planning connects classroom teaching with reading, practical work, projects, co-curricular learning, and periodic assessment. Level-specific subjects, grade coverage, learning priorities, and outcomes are maintained in the programme records shown on the Academics page.\n\nAuthorised school staff can update this section when curriculum or assessment guidance changes. Current syllabi, examination routines, academic calendars, subject combinations, and formal requirements should be confirmed through official school notices and documents for the relevant academic year.",
+        template: "information",
+        order: 21,
       },
       {
         slug: "admissions",
@@ -1459,7 +1622,7 @@ export const baseline = mutation({
       markCreated();
     }
 
-    const testimonials = [
+    const placeholderTestimonials = [
       {
         name: "Alumni voices",
         role: "Former students",
@@ -1479,25 +1642,26 @@ export const baseline = mutation({
     if (existingTestimonials.length === 200) {
       throw new Error("Testimonial seed stopped because the table exceeds the safe reconciliation limit.");
     }
-    for (const testimonial of testimonials) {
-      const existing = existingTestimonials.find((item) => item.name === testimonial.name);
-      if (existing) {
-        markSkipped();
-        continue;
+    for (const placeholder of placeholderTestimonials) {
+      const exactSeedRecords = existingTestimonials.filter(
+        (item) =>
+          item.name === placeholder.name &&
+          item.role === placeholder.role &&
+          item.quote === placeholder.quote &&
+          item.order === placeholder.order,
+      );
+      for (const record of exactSeedRecords) {
+        if (record.status !== "published") {
+          markSkipped();
+          continue;
+        }
+        await ctx.db.patch("testimonials", record._id, {
+          status: "archived",
+          updatedBy: actor._id,
+          updatedAt: now,
+        });
+        markUpdated();
       }
-      const id = await ctx.db.insert("testimonials", {
-        ...testimonial,
-        status: "published",
-        publishAt: now,
-        publishedAt: now,
-        createdBy: actor._id,
-        updatedBy: actor._id,
-        createdAt: now,
-        updatedAt: now,
-      });
-      existingTestimonials.push((await ctx.db.get("testimonials", id))!);
-      await recordCreated(ctx, "content:testimonials", "published");
-      markCreated();
     }
 
     const gallery = [

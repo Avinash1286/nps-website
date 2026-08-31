@@ -4,12 +4,52 @@ import { BookOpenText, ChevronDown, CircleUserRound, LogOut } from "lucide-react
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
-import { authClient } from "@/lib/auth/student-client";
+
+type StudentAccountSession = {
+  user: { name?: string | null; email?: string | null };
+} | null;
 
 type SiteStudentAccountProps = {
   variant: "desktop" | "mobile";
+  session: StudentAccountSession;
+  isPending: boolean;
   onNavigate?: () => void;
 };
+
+/** The public header only needs the current student's display identity. Using
+ * the native Better Auth HTTP endpoint avoids shipping the complete Better
+ * Auth and Convex client runtimes to every anonymous visitor. */
+export function useStudentAccountSession(routeKey: string) {
+  const [session, setSession] = useState<StudentAccountSession>(null);
+  const [isPending, setIsPending] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const load = async () => {
+      try {
+        const response = await fetch("/api/auth/get-session", {
+          credentials: "include",
+          signal: controller.signal,
+        });
+        const value = (await response.json().catch(() => null)) as StudentAccountSession;
+        if (!controller.signal.aborted) setSession(response.ok ? value : null);
+      } catch {
+        if (!controller.signal.aborted) setSession(null);
+      } finally {
+        if (!controller.signal.aborted) setIsPending(false);
+      }
+    };
+
+    void load();
+    window.addEventListener("focus", load);
+    return () => {
+      controller.abort();
+      window.removeEventListener("focus", load);
+    };
+  }, [routeKey]);
+
+  return { session, isPending };
+}
 
 function studentDisplayName(user: { name?: string | null; email?: string | null }) {
   const name = user.name?.trim();
@@ -19,9 +59,8 @@ function studentDisplayName(user: { name?: string | null; email?: string | null 
   return emailName || "Student";
 }
 
-export function SiteStudentAccount({ variant, onNavigate }: SiteStudentAccountProps) {
+export function SiteStudentAccount({ variant, session, isPending, onNavigate }: SiteStudentAccountProps) {
   const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [logoutError, setLogoutError] = useState("");
@@ -59,8 +98,13 @@ export function SiteStudentAccount({ variant, onNavigate }: SiteStudentAccountPr
     setLogoutError("");
 
     try {
-      const result = await authClient.signOut();
-      if (result.error) throw new Error("We could not sign you out. Please try again.");
+      const response = await fetch("/api/auth/sign-out", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      if (!response.ok) throw new Error("We could not sign you out. Please try again.");
 
       setOpen(false);
       onNavigate?.();

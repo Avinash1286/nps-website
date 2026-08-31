@@ -15,6 +15,42 @@ import {
   getStudentArticles,
   getTeachers,
 } from "@/lib/data/public";
+
+const legacyPublicPaths: Record<string, string> = {
+  "/about/overview": "/about",
+  "/about/history": "/about#history",
+  "/about/mission-vision": "/about#mission",
+  "/academics/overview": "/academics",
+  "/academics/primary": "/academics#primary",
+  "/academics/secondary": "/academics#secondary",
+  "/academics/plus-2": "/academics#plus-2",
+  "/academics/curriculum": "/academics#curriculum",
+  "/academics/departments": "/departments",
+  "/academics/library": "/facilities#library",
+  "/academics/sports": "/campus-life/activities",
+  "/teachers": "/departments",
+  "/campus-life/facilities": "/facilities",
+  "/campus-life/virtual-tour": "/facilities",
+  "/campus-life/transport": "/facilities#transportation",
+};
+
+function canonicalPublicHref(href: string): string {
+  if (!href.startsWith("/") || href.startsWith("//")) return href;
+
+  const suffixIndex = [href.indexOf("?"), href.indexOf("#")]
+    .filter((index) => index >= 0)
+    .reduce((lowest, index) => Math.min(lowest, index), href.length);
+  const rawPathname = href.slice(0, suffixIndex);
+  const suffix = href.slice(suffixIndex);
+  const pathname = rawPathname.length > 1 ? rawPathname.replace(/\/$/, "") : rawPathname;
+  const legacyDepartment = pathname.match(/^\/academics\/departments\/([^/]+)$/);
+  if (legacyDepartment) return `/departments/${legacyDepartment[1]}`;
+
+  const replacement = legacyPublicPaths[pathname];
+  if (replacement) return replacement;
+  return `${pathname}${suffix}`;
+}
+
 export const metadata: Metadata = { title: "Search", robots: { index: false, follow: true } };
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams;
@@ -51,32 +87,32 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       ])
     : [[], [], [], [], [], [], [], [], [], [], [], [], []];
   const navigationPages = [...headerNavigation, ...footerNavigation, ...utilityNavigation].filter(
-    (item) => !item.external && item.href.startsWith("/"),
+    (item) => !item.external && item.href.startsWith("/") && !item.href.startsWith("//"),
   );
   const candidates = query
     ? [
         ...navigationPages.map((item) => ({
           title: item.label,
           description: item.description ?? item.label,
-          href: item.href,
+          href: canonicalPublicHref(item.href),
           type: "Page",
         })),
         ...pages.map((item) => ({
           title: item.title,
           description: item.summary ?? item.body.slice(0, 220),
-          href: `/${item.slug}`,
+          href: canonicalPublicHref(`/${item.slug}`),
           type: "Page",
         })),
         ...programs.map((item) => ({
           title: item.name,
           description: item.shortDescription,
-          href: `/academics/${item.slug}`,
+          href: `/academics#${item.slug}`,
           type: "Programme",
         })),
         ...departments.map((item) => ({
           title: item.name,
           description: item.description,
-          href: `/academics/departments/${item.slug}`,
+          href: `/departments/${item.slug}`,
           type: "Department",
         })),
         ...facilities.map((item) => ({

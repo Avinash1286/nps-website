@@ -15,6 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
       page?.summary ??
       "Contact Nepal Police School, Garuda through verified school channels or the secure website enquiry form.",
     seo: page?.seo,
+    path: "/contact",
   });
 }
 

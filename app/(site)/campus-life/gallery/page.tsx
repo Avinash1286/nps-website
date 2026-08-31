@@ -1,16 +1,17 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Images } from "lucide-react";
 import PublicImage from "@/components/site/public-image";
 import { EmptyState } from "@/components/site/empty-state";
 import { PageHero } from "@/components/site/page-hero";
 import { FeaturedBadge } from "@/components/site/featured-badge";
+import { contentMetadata } from "@/lib/content/public-metadata";
 import { getGalleryAlbums } from "@/lib/data/public";
 
-export const metadata: Metadata = {
+export const metadata = contentMetadata({
   title: "School gallery",
   description: "Approved photographs and albums from Nepal Police School, Garuda.",
-};
+  path: "/campus-life/gallery",
+});
 
 export default async function GalleryPage() {
   const albums = await getGalleryAlbums();
