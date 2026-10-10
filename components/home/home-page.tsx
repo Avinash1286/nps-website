@@ -7,6 +7,7 @@ import { GalleryPreview } from "@/components/home/gallery-preview";
 import { HeroCarousel, type HeroSlide } from "@/components/home/hero-carousel";
 import { ManagementMessage } from "@/components/home/management-message";
 import { NewsEvents } from "@/components/home/news-events";
+import { schoolSearchName, schoolSearchShortName } from "@/lib/content/school-search";
 import {
   getEvents,
   getGalleryAlbums,
@@ -74,6 +75,12 @@ export async function HomePage() {
           >
             {hero?.heading ?? site.schoolName}
           </h1>
+          <p
+            className="anim-fade-up mt-5 text-base font-semibold text-sky-200 sm:text-lg"
+            style={{ animationDelay: "180ms" }}
+          >
+            {schoolSearchName} ({schoolSearchShortName}) · Garuda, Rautahat, Nepal
+          </p>
           <p
             className="anim-fade-up mt-7 max-w-2xl text-base leading-8 text-slate-200 sm:text-lg"
             style={{ animationDelay: "240ms" }}
