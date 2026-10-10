@@ -1185,33 +1185,20 @@ export const listEvents = query({
     const now = await publicationNow(ctx);
     if (scope !== "all" && now === undefined) return [];
     const take = limitOf(args.limit, 200);
-    const candidateLimit = Math.min(600, take * 3);
-    let rows: Doc<"events">[];
-    if (scope === "upcoming") {
-      rows = await ctx.db
-        .query("events")
-        .withIndex("by_status_end_at", (q) => q.eq("status", "published").gte("endAt", now!))
-        .order("asc")
-        .take(candidateLimit);
-    } else if (scope === "past") {
-      rows = await ctx.db
-        .query("events")
-        .withIndex("by_status_end_at", (q) => q.eq("status", "published").lt("endAt", now!))
-        .order("desc")
-        .take(candidateLimit);
-    } else {
-      rows = await ctx.db
-        .query("events")
-        .withIndex("by_status_start_at", (q) => q.eq("status", "published"))
-        .order("desc")
-        .take(candidateLimit);
-    }
-    const filtered = rows
-      .filter((row) => isPublished(row))
-      .sort((a, b) => (scope === "past" ? b.startAt - a.startAt : a.startAt - b.startAt))
-      .slice(0, take);
+    const events = ctx.db
+      .query("events")
+      .withIndex("by_status_start_at", (q) => q.eq("status", "published"))
+      .order(scope === "past" ? "desc" : "asc");
+    // Apply the end-time scope before limiting the start-time-ordered results.
+    const scopedEvents =
+      scope === "upcoming"
+        ? events.filter((q) => q.gte(q.field("endAt"), now!))
+        : scope === "past"
+          ? events.filter((q) => q.lt(q.field("endAt"), now!))
+          : events;
+    const rows = await scopedEvents.take(take);
     return await Promise.all(
-      filtered.map(async (row) =>
+      rows.map(async (row) =>
         publicEvent(row, await storageUrl(ctx, row.featuredImageId, row.featuredImageUrl)),
       ),
     );

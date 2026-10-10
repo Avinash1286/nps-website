@@ -52,8 +52,13 @@ function canonicalPublicHref(href: string): string {
 }
 
 export const metadata: Metadata = { title: "Search", robots: { index: false, follow: true } };
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { q } = await searchParams;
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const q = Array.isArray(params.q) ? params.q[0] : params.q;
   const query = q?.trim().toLowerCase() ?? "";
   const [
     news,
