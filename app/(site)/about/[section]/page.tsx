@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { StandardPage } from "@/components/site/standard-page";
 import { cmsPageToStandard } from "@/lib/content/cms-page";
 import { getCmsPage } from "@/lib/data/public";
+import { contentMetadata } from "@/lib/content/public-metadata";
 
 const mergedSections: Record<string, string> = {
   history: "/about#history",
@@ -13,7 +14,14 @@ export async function generateMetadata({ params }: PageProps<"/about/[section]">
   const { section } = await params;
   if (mergedSections[section]) return { robots: { index: false, follow: true } };
   const configured = await getCmsPage(`about/${section}`);
-  return configured ? { title: configured.title, description: configured.summary } : {};
+  return configured
+    ? contentMetadata({
+        title: configured.title,
+        description: configured.summary,
+        seo: configured.seo,
+        path: `/about/${section}`,
+      })
+    : {};
 }
 
 export default async function AboutSectionPage({ params }: PageProps<"/about/[section]">) {

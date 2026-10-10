@@ -126,3 +126,27 @@ Before launch:
 - Administrative changes are attributed in audit logs, and background jobs are visible and retryable.
 
 See [SECURITY.md](./SECURITY.md) for reporting and operational guidance.
+
+## Google Search discovery
+
+Set the web deployment's `NEXT_PUBLIC_SITE_URL` to the public HTTPS origin, currently
+`https://nepalpoliceschool.vercel.app`. Canonicals and sitemap URLs use this origin;
+Vercel's production hostname is the fallback when the optional override is missing or invalid.
+
+After deploying the latest `master` commit to Production:
+
+1. Open `/robots.txt` and `/sitemap.xml` on the public domain. Public pages should be crawlable,
+   and the sitemap should contain canonical public URLs. Keep staff and student routes private.
+2. Verify the URL-prefix property `https://nepalpoliceschool.vercel.app/` in Google Search Console.
+   The supplied HTML method requires `/google0553287e66d39a3e.html` to serve exactly
+   `google-site-verification: google0553287e66d39a3e.html`. Keep the file after verification.
+3. Submit `sitemap.xml` in the property's Sitemaps report.
+4. Use URL Inspection to run a live test and request indexing for the homepage, `/about`,
+   `/academics`, `/admissions`, and `/contact`. Use the sitemap for the other published pages.
+5. Review Page Indexing for excluded or failed URLs after Google processes the site. Check that
+   the administrator's site-wide search-indexing opt-out is disabled for the public launch;
+   respect individual pages intentionally marked `noIndex`.
+
+Google decides whether and when to index pages. Sitemap submission and indexing requests do not
+guarantee inclusion or ranking. See Google's [recrawl guidance](https://developers.google.com/search/docs/crawling-indexing/ask-google-to-recrawl)
+and [canonical URL guidance](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls).

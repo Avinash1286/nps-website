@@ -5,11 +5,16 @@ import { ArrowLeft, Clock3, Mail, UserRound } from "lucide-react";
 import { notFound } from "next/navigation";
 import { PageHero } from "@/components/site/page-hero";
 import { getLeader } from "@/lib/data/public";
+import { contentMetadata } from "@/lib/content/public-metadata";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const leader = await getLeader(slug);
   return leader
-    ? { title: leader.name, description: `${leader.designation} at Nepal Police School, Garuda.` }
+    ? contentMetadata({
+        title: leader.name,
+        description: `${leader.designation} at Nepal Police School, Garuda.`,
+        path: `/about/leadership/${slug}`,
+      })
     : {};
 }
 export default async function LeadershipProfilePage({ params }: { params: Promise<{ slug: string }> }) {

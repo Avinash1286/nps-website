@@ -4,6 +4,7 @@ import { PolicyPage } from "@/components/content/policy-page";
 export const metadata: Metadata = {
   title: "Accessibility",
   description: "Accessibility approach and support for the Nepal Police School, Garuda website.",
+  alternates: { canonical: "/accessibility" },
 };
 export default function AccessibilityPage() {
   return (

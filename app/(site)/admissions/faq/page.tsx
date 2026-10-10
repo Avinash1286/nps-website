@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "Frequently asked questions",
   description:
     "Verified answers to common admissions and school-information questions from Nepal Police School, Garuda.",
+  alternates: { canonical: "/admissions/faq" },
 };
 
 export default async function FrequentlyAskedQuestionsPage({

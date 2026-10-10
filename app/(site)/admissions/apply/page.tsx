@@ -8,6 +8,7 @@ import { getSiteProfile } from "@/lib/data/public";
 export const metadata: Metadata = {
   title: "Admission enquiry",
   description: "Send a secure preliminary admission enquiry to Nepal Police School, Garuda.",
+  alternates: { canonical: "/admissions/apply" },
 };
 
 export default async function ApplyPage() {

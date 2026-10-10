@@ -62,6 +62,16 @@ const redirectedPageSlugs = new Set([
   "campus-life/transport",
 ]);
 
+// These routes have their own private, noindex, redirect, or metadata handlers.
+// A CMS slug with the same name cannot create an indexable public page there.
+function isDiscoverableCmsPage(slug: string) {
+  return !(
+    redirectedPageSlugs.has(slug) ||
+    /^(admin|api|sign-in|student|search|newsletter)(\/|$)/.test(slug) ||
+    ["admissions/submitted", "events/cancel", "robots.txt", "sitemap.xml"].includes(slug)
+  );
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const site = await getSiteProfile();
@@ -91,7 +101,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   const dynamicRouteCandidates: Array<{ route: string; lastModified?: string }> = [
     ...pages
-      .filter((item) => !item.seo?.noIndex && !redirectedPageSlugs.has(item.slug))
+      .filter((item) => !item.seo?.noIndex && isDiscoverableCmsPage(item.slug))
       .map((item) => ({ route: `/${item.slug}` })),
     ...departments
       .filter((item) => !item.seo?.noIndex)

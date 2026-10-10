@@ -4,6 +4,7 @@ import { PolicyPage } from "@/components/content/policy-page";
 export const metadata: Metadata = {
   title: "Privacy notice",
   description: "How the Nepal Police School, Garuda website handles personal information.",
+  alternates: { canonical: "/privacy" },
 };
 export default function PrivacyPage() {
   return (
