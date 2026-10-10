@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { getSiteProfile } from "@/lib/data/public";
+import { schoolSearchAliases } from "@/lib/content/school-search";
 import { serializeJsonLd } from "@/lib/security/json-ld";
 import { getSiteUrl } from "@/lib/server/site-url";
 import "./globals.css";
@@ -26,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: title, template: `%s | ${site.shortName}` },
     description,
     category: "education",
-    keywords: ["Nepal Police School", "NPS Garuda", "school in Rautahat", "Nepal education"],
+    keywords: ["Nepal Police School", ...schoolSearchAliases, "school in Rautahat", "Nepal education"],
     icons: {
       icon: site.faviconUrl ?? site.logoUrl ?? "/media/nps-logo.png",
       apple: site.logoUrl ?? "/media/nps-logo.png",
@@ -63,6 +64,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     "@context": "https://schema.org",
     "@type": "School",
     name: site.schoolName,
+    alternateName: schoolSearchAliases,
     url: siteUrl,
     logo: new URL(site.logoUrl ?? "/media/nps-logo.png", siteUrl).toString(),
     description: site.description,
