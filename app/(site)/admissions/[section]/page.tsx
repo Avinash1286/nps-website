@@ -4,6 +4,7 @@ import { StandardPage } from "@/components/site/standard-page";
 import { admissionPages } from "@/lib/content/site-pages";
 import { cmsPageToStandard } from "@/lib/content/cms-page";
 import { getCmsPage } from "@/lib/data/public";
+import { contentMetadata } from "@/lib/content/public-metadata";
 export async function generateMetadata({
   params,
 }: {
@@ -12,7 +13,14 @@ export async function generateMetadata({
   const { section } = await params;
   const configured = await getCmsPage(`admissions/${section}`);
   const page = configured ? cmsPageToStandard(configured, "Admissions") : admissionPages[section];
-  return page ? { title: page.title, description: page.description } : {};
+  return page
+    ? contentMetadata({
+        title: page.title,
+        description: page.description,
+        seo: configured?.seo,
+        path: `/admissions/${section}`,
+      })
+    : {};
 }
 export default async function AdmissionSectionPage({ params }: { params: Promise<{ section: string }> }) {
   const { section } = await params;

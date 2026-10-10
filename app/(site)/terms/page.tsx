@@ -4,6 +4,7 @@ import { PolicyPage } from "@/components/content/policy-page";
 export const metadata: Metadata = {
   title: "Website terms",
   description: "Terms for using the Nepal Police School, Garuda website.",
+  alternates: { canonical: "/terms" },
 };
 export default function TermsPage() {
   return (
