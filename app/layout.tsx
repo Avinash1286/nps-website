@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { getSiteProfile } from "@/lib/data/public";
-import { schoolSearchAliases } from "@/lib/content/school-search";
+import { schoolSearchAliases, schoolSearchShortName } from "@/lib/content/school-search";
 import { serializeJsonLd } from "@/lib/security/json-ld";
 import { getSiteUrl } from "@/lib/server/site-url";
 import "./globals.css";
@@ -23,11 +23,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(siteUrl),
-    applicationName: "NPS Digital School",
+    applicationName: schoolSearchShortName,
     title: { default: title, template: `%s | ${site.shortName}` },
     description,
     category: "education",
-    keywords: ["Nepal Police School", ...schoolSearchAliases, "school in Rautahat", "Nepal education"],
+    keywords: [...schoolSearchAliases, "school in Rautahat", "Nepal education"],
     icons: {
       icon: site.faviconUrl ?? site.logoUrl ?? "/media/nps-logo.png",
       apple: site.logoUrl ?? "/media/nps-logo.png",
@@ -36,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       locale: "en_NP",
-      siteName: site.schoolName,
+      siteName: schoolSearchShortName,
       title,
       description,
       url: "/",

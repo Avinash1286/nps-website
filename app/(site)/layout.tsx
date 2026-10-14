@@ -4,6 +4,7 @@ import { MaintenanceGate } from "@/components/site/maintenance-gate";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { getNavigation, getSiteProfile } from "@/lib/data/public";
+import { schoolSearchShortName } from "@/lib/content/school-search";
 
 export const revalidate = 60;
 
@@ -17,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "Official information, academics, admissions, notices, events, and resources from Nepal Police School, Garuda, Rautahat.",
     openGraph: {
       type: "website",
-      siteName: site.schoolName,
+      siteName: schoolSearchShortName,
       images: [{ url: socialImage, alt: site.schoolName }],
     },
     twitter: { card: "summary_large_image", images: [socialImage] },
