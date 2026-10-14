@@ -32,8 +32,6 @@ export function usePublicForm(endpoint: string, successMessage: string) {
       if (!response.ok)
         throw new Error(result.error || result.message || "We could not submit the form. Please try again.");
       submissionId.current = crypto.randomUUID();
-      setCaptchaToken("");
-      setCaptchaKey((current) => current + 1);
       setStatus({ state: "success", message: result.message || successMessage });
       return true;
     } catch (error) {
@@ -42,6 +40,10 @@ export function usePublicForm(endpoint: string, successMessage: string) {
         message: error instanceof Error ? error.message : "We could not submit the form. Please try again.",
       });
       return false;
+    } finally {
+      // Turnstile tokens may have been consumed even when the submission fails.
+      setCaptchaToken("");
+      setCaptchaKey((current) => current + 1);
     }
   }
 

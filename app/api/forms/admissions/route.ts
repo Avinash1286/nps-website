@@ -44,7 +44,7 @@ const nestedSchema = z.object({
     address: z.string().trim().min(4).max(300),
   }),
   priorSchool: z.string().trim().max(200).optional().or(z.literal("")),
-  notes: z.string().trim().max(1500).optional().or(z.literal("")),
+  notes: z.string().trim().max(2000).optional().or(z.literal("")),
 });
 
 const enquirySchema = z.object({
@@ -57,7 +57,7 @@ const enquirySchema = z.object({
   email: z.string().trim().email().max(160),
   phone: z.string().trim().min(7).max(40),
   previousSchool: z.string().trim().max(200).optional().or(z.literal("")),
-  message: z.string().trim().max(1500).optional().or(z.literal("")),
+  message: z.string().trim().max(2000).optional().or(z.literal("")),
 });
 
 const schema = z.union([nestedSchema, enquirySchema]);

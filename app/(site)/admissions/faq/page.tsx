@@ -15,9 +15,11 @@ export const metadata: Metadata = {
 export default async function FrequentlyAskedQuestionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string }>;
+  searchParams: Promise<{ q?: string | string[]; category?: string | string[] }>;
 }) {
-  const { q, category } = await searchParams;
+  const params = await searchParams;
+  const q = Array.isArray(params.q) ? params.q[0] : params.q;
+  const category = Array.isArray(params.category) ? params.category[0] : params.category;
   const faqs = await getFaqs(undefined, 120);
   const categories = [
     ...new Set(faqs.map((item) => item.category).filter((value): value is string => Boolean(value))),
