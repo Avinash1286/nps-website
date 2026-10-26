@@ -14,6 +14,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const SESSION_COOKIE = "nps_ai_session";
+// The current Convex action returns this fallback when generation fails.
+// Expose it as a retryable failure rather than a successful AI answer.
+const UNAVAILABLE_ANSWER =
+  "I'm sorry, I can't reach the school knowledge service right now. Please try again shortly or contact the school office for time-sensitive help.";
 const messageSchema = z.object({
   message: z.string().trim().min(1).max(1500),
   history: z
@@ -66,9 +70,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const existingSession = request.cookies.get(SESSION_COOKIE)?.value;
-  const sessionId =
-    existingSession && /^[a-f0-9-]{36}$/i.test(existingSession) ? existingSession : randomUUID();
+  const cookieValue = request.cookies.get(SESSION_COOKIE)?.value;
+  const existingSession = cookieValue && /^[a-f0-9-]{36}$/i.test(cookieValue) ? cookieValue : undefined;
+  const sessionId = existingSession ?? randomUUID();
   const fingerprint = requestFingerprint(request, sessionId, serviceSecret);
   const requestTimestamp = Date.now();
   const signaturePayload = canonicalAssistantSignaturePayload({
@@ -93,15 +97,21 @@ export async function POST(request: NextRequest) {
       },
       { url: convexUrl },
     );
+    const unavailable = result.answer === UNAVAILABLE_ANSWER && result.sources.length === 0;
     const response = NextResponse.json(
+      unavailable
+        ? { error: result.answer }
+        : {
+            answer: result.answer,
+            sources: result.sources
+              .map((source) => ({ ...source, href: safeSameOriginPath(source.href) }))
+              .filter((source): source is { title: string; href: string } => Boolean(source.href)),
+            remaining: result.remaining,
+          },
       {
-        answer: result.answer,
-        sources: result.sources
-          .map((source) => ({ ...source, href: safeSameOriginPath(source.href) }))
-          .filter((source): source is { title: string; href: string } => Boolean(source.href)),
-        remaining: result.remaining,
+        status: unavailable ? 503 : 200,
+        headers: { "Cache-Control": "no-store", ...(unavailable ? { "Retry-After": "30" } : {}) },
       },
-      { headers: { "Cache-Control": "no-store" } },
     );
     if (!existingSession) {
       response.cookies.set(SESSION_COOKIE, sessionId, {

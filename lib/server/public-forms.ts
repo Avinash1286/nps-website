@@ -12,9 +12,9 @@ export function preparePublicFormRequest(request: NextRequest) {
   if (!isConfiguredSecret(fingerprintSecret) || !isConfiguredSecret(formServiceSecret) || !convexUrl)
     return null;
 
-  const existingSession = request.cookies.get(FORM_SESSION_COOKIE)?.value;
-  const sessionId =
-    existingSession && /^[a-f0-9-]{36}$/i.test(existingSession) ? existingSession : randomUUID();
+  const cookieValue = request.cookies.get(FORM_SESSION_COOKIE)?.value;
+  const existingSession = cookieValue && /^[a-f0-9-]{36}$/i.test(cookieValue) ? cookieValue : undefined;
+  const sessionId = existingSession ?? randomUUID();
   return {
     convexUrl,
     existingSession,

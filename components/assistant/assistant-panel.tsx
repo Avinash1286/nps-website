@@ -2,7 +2,18 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useId, useRef, useState } from "react";
-import { Bot, ExternalLink, LoaderCircle, Send, ShieldCheck, X } from "lucide-react";
+import {
+  Bot,
+  Check,
+  Copy,
+  ExternalLink,
+  LoaderCircle,
+  RotateCcw,
+  Send,
+  ShieldCheck,
+  Square,
+  X,
+} from "lucide-react";
 
 type Source = { title: string; href: string };
 type Message = { role: "user" | "assistant"; content: string; sources?: Source[] };
@@ -36,12 +47,18 @@ export function AssistantPanel({
   const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [failedQuestion, setFailedQuestion] = useState<string | null>(null);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copyNotice, setCopyNotice] = useState("");
   const messageInputId = useId();
   const safetyMessageId = useId();
   const generatedHeadingId = useId();
   const panelHeadingId = headingId ?? generatedHeadingId;
   const endRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(false);
+  const activeRequest = useRef<AbortController | null>(null);
+
+  useEffect(() => () => activeRequest.current?.abort("unmounted"), []);
 
   useEffect(() => {
     if (!mountedRef.current) {
@@ -55,30 +72,40 @@ export function AssistantPanel({
     endRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "nearest" });
   }, [messages, busy]);
 
-  async function ask(question: string) {
+  async function ask(question: string, retry = false) {
     const clean = question.trim();
-    if (!clean || busy) return;
+    if (!clean || activeRequest.current) return;
 
-    const nextMessages: Message[] = [...messages, { role: "user", content: clean }];
+    const lastMessage = messages.at(-1);
+    const retryLastQuestion = retry && lastMessage?.role === "user" && lastMessage.content === clean;
+    const nextMessages: Message[] = retryLastQuestion
+      ? messages
+      : [...messages, { role: "user", content: clean }];
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const timeout = window.setTimeout(() => controller.abort("timeout"), 30_000);
     setMessages(nextMessages);
-    setValue("");
+    if (!retry) setValue("");
     setError(null);
+    setFailedQuestion(null);
+    setCopyNotice("");
     setBusy(true);
 
     try {
       const response = await fetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: clean,
-          history: nextMessages.slice(-7, -1).map(({ role, content }) => ({ role, content })),
-        }),
+        // The server keeps the conversation in its session-backed Agent thread.
+        // Resending long answers as input history exceeds the gateway's input limit.
+        body: JSON.stringify({ message: clean }),
+        signal: controller.signal,
       });
       const payload = (await response.json().catch(() => ({}))) as {
         answer?: string;
         sources?: Source[];
         error?: string;
       };
+      if (controller.signal.aborted) throw new Error("The request was interrupted.");
       if (!response.ok || !payload.answer) {
         throw new Error(payload.error ?? "The assistant is unavailable right now.");
       }
@@ -87,11 +114,37 @@ export function AssistantPanel({
         { role: "assistant", content: payload.answer!, sources: payload.sources ?? [] },
       ]);
     } catch (requestError) {
+      if (controller.signal.reason === "unmounted") return;
+      setFailedQuestion(clean);
       setError(
-        requestError instanceof Error ? requestError.message : "The assistant is unavailable right now.",
+        controller.signal.aborted
+          ? controller.signal.reason === "stopped"
+            ? "Response stopped. You can retry your question."
+            : "The assistant took too long to respond. Please retry your question."
+          : requestError instanceof Error
+            ? requestError.message
+            : "The assistant is unavailable right now.",
       );
     } finally {
-      setBusy(false);
+      window.clearTimeout(timeout);
+      if (activeRequest.current === controller) activeRequest.current = null;
+      if (controller.signal.reason !== "unmounted") setBusy(false);
+    }
+  }
+
+  async function copyAnswer(message: Message, index: number) {
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+      const sources = message.sources?.length
+        ? `\n\nSources:\n${message.sources
+            .map((source) => `${source.title}: ${new URL(source.href, window.location.origin).href}`)
+            .join("\n")}`
+        : "";
+      await navigator.clipboard.writeText(`${message.content}${sources}`);
+      setCopiedIndex(index);
+      setCopyNotice("Answer copied, including its source links when available.");
+    } catch {
+      setCopyNotice("Copy is unavailable. You can select the answer text and copy it manually.");
     }
   }
 
@@ -178,6 +231,21 @@ export function AssistantPanel({
                 </ul>
               </div>
             )}
+            {message.role === "assistant" && index > 0 && (
+              <button
+                type="button"
+                className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-sky-800 transition hover:bg-sky-50 focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:outline-none"
+                onClick={() => void copyAnswer(message, index)}
+                aria-label={copiedIndex === index ? "Answer copied" : "Copy answer"}
+              >
+                {copiedIndex === index ? (
+                  <Check size={13} aria-hidden="true" />
+                ) : (
+                  <Copy size={13} aria-hidden="true" />
+                )}
+                {copiedIndex === index ? "Copied" : "Copy answer"}
+              </button>
+            )}
           </article>
         ))}
         {busy && (
@@ -206,12 +274,33 @@ export function AssistantPanel({
           </div>
         )}
         {error && (
-          <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-xs leading-5 text-red-800" role="alert">
-            {error}{" "}
-            <Link className="font-bold underline" href="/contact" onClick={onClose}>
-              Contact the school office
-            </Link>
-            .
+          <div className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-xs leading-5 text-red-800" role="alert">
+            <p>
+              {error}{" "}
+              <Link className="font-bold underline" href="/contact" onClick={onClose}>
+                Contact the school office
+              </Link>
+              {" or "}
+              <Link className="font-bold underline" href="/search" onClick={onClose}>
+                search the website
+              </Link>
+              .
+            </p>
+            {failedQuestion && (
+              <button
+                type="button"
+                className="mt-2 inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2 font-bold underline focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:outline-none"
+                onClick={() => void ask(failedQuestion, true)}
+                disabled={busy}
+              >
+                <RotateCcw size={13} aria-hidden="true" /> Retry question
+              </button>
+            )}
+          </div>
+        )}
+        {copyNotice && (
+          <p role="status" className="mb-3 text-xs leading-5 text-slate-600">
+            {copyNotice}
           </p>
         )}
         <form className="flex items-end gap-2" onSubmit={submit}>
@@ -224,18 +313,29 @@ export function AssistantPanel({
             value={value}
             maxLength={1500}
             onChange={(event) => setValue(event.target.value)}
-            placeholder="Ask about admissions, notices, or academics…"
+            placeholder="Ask in English or Nepali…"
             disabled={busy}
             aria-describedby={safetyMessageId}
           />
-          <button
-            type="submit"
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#3a3fa5] text-white transition hover:bg-[#2e3192] focus-visible:ring-4 focus-visible:ring-sky-200 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={busy || !value.trim()}
-            aria-label="Send question"
-          >
-            <Send size={17} aria-hidden="true" />
-          </button>
+          {busy ? (
+            <button
+              type="button"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#1e1f5c] text-white focus-visible:ring-4 focus-visible:ring-sky-200 focus-visible:outline-none"
+              onClick={() => activeRequest.current?.abort("stopped")}
+              aria-label="Stop response"
+            >
+              <Square size={15} aria-hidden="true" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#3a3fa5] text-white transition hover:bg-[#2e3192] focus-visible:ring-4 focus-visible:ring-sky-200 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!value.trim()}
+              aria-label="Send question"
+            >
+              <Send size={17} aria-hidden="true" />
+            </button>
+          )}
         </form>
         <p
           id={safetyMessageId}

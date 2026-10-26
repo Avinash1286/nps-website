@@ -5,6 +5,7 @@ import { PageHero } from "@/components/site/page-hero";
 import { FeaturedBadge } from "@/components/site/featured-badge";
 import { contentMetadata } from "@/lib/content/public-metadata";
 import { formatPublicDate, getDocuments } from "@/lib/data/public";
+import { firstSearchParam } from "@/lib/content/search-param";
 export const metadata = contentMetadata({
   title: "Downloads",
   description: "Approved forms, schedules, guides, and school documents from Nepal Police School, Garuda.",
@@ -13,9 +14,9 @@ export const metadata = contentMetadata({
 export default async function DownloadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string | string[] }>;
 }) {
-  const { category } = await searchParams;
+  const category = firstSearchParam((await searchParams).category);
   const documents = await getDocuments();
   const categories = Array.from(new Set(documents.map((document) => document.category))).sort();
   const visible = category ? documents.filter((document) => document.category === category) : documents;
@@ -93,10 +94,14 @@ export default async function DownloadsPage({
             </div>
           ) : (
             <EmptyState
-              title="No published documents"
-              description="Approved downloads will appear here after they are published through the school content system."
-              actionLabel="View notices"
-              actionHref="/notices"
+              title={category && documents.length ? "No matching documents" : "No published documents"}
+              description={
+                category && documents.length
+                  ? "No published documents match this category. Clear the filter to browse all documents."
+                  : "Approved downloads will appear here after they are published through the school content system."
+              }
+              actionLabel={category && documents.length ? "Clear category filter" : "View notices"}
+              actionHref={category && documents.length ? "/downloads" : "/notices"}
             />
           )}
           <p className="mt-8 text-xs leading-5 text-slate-500">

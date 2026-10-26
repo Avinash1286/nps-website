@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Search } from "lucide-react";
 import { PageHero } from "@/components/site/page-hero";
+import { firstSearchParam } from "@/lib/content/search-param";
 import {
   getCmsPages,
   getDepartments,
@@ -52,8 +53,12 @@ function canonicalPublicHref(href: string): string {
 }
 
 export const metadata: Metadata = { title: "Search", robots: { index: false, follow: true } };
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { q } = await searchParams;
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[] }>;
+}) {
+  const q = firstSearchParam((await searchParams).q);
   const query = q?.trim().toLowerCase() ?? "";
   const [
     news,
@@ -190,7 +195,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           </form>
           {query ? (
             <div className="mt-10">
-              <p className="text-sm font-semibold text-slate-600">
+              <p className="text-sm font-semibold [overflow-wrap:anywhere] text-slate-600">
                 {results.length} {results.length === 1 ? "result" : "results"} for{" "}
                 <strong className="text-[#1e1f5c]">“{q}”</strong>
               </p>

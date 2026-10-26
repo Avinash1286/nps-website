@@ -4,6 +4,7 @@ import { ChevronDown, HelpCircle, Search } from "lucide-react";
 import { EmptyState } from "@/components/site/empty-state";
 import { PageHero } from "@/components/site/page-hero";
 import { getFaqs } from "@/lib/data/public";
+import { firstSearchParam } from "@/lib/content/search-param";
 
 export const metadata: Metadata = {
   title: "Frequently asked questions",
@@ -15,9 +16,11 @@ export const metadata: Metadata = {
 export default async function FrequentlyAskedQuestionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string }>;
+  searchParams: Promise<{ q?: string | string[]; category?: string | string[] }>;
 }) {
-  const { q, category } = await searchParams;
+  const params = await searchParams;
+  const q = firstSearchParam(params.q);
+  const category = firstSearchParam(params.category);
   const faqs = await getFaqs(undefined, 120);
   const categories = [
     ...new Set(faqs.map((item) => item.category).filter((value): value is string => Boolean(value))),

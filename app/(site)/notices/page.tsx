@@ -4,13 +4,18 @@ import { EmptyState } from "@/components/site/empty-state";
 import { PageHero } from "@/components/site/page-hero";
 import { contentMetadata } from "@/lib/content/public-metadata";
 import { formatPublicDate, getNotices } from "@/lib/data/public";
+import { firstSearchParam } from "@/lib/content/search-param";
 export const metadata = contentMetadata({
   title: "Official notices",
   description: "Official notices and announcements from Nepal Police School, Garuda.",
   path: "/notices",
 });
-export default async function NoticesPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { q } = await searchParams;
+export default async function NoticesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[] }>;
+}) {
+  const q = firstSearchParam((await searchParams).q);
   const notices = await getNotices(200);
   const query = q?.trim().toLowerCase();
   const visible = query
