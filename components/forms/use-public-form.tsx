@@ -10,38 +10,53 @@ export function usePublicForm(endpoint: string, successMessage: string) {
   const [captchaToken, setCaptchaToken] = useState("");
   const [captchaKey, setCaptchaKey] = useState(0);
   const submissionId = useRef("");
-
-  useEffect(() => {
-    submissionId.current = crypto.randomUUID();
-  }, []);
+  const submittedPayload = useRef("");
+  const submitting = useRef(false);
 
   async function submit(payload: Record<string, unknown>) {
-    if (status.state === "submitting") return false;
+    if (submitting.current) return false;
+    submitting.current = true;
     setStatus({ state: "submitting", message: "" });
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 30_000);
     try {
+      const payloadKey = JSON.stringify(payload);
+      if (submittedPayload.current !== payloadKey) {
+        submissionId.current = crypto.randomUUID();
+        submittedPayload.current = payloadKey;
+      }
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...payload,
           captchaToken,
-          submissionId: submissionId.current || crypto.randomUUID(),
+          submissionId: submissionId.current,
         }),
+        signal: controller.signal,
       });
       const result = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
       if (!response.ok)
         throw new Error(result.error || result.message || "We could not submit the form. Please try again.");
       submissionId.current = crypto.randomUUID();
-      setCaptchaToken("");
-      setCaptchaKey((current) => current + 1);
       setStatus({ state: "success", message: result.message || successMessage });
       return true;
     } catch (error) {
       setStatus({
         state: "error",
-        message: error instanceof Error ? error.message : "We could not submit the form. Please try again.",
+        message: controller.signal.aborted
+          ? "The request took too long. Please try again; your form details are still here."
+          : error instanceof Error
+            ? error.message
+            : "We could not submit the form. Please try again.",
       });
       return false;
+    } finally {
+      window.clearTimeout(timeout);
+      submitting.current = false;
+      // Verification tokens are single-use, including attempts that fail after verification.
+      setCaptchaToken("");
+      setCaptchaKey((current) => current + 1);
     }
   }
 
