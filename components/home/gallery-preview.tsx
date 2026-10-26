@@ -13,9 +13,9 @@ type Tile = {
   imageUrl: string;
 };
 
-// A(2x2) + four 1x1 tiles fill a 4-column grid exactly, at every breakpoint.
+// Phones show a full-width cover above two pairs; larger screens keep the mosaic.
 const spans = [
-  "col-span-2 row-span-2",
+  "col-span-2 sm:row-span-2",
   "col-span-1 row-span-1",
   "col-span-1 row-span-1",
   "col-span-1 row-span-1",
@@ -57,7 +57,7 @@ export function GalleryPreview({
           }
         />
 
-        <div className="mt-14 grid auto-rows-[150px] grid-cols-4 gap-3 sm:auto-rows-[190px] sm:gap-4 lg:auto-rows-[215px]">
+        <div className="mt-14 grid auto-rows-[180px] grid-cols-2 gap-3 sm:auto-rows-[190px] sm:grid-cols-4 sm:gap-4 lg:auto-rows-[215px]">
           {tiles.map((tile, index) => (
             <Reveal
               key={tile.key}
@@ -73,12 +73,12 @@ export function GalleryPreview({
                   src={tile.imageUrl}
                   alt={tile.title}
                   fill
-                  sizes={index === 0 ? "(max-width: 640px) 100vw, 50vw" : "(max-width: 640px) 50vw, 25vw"}
+                  sizes={index === 0 ? "(min-width: 640px) 50vw, 100vw" : "(min-width: 640px) 25vw, 50vw"}
                   className="object-cover"
                 />
                 <span className="absolute inset-0 bg-gradient-to-t from-[#12123a]/85 via-[#12123a]/15 to-transparent opacity-80 transition duration-500 group-hover:opacity-100" />
-                <span className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-                  <span className="flex items-center gap-2 text-xs font-extrabold text-white sm:text-sm">
+                <span className="absolute inset-x-0 bottom-0 p-3 sm:p-5">
+                  <span className="flex items-center gap-2 text-sm font-extrabold text-white">
                     <Images size={15} className="shrink-0 text-[#f0bd3a]" />
                     <span className="line-clamp-2">{tile.title}</span>
                   </span>
