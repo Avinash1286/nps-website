@@ -3,6 +3,8 @@ import { contentMetadata } from "@/lib/content/public-metadata";
 import Link from "next/link";
 import { Clock3, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
 import { ContactForm } from "@/components/forms/contact-form";
+import { FormUnavailable } from "@/components/forms/form-unavailable";
+import { hasPublicFormConfiguration } from "@/lib/server/form-configuration";
 import { PageHero } from "@/components/site/page-hero";
 import { pageParagraphs } from "@/lib/content/cms-page";
 import { getCmsPage, getSiteProfile } from "@/lib/data/public";
@@ -130,7 +132,16 @@ export default async function ContactPage() {
               </p>
             </div>
           </aside>
-          <ContactForm />
+          {hasPublicFormConfiguration() ? (
+            <ContactForm />
+          ) : (
+            <FormUnavailable
+              title="Contact the school directly"
+              description="Online messages are temporarily unavailable. Please call or email the school office for help with your enquiry."
+              phone={site.phone}
+              email={site.email}
+            />
+          )}
         </div>
       </section>
     </>

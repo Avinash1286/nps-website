@@ -1,16 +1,14 @@
 import { createHmac, randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { isConfiguredSecret } from "@/lib/security/configuration";
+import { getPublicFormConfiguration } from "./form-configuration";
 import { requestFingerprint } from "./request-security";
 
 const FORM_SESSION_COOKIE = "nps_form_session";
 
 export function preparePublicFormRequest(request: NextRequest) {
-  const fingerprintSecret = process.env.REQUEST_FINGERPRINT_SECRET;
-  const formServiceSecret = process.env.FORM_SERVICE_SECRET;
-  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-  if (!isConfiguredSecret(fingerprintSecret) || !isConfiguredSecret(formServiceSecret) || !convexUrl)
-    return null;
+  const configuration = getPublicFormConfiguration();
+  if (!configuration) return null;
+  const { fingerprintSecret, formServiceSecret, convexUrl } = configuration;
 
   const cookieValue = request.cookies.get(FORM_SESSION_COOKIE)?.value;
   const existingSession = cookieValue && /^[a-f0-9-]{36}$/i.test(cookieValue) ? cookieValue : undefined;

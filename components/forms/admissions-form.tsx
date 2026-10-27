@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Send } from "lucide-react";
+import { normalizeAcademicYear } from "@/lib/content/academic-year";
 import {
   fieldClass,
   FormMessage,
@@ -11,6 +12,7 @@ import {
 } from "@/components/forms/use-public-form";
 
 export function AdmissionsForm({ academicYear }: { academicYear?: string }) {
+  const confirmedYear = normalizeAcademicYear(academicYear);
   const { status, submit, captcha } = usePublicForm(
     "/api/forms/admissions",
     "Your admission enquiry has been recorded. Keep the reference returned by the school for follow-up.",
@@ -77,22 +79,27 @@ export function AdmissionsForm({ academicYear }: { academicYear?: string }) {
           <input name="previousSchool" maxLength={160} className={fieldClass} />
         </label>
         <label className="text-sm font-bold text-slate-700">
-          Active academic year
+          Academic year
           <input
             name="academicYear"
             maxLength={40}
-            value={academicYear ?? "Current intake"}
+            value={confirmedYear ?? "Current intake"}
             readOnly
             aria-readonly="true"
             className={`${fieldClass} cursor-not-allowed bg-slate-50 text-slate-600`}
           />
+          {!confirmedYear && (
+            <span className="mt-2 block text-xs leading-5 font-normal text-slate-500">
+              Confirm the academic year with the school or in the latest admissions notice.
+            </span>
+          )}
         </label>
       </div>
       <label className="mt-5 block text-sm font-bold text-slate-700">
         Additional information
         <textarea
           name="message"
-          maxLength={2000}
+          maxLength={1500}
           rows={5}
           className={fieldClass}
           placeholder="Tell us what you need help with. Do not upload or paste sensitive identity documents here."

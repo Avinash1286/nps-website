@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Clock3, ShieldCheck } from "lucide-react";
 import { AdmissionsForm } from "@/components/forms/admissions-form";
+import { FormUnavailable } from "@/components/forms/form-unavailable";
+import { hasPublicFormConfiguration } from "@/lib/server/form-configuration";
 import { PageHero } from "@/components/site/page-hero";
 import { getSiteProfile } from "@/lib/data/public";
 
@@ -39,7 +41,16 @@ export default async function ApplyPage() {
             </p>
           </aside>
           {site.admissionsOpen ? (
-            <AdmissionsForm academicYear={site.academicYear} />
+            hasPublicFormConfiguration() ? (
+              <AdmissionsForm academicYear={site.academicYear} />
+            ) : (
+              <FormUnavailable
+                title="Contact the school about admissions"
+                description="Online admission enquiries are temporarily unavailable. Please contact the school office for current intake dates, requirements and application guidance."
+                phone={site.phone}
+                email={site.email}
+              />
+            )
           ) : (
             <div className="rounded-3xl border border-amber-200 bg-amber-50 p-7 text-amber-950 sm:p-10">
               <Clock3 size={28} />

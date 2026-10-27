@@ -2,6 +2,7 @@ import { fetchAction } from "convex/nextjs";
 import { makeFunctionReference } from "convex/server";
 import { NextRequest } from "next/server";
 import { z } from "zod";
+import { normalizeAcademicYear } from "@/lib/content/academic-year";
 import {
   formJson,
   looksLikeBot,
@@ -20,7 +21,7 @@ const antiAbuseFields = {
 };
 
 const academicYearField = z.preprocess(
-  (value) => (typeof value === "string" && !value.trim() ? undefined : value),
+  (value) => (typeof value === "string" ? normalizeAcademicYear(value) : value),
   z.string().trim().min(1).max(40).default("current"),
 );
 
