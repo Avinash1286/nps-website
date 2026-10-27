@@ -181,10 +181,10 @@ function SettingsEditor({ settings }: { settings: Record<string, unknown> | null
       >
         <Field label="Default SEO title" value={form.seoTitle} set={(value) => set("seoTitle", value)} />
         <Field
-          label="Social sharing image URL"
+          label="Social sharing image path or Convex storage URL"
           value={form.seoImageUrl}
           set={(value) => set("seoImageUrl", value)}
-          type="url"
+          inputMode="url"
         />
         <TextArea
           label="Default SEO description"
@@ -312,17 +312,18 @@ function MediaField({
         </select>
       </label>
       <label className="mt-3 block text-xs font-bold text-slate-600">
-        Or external HTTPS image URL
+        Or site image path / Convex storage URL
         <input
-          type="url"
+          type="text"
+          inputMode="url"
           value={url}
           onChange={(event) => setUrl(event.target.value)}
           className={inputClass}
-          placeholder="https://…"
+          placeholder="/media/image.png or https://….convex.cloud/…"
         />
       </label>
       <p className="mt-2 text-xs leading-5 text-slate-500">
-        A stored image takes precedence over the external URL.
+        Use a site path starting with / or an HTTPS Convex storage URL. A stored image takes precedence.
       </p>
     </div>
   );
@@ -353,12 +354,14 @@ function Field({
   set,
   required,
   type = "text",
+  inputMode,
 }: {
   label: string;
   value: string;
   set: (value: string) => void;
   required?: boolean;
   type?: "text" | "email" | "url";
+  inputMode?: "url";
 }) {
   return (
     <label className="block text-sm font-bold">
@@ -369,6 +372,7 @@ function Field({
         onChange={(event) => set(event.target.value)}
         required={required}
         type={type}
+        inputMode={inputMode}
       />
     </label>
   );
