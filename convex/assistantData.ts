@@ -3,6 +3,7 @@ import { ConvexError, v } from "convex/values";
 import { components } from "./_generated/api";
 import { internalMutation, internalQuery } from "./_generated/server";
 import { enqueueJob } from "./lib/jobs";
+import { AI_TRANSIENT_MAX_ATTEMPTS, aiRetryDelay, classifyAiFailure } from "./lib/aiRetry";
 import { plainText, safeKey, shortHash } from "./lib/input";
 import { enforceRateLimit } from "./lib/rateLimit";
 import { currentUser } from "./lib/auth";
@@ -225,6 +226,7 @@ export const queueFailure = internalMutation({
       error: args.error.slice(0, 1000),
       updatedAt: Date.now(),
     });
+    const temporaryFailure = classifyAiFailure(args.error) === "temporary";
     return await enqueueJob(ctx, {
       type: "ai_response",
       idempotencyKey: `ai:${args.assistantMessageId}`,
@@ -233,8 +235,8 @@ export const queueFailure = internalMutation({
         userMessageId: args.userMessageId,
         messageId: args.assistantMessageId,
       },
-      maxAttempts: 4,
-      runAt: Date.now() + 30_000,
+      maxAttempts: temporaryFailure ? AI_TRANSIENT_MAX_ATTEMPTS : 4,
+      runAt: Date.now() + (temporaryFailure ? aiRetryDelay(0, args.assistantMessageId) : 30_000),
     });
   },
 });
