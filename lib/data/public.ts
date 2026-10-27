@@ -4,6 +4,7 @@ import { fetchQuery } from "convex/nextjs";
 import { makeFunctionReference } from "convex/server";
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
+import { normalizeAcademicYear } from "@/lib/content/academic-year";
 
 export type SiteProfile = {
   schoolName: string;
@@ -624,7 +625,7 @@ export async function getSiteProfile(): Promise<SiteProfile> {
     secondaryPhone: optionalText(contact?.secondaryPhone),
     mapUrl: optionalText(contact?.mapUrl),
     officeHours: optionalText(settings.officeHours ?? contact?.officeHours),
-    academicYear: optionalText(settings.academicYear),
+    academicYear: normalizeAcademicYear(settings.academicYear),
     timezone: validTimeZone(optionalText(settings.timezone), baselineSite.timezone),
     admissionsOpen: settings.admissionsOpen === true,
     assistantEnabled: settings.assistantEnabled === true,

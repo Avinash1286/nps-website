@@ -4,6 +4,7 @@ import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react";
 import type { PublicNavigationItem, SiteProfile } from "@/lib/data/public";
 import { NewsletterForm } from "@/components/forms/newsletter-form";
 import { Reveal } from "@/components/site/reveal";
+import { hasPublicFormConfiguration } from "@/lib/server/form-configuration";
 
 type FooterLink = Pick<PublicNavigationItem, "id" | "label" | "href" | "external" | "description">;
 type FooterGroup = { title: string; links: readonly FooterLink[] };
@@ -29,6 +30,7 @@ export function SiteFooter({
       links: standalone,
     });
   const footerGroups = configuredGroups;
+  const subscriptionsAvailable = hasPublicFormConfiguration();
   return (
     <footer className="relative isolate overflow-hidden bg-[#12123a] text-white">
       <div
@@ -46,13 +48,26 @@ export function SiteFooter({
               School updates
             </p>
             <h2 className="mt-4 text-2xl font-extrabold tracking-[-.03em] sm:text-3xl">
-              Receive important news by email
+              {subscriptionsAvailable
+                ? "Receive important news by email"
+                : "Follow the latest school updates"}
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-7 text-slate-300">
-              Subscribe for published notices and school updates. You can unsubscribe from any email.
+              {subscriptionsAvailable
+                ? "Subscribe for published notices and school updates. You can unsubscribe from any email."
+                : "Email subscriptions are temporarily unavailable. Read published notices and announcements here on the website."}
             </p>
           </div>
-          <NewsletterForm />
+          {subscriptionsAvailable ? (
+            <NewsletterForm />
+          ) : (
+            <Link
+              href="/notices"
+              className="inline-flex min-h-12 w-fit items-center gap-2 rounded-xl bg-sky-500 px-5 py-3 text-sm font-extrabold text-white transition hover:bg-sky-400"
+            >
+              View latest notices <ArrowUpRight aria-hidden="true" size={16} />
+            </Link>
+          )}
         </Reveal>
       </div>
       <div className="px-4 py-16 sm:px-6 lg:px-8">

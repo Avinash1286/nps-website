@@ -7,6 +7,7 @@ vi.mock("convex/server", () => ({ makeFunctionReference: (name: string) => name 
 
 import {
   getCmsPage,
+  getSiteProfile,
   getDepartment,
   getFacilities,
   getFaqs,
@@ -29,6 +30,11 @@ describe("public Convex data normalization", () => {
   });
 
   afterAll(() => vi.unstubAllEnvs());
+
+  it("omits the seed academic-year placeholder from public school information", async () => {
+    fetchQueryMock.mockResolvedValueOnce({ academicYear: "Configure in admin" });
+    await expect(getSiteProfile()).resolves.toMatchObject({ academicYear: undefined });
+  });
 
   it("uses the approved leadership welcome message without dropping the biography", async () => {
     fetchQueryMock.mockResolvedValueOnce({

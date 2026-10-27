@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { EventRegistrationForm } from "@/components/forms/event-registration-form";
+import { FormUnavailable } from "@/components/forms/form-unavailable";
+import { hasPublicFormConfiguration } from "@/lib/server/form-configuration";
 import { DetailPage } from "@/components/site/detail-page";
 import { contentMetadata } from "@/lib/content/public-metadata";
 import { getEvent } from "@/lib/data/public";
@@ -22,7 +24,15 @@ export default async function EventDetail({ params }: { params: Promise<{ slug: 
   if (!item) notFound();
   return (
     <DetailPage item={item} type="Event">
-      {item.registrationOpen && <EventRegistrationForm eventSlug={item.slug} eventTitle={item.title} />}
+      {item.registrationOpen &&
+        (hasPublicFormConfiguration() ? (
+          <EventRegistrationForm eventSlug={item.slug} eventTitle={item.title} />
+        ) : (
+          <FormUnavailable
+            title="Contact the school to register"
+            description="Online event registration is temporarily unavailable. Contact the school to confirm availability and registration arrangements."
+          />
+        ))}
     </DetailPage>
   );
 }
