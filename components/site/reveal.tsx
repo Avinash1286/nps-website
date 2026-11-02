@@ -4,6 +4,38 @@ import { useEffect, useRef, useState, type ElementType, type ReactNode } from "r
 
 type RevealVariant = "up" | "left" | "right" | "scale" | "none";
 
+const pendingReveals = new Map<Element, () => void>();
+let revealObserver: IntersectionObserver | undefined;
+
+function observeReveal(node: Element, reveal: () => void) {
+  revealObserver ??= new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const show = pendingReveals.get(entry.target);
+        pendingReveals.delete(entry.target);
+        revealObserver?.unobserve(entry.target);
+        show?.();
+      }
+      releaseObserver();
+    },
+    { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
+  );
+  pendingReveals.set(node, reveal);
+  revealObserver.observe(node);
+  return () => {
+    pendingReveals.delete(node);
+    revealObserver?.unobserve(node);
+    releaseObserver();
+  };
+}
+
+function releaseObserver() {
+  if (pendingReveals.size) return;
+  revealObserver?.disconnect();
+  revealObserver = undefined;
+}
+
 /**
  * Reveals its children once they scroll into view. The server-rendered markup
  * already contains the content, so search engines and no-script visitors keep
@@ -33,18 +65,7 @@ export function Reveal({
     if (!node || visible) return;
     // Reduced motion is handled in globals.css, which pins .reveal to its final
     // state, so the observer below only ever drives the transition itself.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
+    return observeReveal(node, () => setVisible(true));
   }, [visible]);
 
   return (

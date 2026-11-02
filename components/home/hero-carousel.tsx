@@ -104,9 +104,9 @@ export function HeroCarousel({ slides, children }: { slides: readonly HeroSlide[
               src={slide.src}
               alt={slideIndex === index ? slide.alt : ""}
               fill
-              preload={slideIndex === 0}
-              loading={slideIndex === 0 ? undefined : "lazy"}
-              decoding={slideIndex === 0 ? "sync" : "async"}
+              loading={slideIndex === 0 ? "eager" : "lazy"}
+              fetchPriority={slideIndex === 0 ? "high" : "low"}
+              decoding="async"
               quality={slideIndex === 0 ? 65 : 75}
               sizes="100vw"
               className="object-cover object-center"
