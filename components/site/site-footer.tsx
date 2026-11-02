@@ -196,6 +196,14 @@ export function SiteFooter({
             <Link href="/admin" className="inline-flex items-center gap-1 transition hover:text-white">
               Staff portal <ArrowUpRight size={12} />
             </Link>
+            <a
+              href="https://abhimanyuyadav.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 transition hover:text-white"
+            >
+              Contact our developer <ArrowUpRight aria-hidden="true" size={12} />
+            </a>
           </div>
         </div>
       </div>
