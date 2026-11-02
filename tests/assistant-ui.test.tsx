@@ -54,7 +54,7 @@ describe("public assistant UI", () => {
     );
 
     render(<AssistantLauncher />);
-    const launcher = screen.getByRole("button", { name: "Open NPS assistant" });
+    const launcher = screen.getByRole("button", { name: "Ask NPS: open assistant" });
     expect(launcher).toHaveAttribute("aria-expanded", "false");
 
     fireEvent.click(launcher);
@@ -69,7 +69,7 @@ describe("public assistant UI", () => {
     fireEvent.click(screen.getByRole("button", { name: "Close assistant" }));
     expect(screen.queryByRole("dialog", { name: "NPS Information Assistant" })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Open NPS assistant" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ask NPS: open assistant" }));
     expect(screen.getByText("Admissions open after the official notice is published.")).toBeVisible();
   });
 
@@ -130,7 +130,7 @@ describe("public assistant UI", () => {
 
   it("resets an open floating assistant after navigating through the full assistant route", async () => {
     const view = render(<AssistantLauncher />);
-    fireEvent.click(screen.getByRole("button", { name: "Open NPS assistant" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ask NPS: open assistant" }));
     expect(await screen.findByRole("dialog", { name: "NPS Information Assistant" })).toBeInTheDocument();
 
     navigation.pathname = "/assistant";
@@ -139,7 +139,7 @@ describe("public assistant UI", () => {
 
     navigation.pathname = "/";
     view.rerender(<AssistantLauncher />);
-    expect(screen.getByRole("button", { name: "Open NPS assistant" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "Ask NPS: open assistant" })).toHaveAttribute(
       "aria-expanded",
       "false",
     );
