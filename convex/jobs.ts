@@ -7,6 +7,7 @@ import { shortHash } from "./lib/input";
 import { recordDeleted, recordStatusChanged } from "./lib/metrics";
 import { adjustCampaignOutcome } from "./lib/newsletter";
 import { isConfiguredSecret } from "./lib/secrets";
+import { AI_TRANSIENT_MAX_ATTEMPTS, aiRetryDelay, classifyAiFailure } from "./lib/aiRetry";
 
 const CONTENT_TYPES = [
   "pages",
@@ -293,11 +294,22 @@ export const fail = internalMutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const job = await ctx.db.get("jobs", args.jobId);
-    if (!job || job.status === "succeeded" || job.status === "cancelled") return null;
+    if (!job || job.status === "succeeded" || job.status === "cancelled" || job.status === "dead")
+      return null;
     const now = Date.now();
-    const retryable = args.retryable ?? true;
-    const shouldRetry = retryable && job.attempts < job.maxAttempts;
-    const delay = Math.min(60 * 60 * 1000, 2 ** Math.max(0, job.attempts - 1) * 30_000);
+    const aiFailure = job.type === "ai_response" ? classifyAiFailure(args.error) : undefined;
+    const retryable = (args.retryable ?? true) && aiFailure !== "permanent";
+    // Also applies to legacy four-attempt jobs after an explicit admin retry.
+    // Never revive dead jobs automatically or extend a non-retryable failure.
+    const maxAttempts =
+      retryable && aiFailure === "temporary"
+        ? Math.max(job.maxAttempts, AI_TRANSIENT_MAX_ATTEMPTS)
+        : job.maxAttempts;
+    const shouldRetry = retryable && job.attempts < maxAttempts;
+    const delay =
+      aiFailure === "temporary"
+        ? aiRetryDelay(job.attempts, job._id)
+        : Math.min(60 * 60 * 1000, 2 ** Math.max(0, job.attempts - 1) * 30_000);
     const runAt = shouldRetry ? now + delay : job.runAt;
     let campaignOutcome = job.campaignOutcome;
     if (
@@ -343,6 +355,7 @@ export const fail = internalMutation({
     }
     await ctx.db.patch("jobs", job._id, {
       status: shouldRetry ? "retry" : "dead",
+      maxAttempts,
       runAt,
       lockedAt: undefined,
       lastError: args.error.slice(0, 2000),
